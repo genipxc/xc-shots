@@ -326,6 +326,13 @@
     <p class="msect">Shots — flag anything unusable</p>
     <div class="mlist" id="mgShots"></div>
 
+    <p class="msect">Drive folder — where their uploads land</p>
+    <div class="addteam" style="margin-top:12px">
+      <input id="driveUrl" placeholder="Paste the shared Drive folder link…" oninput="S.drive=this.value.trim(); save()">
+      <button onclick="if(S.drive)window.open(S.drive,'_blank','noopener');else toast('Paste a folder link first.')">Open</button>
+    </div>
+    <p class="demonote" style="margin-top:8px;border:0;padding:0"><b>SETUP —</b> Drive → folder per client → Share → Anyone with the link → <b>Editor</b>. Paste it here; the team's Upload buttons open it.</p>
+
     <p class="msect">Team — who's on the name picker</p>
     <div class="team" id="mgTeam"></div>
     <div class="addteam">
@@ -432,7 +439,7 @@
   <div class="dont"><span class="ic">DON'T</span><p id="shDont"></p></div>
   <div class="sheetbtns">
     <button class="bigbtn" id="shTick" onclick="tickFromSheet()">Mark as filmed ✓</button>
-    <button class="up" onclick="toast('In the real app this opens <b>your shared Drive folder</b> — big files ride on Google, not on us.')">Upload ↗</button>
+    <button class="up" onclick="upload()">Upload ↗</button>
   </div>
 </div>
 
@@ -520,6 +527,7 @@ const DEFAULTS = {entered:false, me:null, guided:false,
   team:["Jess","Marco","Sam","Antonia"],
   by:{0:"Sam",1:"Jess",2:"Antonia",3:"Jess",5:"Marco"},
   received:{0:true,1:true,2:true,5:true},
+  drive:"https://drive.google.com/drive/folders/1D36iNhyBiLJYjJg8ANKyOk5RhlXa8a-m",
   redo:[4],
   reasons:{4:"Bit dark — try again nearer the window. The pour itself was spot on."},
   results:[
@@ -578,7 +586,7 @@ function render(){
           <h3>${s.n}</h3>
           <span class="how">${s.h}</span>
           ${isRedo ? `<span class="reason"><b>XC ASKED FOR A REDO —</b> ${S.reasons[i]}</span>` : ""}
-          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]}</span><span class="chip">${s.d}</span><span class="chip open">How-to ↗</span>${isDone&&S.by[i]?(S.received[i]?`<span class="byme rcv">✓ ${S.by[i]} · received</span>`:`<span class="byme wait">✓ ${S.by[i]} · waiting for upload</span>`):""}</span>
+          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]}</span><span class="chip">${s.d}</span><span class="chip open">How-to ↗</span><span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload()" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload()}">Upload ↗</span>${isDone&&S.by[i]?(S.received[i]?`<span class="byme rcv">✓ ${S.by[i]} · received</span>`:`<span class="byme wait">✓ ${S.by[i]} · waiting for upload</span>`):""}</span>
         </span>
         ${frame(s.t, 44)}`;
       box.appendChild(el);
@@ -772,6 +780,7 @@ function renderManage(){
       : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : "";
     return `<div class="mrow${isRedo?" redo":""}"><span class="nm">${s.n}</span>${who}${act}</div>`;
   }).join("");
+  const du = document.getElementById("driveUrl"); if(document.activeElement !== du) du.value = S.drive || "";
   document.getElementById("mgTeam").innerHTML = S.team.map(n=>
     `<span class="tchip">${n}<button aria-label="Remove ${n}" onclick="removeTeam('${n}')">✕</button></span>`).join("");
   document.getElementById("mgResults").innerHTML = S.results.map((r,k)=>
@@ -844,6 +853,13 @@ function removeTeam(n){
   S.team = S.team.filter(t=>t!==n);
   if(S.me === n) S.me = null;
   save(); renderManage();
+}
+
+/* ── upload → the client's shared Drive folder ── */
+function upload(){
+  if(!S.drive){ toast("No Drive folder set for this client yet — ask XC."); return; }
+  window.open(S.drive, "_blank", "noopener");
+  toast("Drive's open — <b>+ → Upload → pick your video</b>. Then come back and tick the shot.");
 }
 
 /* ── received state (XC flips it) ── */
