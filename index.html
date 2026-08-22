@@ -393,6 +393,15 @@
         </ul>
       </div>
 
+      <div class="settings">
+        <h3>Uploading</h3>
+        <ul>
+          <li>Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li>
+          <li>Clips <b>disappear from the folder within a minute</b> — that's XC receiving them, not a failure</li>
+          <li>Upload first, <b>then tick</b> the shot</li>
+        </ul>
+      </div>
+
       <p class="mantra">When in doubt:<br>slower, closer, stiller.</p>
       <p class="demonote"><b>FROM THE WORKSHOP —</b> this tab is everything from your XC session, kept. New staff read this before their first shot.</p>
     </div>
@@ -729,12 +738,14 @@ function buildGuide(){
     pill.textContent = "iPhone · Safari";
     steps.innerHTML = step(1,"Tap the <b>Share</b> button — the square with the arrow, bottom of Safari.")
       + step(2,"Scroll down, tap <b>Add to Home Screen</b>.")
-      + step(3,"Tap <b>Add</b>. That's it — gold icon, one tap from now on.");
+      + step(3,"Tap <b>Add</b>. That's it — gold icon, one tap from now on.")
+      + step(4,"Install the <b>Google Drive</b> app from the App Store if it's not on your phone — uploads finish in the background, even with the phone locked.");
   } else if(isAndroid){
     pill.textContent = "Android · Chrome";
     steps.innerHTML = step(1,"Tap the <b>⋮ menu</b>, top-right of Chrome.")
       + step(2,"Tap <b>Add to Home screen</b>.")
-      + step(3,"Tap <b>Add</b>. Done — gold icon, one tap from now on.");
+      + step(3,"Tap <b>Add</b>. Done — gold icon, one tap from now on.")
+      + step(4,"Make sure the <b>Google Drive</b> app is installed — uploads finish in the background, even with the phone locked.");
   } else {
     pill.textContent = "You're on a computer";
     steps.innerHTML = step(1,"This app lives on phones — open the same link on your phone.")
@@ -859,7 +870,7 @@ function removeTeam(n){
 function upload(){
   if(!S.drive){ toast("No Drive folder set for this client yet — ask XC."); return; }
   window.open(S.drive, "_blank", "noopener");
-  toast("Drive's open — <b>+ → Upload → pick your video</b>. Then come back and tick the shot.");
+  toast("In Drive: <b>+ → Upload → pick your video</b>. Use the Drive app (not the browser) so it finishes in the background. Clips vanish from the folder within a minute — that's XC receiving them. Then tick the shot.");
 }
 
 /* ── received state (XC flips it) ── */
