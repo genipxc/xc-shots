@@ -318,7 +318,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "1.6";
+const BUILD = "1.7";
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
 const LS = {
@@ -333,6 +333,7 @@ const FRAMES = {
 const TLAB = {wide:"Wide", mid:"Mid", close:"Close-up"};
 const CAP = {wide:"Fit the whole scene in", mid:"Person-sized framing", close:"Fill the screen with it"};
 const CANNED = ["Bit dark — try again nearer the window. Framing was spot on.","Bit shaky — lean the phone on something and go again. Great instinct on the moment.","Cut off too early — same shot, just let it run a slow count of 20."];
+const q = v => JSON.stringify(v).replace(/"/g,"&quot;");   // safe inside double-quoted onclick attributes
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtV = v => v >= 1000 ? (v/1000).toFixed(1).replace(/\.0$/,"") + "k" : String(v||0);
 function frame(t, s){ return (FRAMES[t]||FRAMES.mid).replace("{S}", s).replace('<svg', s>50 ? '<svg class="bigframe"' : '<svg class="frame"'); }
@@ -405,7 +406,7 @@ async function tryCode(){
 }
 function buildNames(){
   document.getElementById("nameEyebrow").textContent = C.name;
-  document.getElementById("nameGrid").innerHTML = C.team.length ? C.team.map(n=>`<button onclick="pickName(${JSON.stringify(n).replace(/"/g,'&quot;')})">${esc(n)}</button>`).join("") : '<p class="sub">No names yet — ask XC to add the team.</p>';
+  document.getElementById("nameGrid").innerHTML = C.team.length ? C.team.map(n=>`<button onclick="pickName(${q(n).replace(/"/g,'&quot;')})">${esc(n)}</button>`).join("") : '<p class="sub">No names yet — ask XC to add the team.</p>';
 }
 function pickName(n){
   me = n; LS.set("me", n);
@@ -538,7 +539,7 @@ function renderResults(){
   document.getElementById("reelList").innerHTML = rs.map((r,k)=>`<div class="reel${r.v===topV&&r.v>0?" top":""}"><div class="l"><h3>${esc(r.n)}${r.v===topV&&r.v>0?'<span class="star">★ Top clip</span>':""}</h3><p class="by">Filmed by <b>${esc(r.by)}</b> · week ${r.wk}</p><button class="sharebtn" onclick="openShare(${k})">Share card ↗</button></div><div class="v"><div class="n">${fmtV(r.v)}</div><div class="u">views</div></div></div>`).join("");
   const ap = C.approved || [];
   document.getElementById("approvedHead").classList.toggle("hide", !ap.length);
-  document.getElementById("approvedList").innerHTML = ap.map(f=>`<div class="reel" style="cursor:pointer" onclick="openPreview(${JSON.stringify(f.id)},${JSON.stringify(f.name)},'')"><div class="l"><h3>${esc(f.name.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,""))}</h3><p class="by">Tap to watch</p></div><div class="v"><div class="u">▶</div></div></div>`).join("");
+  document.getElementById("approvedList").innerHTML = ap.map(f=>`<div class="reel" style="cursor:pointer" onclick="openPreview(${q(f.id)},${q(f.name)},'')"><div class="l"><h3>${esc(f.name.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,""))}</h3><p class="by">Tap to watch</p></div><div class="v"><div class="u">▶</div></div></div>`).join("");
 }
 function openPreview(id, title, note){
   document.getElementById("pTitle").textContent = title; document.getElementById("pNote").textContent = note || "";
@@ -606,7 +607,7 @@ function renderRoster(){
     const pct = c.total ? Math.round(c.done/c.total*100) : 0;
     const st = c.quietDays!==null && c.quietDays>=3 ? `<span class="st behind">${c.quietDays} days quiet</span>` : (c.wkDone>=c.wkTotal && c.wkTotal ? '<span class="st ok">Week done</span>' : '<span class="st ok">On track</span>');
     const nudge = c.quietDays!==null && c.quietDays>=3 ? `<button class="nudgebtn" onclick="event.stopPropagation();nudge()">Nudge ↗</button>` : "";
-    return `<button class="cl" onclick="openManage(${JSON.stringify(c.code)})"><div class="r1"><h3>${esc(c.name)}</h3><span style="display:flex;gap:8px;align-items:center">${nudge}${st}</span></div>
+    return `<button class="cl" onclick="openManage(${q(c.code)})"><div class="r1"><h3>${esc(c.name)}</h3><span style="display:flex;gap:8px;align-items:center">${nudge}${st}</span></div>
       <div class="r2"><span>${c.done} of ${c.total} this month</span>${c.redos?`<span style="color:var(--warn)">${c.redos} redo out</span>`:""}${c.deliveriesPending?`<span style="color:var(--goldB)">${c.deliveriesPending} to review</span>`:""}<span>week: ${c.wkDone} of ${c.wkTotal}</span></div>
       <div class="bar"><i style="width:${pct}%"></i></div></button>`;
   }).join("");
@@ -657,17 +658,17 @@ function renderManage(){
     const isDone = !!by[i], isRedo = !!redo[i], fl = files[i]||[];
     const who = isRedo ? '<span class="who out">redo out</span>' : isDone ? `<span class="who${fl.length?"":" todo"}">✓ ${esc(by[i])}${fl.length?"":" · no file yet"}</span>` : (fl.length ? '<span class="who">file in · not ticked</span>' : `<span class="who todo">wk ${s.w} · to-do</span>`);
     const act = isDone ? `<button class="mact" onclick="openFlag(${i})">Flag redo</button>` : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : "";
-    const fh = fl.length ? `<div class="files">${fl.map(f=>`<a class="file" onclick="openPreview(${JSON.stringify(f.id)},${JSON.stringify(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${esc(f.name.replace(/ — /," "))}</span></a>`).join("")}</div>` : "";
+    const fh = fl.length ? `<div class="files">${fl.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${esc(f.name.replace(/ — /," "))}</span></a>`).join("")}</div>` : "";
     return `<div class="mrow${isRedo?" redo":""}"><div class="r"><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${act}</div>${fh}</div>`;
   }).join("");
   const un = files.unsorted||[];
-  document.getElementById("mgUnsorted").innerHTML = un.length ? `<p class="msect">Unsorted — dropped without picking a shot</p><div class="mrow"><div class="files">${un.map(f=>`<a class="file" onclick="openPreview(${JSON.stringify(f.id)},${JSON.stringify(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="">`:'<span class="th"></span>'}<span class="fn">${esc(f.name)}</span></a>`).join("")}</div></div>` : "";
-  document.getElementById("mgTeam").innerHTML = (S.team||[]).map(n=>`<span class="tchip">${esc(n)}<button aria-label="Remove ${esc(n)}" onclick="removeTeam(${JSON.stringify(n).replace(/"/g,'&quot;')})">✕</button></span>`).join("");
+  document.getElementById("mgUnsorted").innerHTML = un.length ? `<p class="msect">Unsorted — dropped without picking a shot</p><div class="mrow"><div class="files">${un.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="">`:'<span class="th"></span>'}<span class="fn">${esc(f.name)}</span></a>`).join("")}</div></div>` : "";
+  document.getElementById("mgTeam").innerHTML = (S.team||[]).map(n=>`<span class="tchip">${esc(n)}<button aria-label="Remove ${esc(n)}" onclick="removeTeam(${q(n).replace(/"/g,'&quot;')})">✕</button></span>`).join("");
   // deliveries
   const D = mgDeliv || {pending:[], approved:[]};
   document.getElementById("delivCount").textContent = D.pending.length ? `(${D.pending.length})` : "";
-  const fileRow = (f, btns) => `<div class="mrow"><div class="r"><a class="file" style="width:64px" onclick="openPreview(${JSON.stringify(f.id)},${JSON.stringify(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" style="width:64px;height:86px" src="${esc(f.thumb)}" alt="">`:'<span class="th" style="width:64px;height:86px"></span>'}</a><span class="nm">${esc(f.name)}<br><span class="by2 mono" style="font-size:9px;color:var(--dim)">${new Date(f.created).toLocaleDateString("en-AU")}</span></span>${btns}</div></div>`;
-  document.getElementById("mgPending").innerHTML = D.pending.length ? D.pending.map(f=>fileRow(f, `<button class="mact ok" onclick="approve(${JSON.stringify(f.id)})">Approve</button><button class="mact" onclick="openBack(${JSON.stringify(f.id)},${JSON.stringify(f.name)})">Send back</button>`)).join("") : '<p class="sub">Nothing waiting.</p>';
+  const fileRow = (f, btns) => `<div class="mrow"><div class="r"><a class="file" style="width:64px" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" style="width:64px;height:86px" src="${esc(f.thumb)}" alt="">`:'<span class="th" style="width:64px;height:86px"></span>'}</a><span class="nm">${esc(f.name)}<br><span class="by2 mono" style="font-size:9px;color:var(--dim)">${new Date(f.created).toLocaleDateString("en-AU")}</span></span>${btns}</div></div>`;
+  document.getElementById("mgPending").innerHTML = D.pending.length ? D.pending.map(f=>fileRow(f, `<button class="mact ok" onclick="approve(${q(f.id)})">Approve</button><button class="mact" onclick="openBack(${q(f.id)},${q(f.name)})">Send back</button>`)).join("") : '<p class="sub">Nothing waiting.</p>';
   document.getElementById("mgApproved").innerHTML = D.approved.length ? D.approved.map(f=>fileRow(f, "")).join("") : '<p class="sub">None yet.</p>';
   if(editShots) renderEdit(); if(editResults) renderResultsEdit();
 }
