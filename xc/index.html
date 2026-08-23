@@ -105,6 +105,24 @@
   .me{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-top:10px}.me b{color:var(--goldB);font-weight:700}.me a{color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
   .sync{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}.sync.live::before{content:"● ";color:var(--ok)}.sync.busy::before{content:"◌ ";color:var(--gold)}.sync.err::before{content:"● ";color:var(--warn)}
   .shotedit{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:8px 10px}.shotedit .i{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);width:18px;flex:none}.shotedit input{flex:1;min-width:0;appearance:none;background:transparent;border:0;border-bottom:1px solid var(--hair);color:var(--ink);font-family:inherit;font-size:13px;padding:4px 2px;outline:none}.shotedit input:focus{border-color:var(--gold)}.shotedit select{appearance:none;background:var(--panel2);border:1px solid var(--hair);color:var(--goldB);font-family:'Space Mono',monospace;font-size:10px;border-radius:8px;padding:6px 8px}
+  /* ── studio side on desktop ── */
+  body.xc .wrap{max-width:1180px;padding:0 32px 90px}
+  @media (min-width:900px){
+    body.xc h1{font-size:38px}
+    body.xc .clients{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    body.xc #dash .addteam{max-width:560px}
+    body.xc .mstat{max-width:560px}
+    body.xc #mgShots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+    body.xc .file{width:132px}body.xc .file .th{width:132px;height:176px}body.xc .file .fn{font-size:9px}
+    body.xc #mvDeliv{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+    body.xc #mvDeliv .demonote{grid-column:1/-1}
+    body.xc #mvTeam,body.xc #mvResults{max-width:640px}
+    body.xc #mgEdit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    body.xc .sheet{max-width:640px;border-radius:20px;bottom:auto;top:50%;transform:translate(0,-45%) scale(.98);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+    body.xc .sheet.show{transform:translate(0,-50%) scale(1);opacity:1;pointer-events:auto}
+    body.xc .vid{max-height:70vh}
+    body.xc .toast{left:auto;right:28px;bottom:28px;transform:translate(0,20px)}body.xc .toast.show{transform:none}
+  }
   @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
 
@@ -180,10 +198,8 @@
       <div id="mgUnsorted"></div>
     </div>
     <div id="mvDeliv" class="hide">
-      <p class="msect">From the editor — to review</p>
-      <div class="mlist" id="mgPending"></div>
-      <p class="msect">Approved — the client can watch these</p>
-      <div class="mlist" id="mgApproved"></div>
+      <div><p class="msect">From the editor — to review</p><div class="mlist" id="mgPending"></div></div>
+      <div><p class="msect">Approved — the client can watch these</p><div class="mlist" id="mgApproved"></div></div>
       <p class="demonote"><b>EDITOR —</b> they drop finished reels in <b>XC Footage — Received / [client] / Delivered</b>. Approve → it appears on the client's Results tab. Send back → it moves to "Sent back" with your note.</p>
     </div>
     <div id="mvTeam" class="hide">
@@ -318,7 +334,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "1.7";
+const BUILD = "1.8";
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
 const LS = {
@@ -436,7 +452,7 @@ async function loadClient(){
   else if(d.error !== "network"){ C = null; }
 }
 function enterClient(){
-  gate("app"); show("client");
+  gate("app"); show("client"); document.body.classList.remove("xc");
   document.getElementById("meName").textContent = me || "—";
   renderClient(); startPoll(loadClient);
 }
@@ -587,9 +603,9 @@ async function tryPin(){
   err.textContent = "";
   pin = v; LS.set("pin", v); roster = d; await enterXC();
 }
-function xcSignOut(){ pin = null; LS.set("pin", null); roster = null; stopPoll(); try { history.replaceState(null, "", location.pathname); } catch(e){} gate("gateCode"); }
+function xcSignOut(){ pin = null; LS.set("pin", null); roster = null; stopPoll(); document.body.classList.remove("xc"); try { history.replaceState(null, "", location.pathname); } catch(e){} gate("gateCode"); }
 async function enterXC(){
-  gate("app"); show("dash"); try { history.replaceState(null, "", location.pathname + "?xc"); } catch(e){}
+  gate("app"); show("dash"); document.body.classList.add("xc"); try { history.replaceState(null, "", location.pathname + "?xc"); } catch(e){}
   if(!roster) await loadRoster(); else renderRoster();
   startPoll(loadRoster);
 }
