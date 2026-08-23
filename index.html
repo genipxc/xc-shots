@@ -186,7 +186,7 @@
 
   <!-- XC: manage one client -->
   <section id="manage" class="hide">
-    <button class="back" onclick="closeManage()">← All clients</button>
+    <div style="display:flex;justify-content:space-between;align-items:center"><button class="back" onclick="closeManage()">← All clients</button><button class="back" onclick="loadManage();toast('Refreshing…')">↻ Refresh</button></div>
     <div class="eyebrow" id="mgEyebrow"></div>
     <h1 id="mgName"></h1>
     <div class="mstat"><div class="box"><div class="n" id="mgMonth">—</div><div class="l">Month</div></div><div class="box"><div class="n" id="mgWeek">—</div><div class="l">This week</div></div><div class="box"><div class="n" id="mgRedo">—</div><div class="l">Redos out</div></div></div>
@@ -210,6 +210,9 @@
       <div class="addteam" style="margin-top:12px"><input id="driveUrl" readonly><button onclick="window.open(document.getElementById('driveUrl').value,'_blank','noopener')">Open</button></div>
       <p class="msect">Studio code</p>
       <p class="mono" style="margin-top:10px;font-size:22px;color:var(--goldB);font-weight:700;letter-spacing:.16em" id="mgCode"></p>
+      <p class="msect" style="color:var(--warn)">Danger zone</p>
+      <div class="sheetbtns"><button class="up" style="border-color:var(--warn);color:var(--warn)" onclick="removeClient()">Remove this client</button></div>
+      <p class="demonote" style="border:0;padding:0;margin-top:8px">Deletes them from the roster and their studio code. Their drop folder is removed only if it's empty. <b>The vault is never touched</b> — every clip they ever sent stays in Drive.</p>
     </div>
     <div id="mvResults" class="hide">
       <p class="msect">Results — paste views, their app updates</p>
@@ -334,7 +337,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "1.8";
+const BUILD = "1.9";
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
 const LS = {
@@ -673,7 +676,7 @@ function renderManage(){
   document.getElementById("mgShots").innerHTML = S.shots.map((s,i)=>{
     const isDone = !!by[i], isRedo = !!redo[i], fl = files[i]||[];
     const who = isRedo ? '<span class="who out">redo out</span>' : isDone ? `<span class="who${fl.length?"":" todo"}">✓ ${esc(by[i])}${fl.length?"":" · no file yet"}</span>` : (fl.length ? '<span class="who">file in · not ticked</span>' : `<span class="who todo">wk ${s.w} · to-do</span>`);
-    const act = isDone ? `<button class="mact" onclick="openFlag(${i})">Flag redo</button>` : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : "";
+    const act = isDone ? `<button class="mact" onclick="openFlag(${i})">Flag redo</button>` : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : (fl.length ? `<button class="mact ok" onclick="xcTick(${i})">Mark filmed</button>` : "");
     const fh = fl.length ? `<div class="files">${fl.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${esc(f.name.replace(/ — /," "))}</span></a>`).join("")}</div>` : "";
     return `<div class="mrow${isRedo?" redo":""}"><div class="r"><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${act}</div>${fh}</div>`;
   }).join("");
@@ -699,6 +702,15 @@ function pickReason(k){ flagSel = k; CANNED.forEach((_,j)=>document.getElementBy
 async function confirmFlag(){ const custom = document.getElementById("fCustom").value.trim(); const reason = custom || (flagSel!==null ? CANNED[flagSel] : null); if(!reason){ toast("Pick a reason or write one — it's what their team sees."); return; } closeFlag(); await act({action:"redo", idx:flagIdx, reason}, "<b>Redo requested.</b> The orange card is on their phones now."); }
 function closeFlag(){ document.getElementById("fveil").classList.remove("show"); document.getElementById("fsheet").classList.remove("show"); }
 async function cancelRedo(i){ await act({action:"cancelRedo", idx:i}, "Redo cancelled."); }
+async function xcTick(i){ await act({action:"tick", idx:i, by:"Team"}, "Marked filmed — counts toward their month."); }
+async function removeClient(){
+  const S = mgState; if(!S) return;
+  const typed = prompt(`Remove ${S.name}? Type their code (${S.code}) to confirm.`);
+  if(!typed || typed.trim().toUpperCase() !== S.code) { toast("Not removed."); return; }
+  const d = await apiPost({action:"removeClient", pin, code:S.code});
+  if(!d.ok){ toast("Couldn't remove: " + esc(d.error)); return; }
+  roster = d; toast(`<b>${esc(S.name)}</b> removed. Vault untouched.`); closeManage();
+}
 async function addTeam(){ const v = document.getElementById("newName").value.trim(); if(!v) return; document.getElementById("newName").value=""; await act({action:"teamAdd", name:v}, `<b>${esc(v)}</b> added — on the picker next open.`); }
 async function removeTeam(n){ await act({action:"teamRemove", name:n}); }
 async function approve(id){ await act({action:"approve", fileId:id}, "<b>Approved.</b> It's on their Results tab now."); }
