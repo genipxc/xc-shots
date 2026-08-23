@@ -97,7 +97,9 @@
   .rcustom{margin-top:10px;width:100%;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:11px;color:var(--ink);font-family:inherit;font-size:13px;padding:11px 13px;outline:none;resize:none}.rcustom:focus{border-color:var(--gold)}
   .gate{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;max-width:440px;margin:0 auto;padding:32px 24px}.gate .glogo{display:flex;align-items:center;gap:10px;margin-bottom:26px}.gate h1{font-size:27px;margin-top:0}.gate .sub{max-width:300px}
   .codein{margin-top:22px;display:flex;gap:10px}.codein input{flex:1;min-width:0;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:16px;letter-spacing:.18em;text-transform:uppercase;padding:14px 16px;outline:none}.codein input:focus{border-color:var(--gold)}.codein input::placeholder{color:var(--dim);letter-spacing:.1em}
-  .gate .err{color:var(--warn);font-size:12.5px;margin-top:10px;min-height:18px}.gatefoot{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--dim);line-height:1.7;margin-top:26px}.gatefoot b{color:var(--gold);font-weight:400}.gatefoot a{color:var(--gold);cursor:pointer;text-decoration:underline}
+  .gate .err{color:var(--warn);font-size:12.5px;margin-top:10px;min-height:18px}
+  .lnk{appearance:none;background:transparent;border:0;padding:0;color:var(--gold);font:inherit;text-decoration:underline;cursor:pointer;touch-action:manipulation}
+  .diag{font-family:'Space Mono',monospace;font-size:9px;color:var(--warn);line-height:1.5;margin-top:10px;word-break:break-all}.gatefoot{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--dim);line-height:1.7;margin-top:26px}.gatefoot b{color:var(--gold);font-weight:400}.gatefoot a{color:var(--gold);cursor:pointer;text-decoration:underline}
   .names{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}.names button{appearance:none;cursor:pointer;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--ink);font-family:inherit;font-weight:800;font-size:16px;padding:18px 10px;transition:border-color .2s}.names button:hover{border-color:var(--gold)}
   .gsteps{margin-top:20px;display:flex;flex-direction:column;gap:12px}.gsteps .step p{font-size:14.5px}.platpill{display:inline-block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;color:var(--gold);border:1px solid var(--goldDim);border-radius:99px;padding:4px 10px;text-transform:uppercase;margin-top:14px}.gatebtns{display:flex;gap:10px;margin-top:24px}
   .me{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-top:10px}.me b{color:var(--goldB);font-weight:700}.me a{color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
@@ -114,7 +116,8 @@
   <p class="sub">It's on the gold card in your staff room — or ask whoever runs your socials.</p>
   <div class="codein"><input id="codeInput" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" aria-label="Studio code" onkeydown="if(event.key==='Enter')tryCode()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="codeBtn" onclick="tryCode()">Enter</button></div>
   <p class="err" id="codeErr"></p>
-  <p class="gatefoot">XC Media · <a onclick="gate('gatePin')" role="button" tabindex="0">XC sign-in</a> · <span id="buildA"></span></p>
+  <p class="gatefoot">XC Media · <button class="lnk" onclick="gate('gatePin')">XC sign-in</button> · <span id="buildA"></span></p>
+  <p class="diag" id="diagA"></p>
 </div>
 
 <!-- GATE: name -->
@@ -143,7 +146,8 @@
   <h1>Your PIN.</h1>
   <div class="codein"><input id="pinInput" type="password" placeholder="PIN" autocomplete="off" aria-label="PIN" onkeydown="if(event.key==='Enter')tryPin()"><button class="bigbtn" style="flex:none;padding:14px 20px" onclick="tryPin()">Enter</button></div>
   <p class="err" id="pinErr"></p>
-  <p class="gatefoot"><a onclick="gate('gateCode')" role="button" tabindex="0">← Back to the team app</a> · <span id="buildB"></span></p>
+  <p class="gatefoot"><button class="lnk" onclick="gate('gateCode')">← Back to the team app</button> · <span id="buildB"></span></p>
+  <p class="diag" id="diagB"></p>
 </div>
 
 <div class="wrap hide" id="app">
@@ -314,7 +318,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "1.4";
+const BUILD = "1.5";
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
 const LS = {
@@ -336,23 +340,32 @@ function frame(t, s){ return (FRAMES[t]||FRAMES.mid).replace("{S}", s).replace('
 /* ═══════════════ api ═══════════════ */
 let pollT = null, inflight = 0;
 function syncUI(state){ const el = document.getElementById("sync"); el.className = "sync " + state; el.textContent = state==="live" ? "synced" : state==="busy" ? "syncing" : "offline"; }
+let lastErr = "";
+function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout after "+ms/1000+"s")), ms))]); }
 async function apiGet(params){
   inflight++; syncUI("busy");
   try {
     const u = API + "?" + new URLSearchParams(params).toString();
-    const r = await fetch(u, {method:"GET", redirect:"follow"});
-    const d = await r.json(); syncUI("live"); return d;
-  } catch(e){ syncUI("err"); return {ok:false, error:"network"}; }
+    const r = await withTimeout(fetch(u, {method:"GET", redirect:"follow", cache:"no-store"}), 25000);
+    const txt = await r.text();
+    let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + "): " + txt.slice(0,80)); }
+    syncUI("live"); lastErr = ""; return d;
+  } catch(e){ syncUI("err"); lastErr = String(e && e.message || e); diag(lastErr); return {ok:false, error:"network"}; }
   finally { inflight--; }
 }
 async function apiPost(body){
   inflight++; syncUI("busy");
   try {
-    const r = await fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)});
-    const d = await r.json(); syncUI("live"); return d;
-  } catch(e){ syncUI("err"); return {ok:false, error:"network"}; }
+    const r = await withTimeout(fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)}), 25000);
+    const txt = await r.text();
+    let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + "): " + txt.slice(0,80)); }
+    syncUI("live"); lastErr = ""; return d;
+  } catch(e){ syncUI("err"); lastErr = String(e && e.message || e); diag(lastErr); return {ok:false, error:"network"}; }
   finally { inflight--; }
 }
+function diag(msg){ ["diagA","diagB"].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = msg ? "⚠ " + msg : ""; }); }
+window.addEventListener("error", e=>diag("JS error: " + (e.message||"") + " @" + (e.lineno||"")));
+window.addEventListener("unhandledrejection", e=>diag("Promise error: " + (e.reason && e.reason.message || e.reason)));
 
 /* ═══════════════ state ═══════════════ */
 let C = null;          // client state from API
@@ -386,7 +399,7 @@ async function tryCode(){
   btn.disabled = true; err.textContent = "";
   const d = await apiGet({action:"state", code:v});
   btn.disabled = false;
-  if(!d.ok){ err.textContent = d.error==="network" ? "No connection — try again in a sec." : "That's not it — check the gold card in the staff room, or ask your manager."; return; }
+  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "That's not it — check the gold card in the staff room, or ask your manager."; return; }
   code = v; LS.set("code", v); C = d;
   buildNames(); gate("gateName");
 }
@@ -567,9 +580,10 @@ function closeShare(){ document.getElementById("sveil").classList.remove("show")
 async function tryPin(){
   const v = document.getElementById("pinInput").value.trim(); const err = document.getElementById("pinErr");
   if(!v){ err.textContent = "Type your PIN."; return; }
-  err.textContent = "";
+  err.textContent = "Checking…";
   const d = await apiGet({action:"roster", pin:v});
-  if(!d.ok){ err.textContent = d.error==="network" ? "No connection." : "Not it."; return; }
+  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Not it — server rejected that PIN (check line 16 + new version)."; return; }
+  err.textContent = "";
   pin = v; LS.set("pin", v); roster = d; await enterXC();
 }
 function xcSignOut(){ pin = null; LS.set("pin", null); roster = null; stopPoll(); try { history.replaceState(null, "", location.pathname); } catch(e){} gate("gateCode"); }
@@ -581,7 +595,7 @@ async function enterXC(){
 async function loadRoster(){
   const d = await apiGet({action:"roster", pin});
   if(d.ok){ roster = d; renderRoster(); }
-  else if(d.error === "pin"){ xcSignOut(); gate("gatePin"); }
+  else if(d.error === "pin"){ pin = null; LS.set("pin", null); roster = null; stopPoll(); gate("gatePin"); document.getElementById("pinErr").textContent = "Your saved PIN was rejected — enter it again."; }
 }
 function renderRoster(){
   if(!roster) return;
