@@ -2,7 +2,7 @@
   "name": "XC Shots",
   "short_name": "XC Shots",
   "description": "Your team's filming app — by XC Media",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0A0A0A",
   "theme_color": "#0A0A0A",
