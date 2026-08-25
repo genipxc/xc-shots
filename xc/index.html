@@ -99,6 +99,8 @@
   .codein{margin-top:22px;display:flex;gap:10px}.codein input{flex:1;min-width:0;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:16px;letter-spacing:.18em;text-transform:uppercase;padding:14px 16px;outline:none}.codein input:focus{border-color:var(--gold)}.codein input::placeholder{color:var(--dim);letter-spacing:.1em}
   .gate .err{color:var(--warn);font-size:12.5px;margin-top:10px;min-height:18px}
   .lnk{appearance:none;background:transparent;border:0;padding:0;color:var(--gold);font:inherit;text-decoration:underline;cursor:pointer;touch-action:manipulation}
+  .gatefoot .lnk{color:var(--dim);text-decoration:none}
+  .gatefoot .lnk:hover,.gatefoot .lnk:focus-visible{color:var(--grey);text-decoration:underline}
   .diag{font-family:'Space Mono',monospace;font-size:9px;color:var(--warn);line-height:1.5;margin-top:10px;word-break:break-all}.gatefoot{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--dim);line-height:1.7;margin-top:26px}.gatefoot b{color:var(--gold);font-weight:400}.gatefoot a{color:var(--gold);cursor:pointer;text-decoration:underline}
   .names{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}.names button{appearance:none;cursor:pointer;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--ink);font-family:inherit;font-weight:800;font-size:16px;padding:18px 10px;transition:border-color .2s}.names button:hover{border-color:var(--gold)}
   .gsteps{margin-top:20px;display:flex;flex-direction:column;gap:12px}.gsteps .step p{font-size:14.5px}.platpill{display:inline-block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;color:var(--gold);border:1px solid var(--goldDim);border-radius:99px;padding:4px 10px;text-transform:uppercase;margin-top:14px}.gatebtns{display:flex;gap:10px;margin-top:24px}
@@ -415,7 +417,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.0";
+const BUILD = "2.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
