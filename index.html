@@ -123,6 +123,49 @@
     body.xc .vid{max-height:70vh}
     body.xc .toast{left:auto;right:28px;bottom:28px;transform:translate(0,20px)}body.xc .toast.show{transform:none}
   }
+  /* v2: studio nav pills + today queue + player + spark + wizard */
+  .xcnav{display:none;gap:8px}
+  body.xc .xcnav{display:flex}
+  .xcnav button{appearance:none;border:1px solid var(--hair);background:transparent;color:var(--dim);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-radius:99px;cursor:pointer;position:relative}
+  .xcnav button.on{border-color:var(--gold);color:var(--goldB);font-weight:700}
+  .xcnav .n{display:inline-block;min-width:16px;padding:1px 5px;border-radius:99px;background:var(--gold);color:#0A0A0A;font-weight:700;font-size:9px;margin-left:5px}
+  .stack{margin-top:22px}
+  .stackhead{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .stackhead .t{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+  .stackhead .line{flex:1;height:1px;background:var(--goldDim)}
+  .stackhead .ct{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim)}
+  .tq{display:flex;flex-direction:column;gap:10px}
+  body.xc .tq{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
+  .tcard{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:13px;display:flex;gap:12px;align-items:flex-start}
+  .tcard.warn{border-color:var(--warn)}
+  .tcard .th{flex:none;width:76px;height:102px;border-radius:8px;object-fit:cover;background:var(--panel2);border:1px solid var(--hair);cursor:pointer}
+  .tcard .b{flex:1;min-width:0}
+  .tcard h4{font-size:13.5px;font-weight:800;letter-spacing:-.01em}
+  .tcard .m{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-top:3px}
+  .tcard .acts{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .zero{margin-top:48px;text-align:center}
+  .zero .big{font-weight:900;font-size:34px;letter-spacing:-.02em;color:var(--goldB)}
+  .zero .sml{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;margin-top:10px}
+  .spark{display:flex;gap:3px;align-items:flex-end;height:16px;margin-top:8px}
+  .spark i{width:10px;background:var(--goldDim);border-radius:2px 2px 0 0;display:block}
+  .spark i.hi{background:var(--gold)}
+  /* review player */
+  .player{position:fixed;inset:0;background:#000;z-index:60;display:none;flex-direction:column}
+  .player.show{display:flex}
+  .player .ptop{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;color:var(--grey)}
+  .player .ptop b{color:var(--ink)}
+  .player .pmid{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+  .player iframe{width:min(56vh,92vw);aspect-ratio:9/16;border:0;background:#111;border-radius:12px}
+  .player .pbar{display:flex;gap:10px;justify-content:center;padding:16px;flex-wrap:wrap}
+  .pkey{appearance:none;cursor:pointer;border:1px solid var(--hair);background:var(--panel);color:var(--ink);font-family:inherit;font-weight:800;font-size:14px;padding:12px 18px;border-radius:12px}
+  .pkey b{font-family:'Space Mono',monospace;color:var(--gold);margin-right:7px}
+  .pkey.good{border-color:var(--gold)}
+  .pkey.redo{border-color:var(--warn)}
+  .pcount{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--dim)}
+  /* wizard recap */
+  .recap{background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-top:14px}
+  .recap .rn{font-family:'Space Mono',monospace;font-weight:700;font-size:24px;color:var(--goldB)}
+  .recap p{color:var(--grey);font-size:12.5px;margin-top:6px}
   @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
 
@@ -134,7 +177,7 @@
   <p class="sub">It's on the gold card in your staff room — or ask whoever runs your socials.</p>
   <div class="codein"><input id="codeInput" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" aria-label="Studio code" onkeydown="if(event.key==='Enter')tryCode()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="codeBtn" onclick="tryCode()">Enter</button></div>
   <p class="err" id="codeErr"></p>
-  <p class="gatefoot">XC Media · <button class="lnk" onclick="gate('gatePin')">XC sign-in</button> · <span id="buildA"></span></p>
+  <p class="gatefoot">XC Media · <button class="lnk" onclick="gate('gatePin')">XC sign-in</button> · <button class="lnk" onclick="ownerStart()">Owner sign-in</button> · <span id="buildA"></span></p>
   <p class="diag" id="diagA"></p>
 </div>
 
@@ -171,8 +214,16 @@
 <div class="wrap hide" id="app">
   <div class="top">
     <div class="brand"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z" fill="#CDA85F"/></svg><div class="t">XC <span>Shots</span></div></div>
+    <div class="xcnav" role="tablist"><button id="nvToday" class="on" onclick="xcnav('today')">Today<span class="n hide" id="todayN"></span></button><button id="nvClients" onclick="xcnav('dash')">Clients</button></div>
     <span class="sync live" id="sync">synced</span>
   </div>
+
+  <!-- XC: today -->
+  <section id="today" class="hide">
+    <div class="eyebrow" id="todayEyebrow">Today</div>
+    <h1 id="todayHead">Loading…</h1>
+    <div id="todayBody"></div>
+  </section>
 
   <!-- XC: roster -->
   <section id="dash" class="hide">
@@ -190,7 +241,7 @@
     <div class="eyebrow" id="mgEyebrow"></div>
     <h1 id="mgName"></h1>
     <div class="mstat"><div class="box"><div class="n" id="mgMonth">—</div><div class="l">Month</div></div><div class="box"><div class="n" id="mgWeek">—</div><div class="l">This week</div></div><div class="box"><div class="n" id="mgRedo">—</div><div class="l">Redos out</div></div></div>
-    <div class="subtabs"><button id="mtShots" class="on" onclick="mtab('shots')">Shots</button><button id="mtDeliv" onclick="mtab('deliv')">Deliveries <span id="delivCount"></span></button><button id="mtTeam" onclick="mtab('team')">Team</button><button id="mtResults" onclick="mtab('results')">Results</button><button id="mtEdit" onclick="mtab('edit')">Shot list</button></div>
+    <div class="subtabs"><button id="mtShots" class="on" onclick="mtab('shots')">Shots</button><button id="mtDeliv" onclick="mtab('deliv')">Deliveries <span id="delivCount"></span></button><button id="mtTeam" onclick="mtab('team')">Team</button><button id="mtResults" onclick="mtab('results')">Results</button><button id="mtEdit" onclick="mtab('edit')">Shot list</button><button id="mtTools" onclick="mtab('tools')">Tools</button></div>
 
     <div id="mvShots">
       <p class="msect">Shots — clips land here automatically</p>
@@ -219,6 +270,21 @@
       <div class="mlist" id="mgResults"></div>
       <div class="addteam"><input id="newReel" placeholder="Add a reel (title)…"><button onclick="addReel()">Add</button></div>
       <div class="sheetbtns"><button class="bigbtn" onclick="saveResults()">Save results</button></div>
+    </div>
+    <div id="mvTools" class="hide">
+      <p class="msect">Staff-room card</p>
+      <p class="sub" style="margin-top:8px">A5, print and laminate. QR opens the app; the code's on the card.</p>
+      <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="printCard()">Open printable card ↗</button></div>
+      <p class="msect">Owner access</p>
+      <p class="sub" style="margin-top:8px">Give the business owner their own PIN — they see progress, results and history, and can manage their team. They can't flag redos or see other clients.</p>
+      <div class="addteam" style="max-width:420px"><input id="ownerPinInput" placeholder="Set owner PIN…"><button onclick="saveOwnerPin()">Save</button></div>
+      <p class="mono" id="ownerPinState" style="margin-top:8px;font-size:10px;color:var(--dim)"></p>
+      <p class="msect">Close the month</p>
+      <p class="sub" style="margin-top:8px">Archives this month's recap (filmed count, views, top clip) into history, clears ticks and redos, starts fresh. Do it on the 1st, after the month's reels are delivered and results are in.</p>
+      <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="closeMonth()">Close month → recap</button></div>
+      <div id="recapBox"></div>
+      <p class="msect">History</p>
+      <div class="mlist" id="mgHistory"></div>
     </div>
     <div id="mvEdit" class="hide">
       <p class="msect">This month's shot list</p>
@@ -332,12 +398,25 @@
   <p class="sharenote"><b>ON A PHONE —</b> long-press the image → Save, then post it to your story.</p>
 </div>
 
+<!-- REVIEW PLAYER -->
+<div class="player" id="player">
+  <div class="ptop"><span id="pInfo"><b>—</b></span><span class="pcount" id="pCount"></span><button class="x" onclick="closePlayer()" aria-label="Close">✕</button></div>
+  <div class="pmid"><iframe id="pVid" allow="autoplay; fullscreen" title="Clip"></iframe></div>
+  <div class="pbar">
+    <button class="pkey good" onclick="pGood()"><b>G</b>Good</button>
+    <button class="pkey redo" onclick="pRedo()"><b>R</b>Redo</button>
+    <button class="pkey good hide" id="pApprove" onclick="pApprove()"><b>A</b>Approve</button>
+    <button class="pkey" onclick="pSkip()"><b>S</b>Skip</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "1.9";
+const BUILD = "2.0";
+const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
 const LS = {
@@ -403,6 +482,7 @@ function gate(which){
   if(which==="gatePin") setTimeout(()=>document.getElementById("pinInput").focus(), 60);
 }
 async function boot(){
+  if(FORCE_EDITOR){ enterEditorGate(); return; }
   const isXC = FORCE_XC || location.hash === "#xc" || /[?&]xc(=|&|$)/.test(location.search);
   if(isXC || (pin && !code)){ if(pin){ await enterXC(); } else gate("gatePin"); return; }
   if(!code){ gate("gateCode"); return; }
@@ -608,9 +688,9 @@ async function tryPin(){
 }
 function xcSignOut(){ pin = null; LS.set("pin", null); roster = null; stopPoll(); document.body.classList.remove("xc"); try { history.replaceState(null, "", location.pathname); } catch(e){} gate("gateCode"); }
 async function enterXC(){
-  gate("app"); show("dash"); document.body.classList.add("xc"); try { history.replaceState(null, "", location.pathname + "?xc"); } catch(e){}
-  if(!roster) await loadRoster(); else renderRoster();
-  startPoll(loadRoster);
+  gate("app"); document.body.classList.add("xc"); try { history.replaceState(null, "", location.pathname + "?xc"); } catch(e){}
+  show("today"); await loadToday(); startPoll(loadToday);
+  loadRoster();
 }
 async function loadRoster(){
   const d = await apiGet({action:"roster", pin});
@@ -628,6 +708,7 @@ function renderRoster(){
     const nudge = c.quietDays!==null && c.quietDays>=3 ? `<button class="nudgebtn" onclick="event.stopPropagation();nudge()">Nudge ↗</button>` : "";
     return `<button class="cl" onclick="openManage(${q(c.code)})"><div class="r1"><h3>${esc(c.name)}</h3><span style="display:flex;gap:8px;align-items:center">${nudge}${st}</span></div>
       <div class="r2"><span>${c.done} of ${c.total} this month</span>${c.redos?`<span style="color:var(--warn)">${c.redos} redo out</span>`:""}${c.deliveriesPending?`<span style="color:var(--goldB)">${c.deliveriesPending} to review</span>`:""}<span>week: ${c.wkDone} of ${c.wkTotal}</span></div>
+      ${spark(c.weeks)}
       <div class="bar"><i style="width:${pct}%"></i></div></button>`;
   }).join("");
 }
@@ -657,7 +738,8 @@ async function loadManage(){
   renderManage();
 }
 function mtab(which){
-  const map = {shots:["mvShots","mtShots"], deliv:["mvDeliv","mtDeliv"], team:["mvTeam","mtTeam"], results:["mvResults","mtResults"], edit:["mvEdit","mtEdit"]};
+  const map = {shots:["mvShots","mtShots"], deliv:["mvDeliv","mtDeliv"], team:["mvTeam","mtTeam"], results:["mvResults","mtResults"], edit:["mvEdit","mtEdit"], tools:["mvTools","mtTools"]};
+  if(which==="tools") renderTools();
   for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); document.getElementById(map[k][1]).classList.toggle("on", which===k); }
   if(which==="edit" && !editShots) { editShots = JSON.parse(JSON.stringify(mgState.shots)); renderEdit(); }
   if(which==="results" && !editResults) { editResults = JSON.parse(JSON.stringify(mgState.results||[])); renderResultsEdit(); }
@@ -699,7 +781,23 @@ async function act(body, okMsg){
 }
 function openFlag(i){ flagIdx = i; flagSel = null; document.getElementById("fTitle").textContent = `Redo: ${mgState.shots[i].n}`; document.getElementById("fCustom").value = ""; document.getElementById("fChips").innerHTML = CANNED.map((c,k)=>`<button id="fc${k}" onclick="pickReason(${k})">${esc(c)}</button>`).join(""); document.getElementById("fveil").classList.add("show"); document.getElementById("fsheet").classList.add("show"); }
 function pickReason(k){ flagSel = k; CANNED.forEach((_,j)=>document.getElementById("fc"+j).classList.toggle("sel", j===k)); document.getElementById("fCustom").value = ""; }
-async function confirmFlag(){ const custom = document.getElementById("fCustom").value.trim(); const reason = custom || (flagSel!==null ? CANNED[flagSel] : null); if(!reason){ toast("Pick a reason or write one — it's what their team sees."); return; } closeFlag(); await act({action:"redo", idx:flagIdx, reason}, "<b>Redo requested.</b> The orange card is on their phones now."); }
+async function confirmFlag(){
+  const custom = document.getElementById("fCustom").value.trim();
+  const reason = custom || (flagSel!==null ? CANNED[flagSel] : null);
+  if(!reason){ toast("Pick a reason or write one — it's what their team sees."); return; }
+  closeFlag();
+  if(flagFromToday){
+    flagFromToday = false;
+    const body = flagIdx===null || flagIdx===undefined
+      ? {action:"reviewGood", pin, code:mgCode, fileId:flagFile}   // unsorted clip: no shot to flag — just clear it from the queue
+      : {action:"reviewRedo", pin, code:mgCode, idx:flagIdx, reason, fileId:flagFile};
+    const d = await apiPost(body);
+    if(d.ok){ toast("<b>Redo requested.</b>"); if(document.getElementById("player").classList.contains("show")){ pi++; pShow(); } loadToday(); }
+    else toast("Couldn't: "+esc(d.error));
+    return;
+  }
+  await act({action:"redo", idx:flagIdx, reason}, "<b>Redo requested.</b> The orange card is on their phones now.");
+}
 function closeFlag(){ document.getElementById("fveil").classList.remove("show"); document.getElementById("fsheet").classList.remove("show"); }
 async function cancelRedo(i){ await act({action:"cancelRedo", idx:i}, "Redo cancelled."); }
 async function xcTick(i){ await act({action:"tick", idx:i, by:"Team"}, "Marked filmed — counts toward their month."); }
@@ -733,13 +831,178 @@ async function newMonth(){ if(!confirm("Start a new month? Ticks and redos clear
 /* ═══════════════ shared ═══════════════ */
 function show(view){
   document.getElementById("manage").classList.add("hide");
-  document.getElementById("dash").classList.toggle("hide", view!=="dash");
-  document.getElementById("client").classList.toggle("hide", view!=="client");
+  ["today","dash","client"].forEach(id => document.getElementById(id).classList.toggle("hide", view!==id));
+  document.getElementById("nvToday").classList.toggle("on", view==="today");
+  document.getElementById("nvClients").classList.toggle("on", view==="dash" );
   window.scrollTo({top:0});
 }
+function xcnav(view){ show(view); if(view==="today"){ loadToday(); startPoll(loadToday); } else { loadRoster(); startPoll(loadRoster); } }
 function monthName(m){ const mm = String(m||"").match(/^(\d{4})-(\d{2})/); if(!mm) return String(m||""); return new Date(Number(mm[1]), Number(mm[2])-1, 1).toLocaleDateString("en-AU", {month:"long", year:"numeric"}); }
 let toastT; function toast(msg){ const t = document.getElementById("toast"); t.innerHTML = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3800); }
 document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeFlag(); closeBack(); closePreview(); closeShare(); } });
+/* ── sparkline ── */
+function spark(weeks){
+  if(!weeks || !weeks.length) return "";
+  return '<span class="spark">' + weeks.slice(-4).map(w=>{
+    const r = w.total ? w.done/w.total : 0;
+    return `<i style="height:${Math.max(2, Math.round(r*16))}px" class="${r>=0.75?"hi":""}"></i>`;
+  }).join("") + '</span>';
+}
+
+/* ── TODAY queue ── */
+let todayData = null;
+async function loadToday(){
+  const d = await apiGet({action:"today", pin});
+  if(d.ok){ todayData = d; renderToday(); }
+  else if(d.error === "pin"){ pin=null; LS.set("pin",null); gate("gatePin"); }
+}
+function renderToday(){
+  const T = todayData; if(!T) return;
+  document.getElementById("todayEyebrow").textContent = `${monthName(T.month)} · Week ${T.week} · Today`;
+  const total = T.counts.deliveries + T.counts.fresh + T.counts.quiet + T.counts.redos;
+  const badge = document.getElementById("todayN");
+  badge.classList.toggle("hide", !total); badge.textContent = total;
+  const head = document.getElementById("todayHead");
+  const body = document.getElementById("todayBody");
+  if(!total){
+    head.textContent = "Nothing needs you.";
+    body.innerHTML = '<div class="zero"><div class="big">All clear.</div><div class="sml">Go film something — or go home.</div></div>';
+    return;
+  }
+  head.textContent = `${total} thing${total===1?"":"s"} need${total===1?"s":""} you.`;
+  let h = "";
+  const reviewables = T.deliveries.length + T.fresh.length;
+  if(reviewables) h += `<div class="sheetbtns" style="max-width:420px;margin-top:16px"><button class="bigbtn" onclick="openPlayer()">▶ Review all ${reviewables} clip${reviewables===1?"":"s"}</button></div>`;
+  if(T.deliveries.length){
+    h += stackHead("To review — from the editor", T.deliveries.length) + '<div class="tq">' + T.deliveries.map((x,k)=>
+      `<div class="tcard">${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th" onclick="openPreview('+q(x.file.id)+','+q(x.file.name)+',\'\')"></span>'}
+       <div class="b"><h4>${esc(x.client)}</h4><p class="m">${esc(x.file.name)}</p>
+       <div class="acts"><button class="mact ok" onclick="tqApprove(${q(x.code)},${q(x.file.id)})">Approve</button><button class="mact" onclick="mgCode=${q(x.code)};openBack(${q(x.file.id)},${q(x.file.name)})">Send back</button></div></div></div>`).join("") + "</div>";
+  }
+  if(T.fresh.length){
+    h += stackHead("Fresh footage in", T.fresh.length) + '<div class="tq">' + T.fresh.map(x=>
+      `<div class="tcard">${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th"></span>'}
+       <div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${esc(x.file.name)}</p>
+       <div class="acts"><button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)})">Good ✓</button><button class="mact" onclick="tqRedo(${q(x.code)},${x.idx===null?"null":x.idx},${q(x.file.id)},${q(x.shot)})">Flag redo</button></div></div></div>`).join("") + "</div>";
+  }
+  if(T.quiet.length){
+    h += stackHead("Going quiet", T.quiet.length) + '<div class="tq">' + T.quiet.map(x=>
+      `<div class="tcard warn"><div class="b"><h4>${esc(x.client)}</h4><p class="m">${x.quietDays===null?"no ticks yet":"quiet "+x.quietDays+" days"} · week ${x.wkDone} of ${x.wkTotal}</p>
+       <div class="acts"><button class="nudgebtn" onclick="nudge()">Nudge ↗</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
+  }
+  if(T.redosAging.length){
+    h += stackHead("Redos aging", T.redosAging.length) + '<div class="tq">' + T.redosAging.map(x=>
+      `<div class="tcard warn"><div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${x.days===null?"":"out "+x.days+" days · "}${esc(x.reason)}</p>
+       <div class="acts"><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
+  }
+  body.innerHTML = h;
+}
+function stackHead(t, n){ return `<div class="stack"><div class="stackhead"><span class="t">${t}</span><span class="line"></span><span class="ct">${n}</span></div></div>`; }
+async function tqApprove(code, fileId){ const d = await apiPost({action:"approve", pin, code, fileId}); if(d.ok){ toast("<b>Approved.</b>"); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
+async function tqGood(code, fileId){ const d = await apiPost({action:"reviewGood", pin, code, fileId}); if(d.ok){ toast("Marked good."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
+function tqRedo(code, idx, fileId, shot){ mgCode = code; flagIdx = idx; flagFile = fileId; flagShot = shot; openFlagToday(shot); }
+let flagFile = null, flagShot = null, flagFromToday = false;
+function openFlagToday(shot){ flagFromToday = true; flagSel = null; document.getElementById("fTitle").textContent = `Redo: ${shot}`; document.getElementById("fCustom").value = ""; document.getElementById("fChips").innerHTML = CANNED.map((c,k)=>`<button id="fc${k}" onclick="pickReason(${k})">${esc(c)}</button>`).join(""); document.getElementById("fveil").classList.add("show"); document.getElementById("fsheet").classList.add("show"); }
+
+/* ── REVIEW PLAYER ── */
+let pq = [], pi = 0;
+function openPlayer(){
+  const T = todayData; if(!T) return;
+  pq = T.deliveries.map(x=>({kind:"delivery", code:x.code, client:x.client, shot:"Delivered", file:x.file}))
+     .concat(T.fresh.map(x=>({kind:"fresh", code:x.code, client:x.client, shot:x.shot, idx:x.idx, file:x.file})));
+  if(!pq.length) return;
+  pi = 0; document.getElementById("player").classList.add("show"); pShow();
+}
+function pShow(){
+  if(pi >= pq.length){ closePlayer(); toast("<b>Queue clear.</b>"); loadToday(); return; }
+  const it = pq[pi];
+  document.getElementById("pInfo").innerHTML = `<b>${esc(it.client)}</b> — ${esc(it.shot)}`;
+  document.getElementById("pCount").textContent = (pi+1) + " / " + pq.length;
+  document.getElementById("pApprove").classList.toggle("hide", it.kind !== "delivery");
+  document.getElementById("pVid").src = it.file.preview;
+}
+function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; }
+async function pGood(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"reviewGood", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
+async function pApprove(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"approve", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
+function pRedo(){ const it = pq[pi]; mgCode = it.code; flagIdx = it.idx===undefined?null:it.idx; flagFile = it.file.id; openFlagToday(it.shot); }
+function pSkip(){ pi++; pShow(); }
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("player").classList.contains("show")) return;
+  if(document.getElementById("fsheet").classList.contains("show")) return;
+  const k = e.key.toLowerCase();
+  if(k==="g") pGood(); else if(k==="r") pRedo(); else if(k==="a" && pq[pi] && pq[pi].kind==="delivery") pApprove(); else if(k==="s") pSkip(); else if(k==="escape") closePlayer();
+});
+
+/* ── owner mode ── */
+function ownerStart(){
+  const codeV = prompt("Client studio code (e.g. MARRA24):"); if(!codeV) return;
+  const pinV = prompt("Owner PIN (from XC):"); if(!pinV) return;
+  LS.set("ownercode", codeV.trim().toUpperCase()); LS.set("ownerpin", pinV.trim());
+  ownerLoad();
+}
+async function ownerLoad(){
+  const oc = LS.get("ownercode"), op = LS.get("ownerpin");
+  if(!oc || !op) return;
+  const d = await apiGet({action:"state", code:oc, owner:op});
+  if(!d.ok || d.role < 1){ toast("Owner sign-in didn't match — ask XC for the PIN."); LS.set("ownerpin", null); return; }
+  code = oc; LS.set("code", oc); C = d; me = LS.get("me") || "Owner";
+  gate("app"); show("client"); document.getElementById("meName").textContent = me;
+  renderClient(); startPoll(async()=>{ const r = await apiGet({action:"state", code:oc, owner:op}); if(r.ok){ C = r; renderClient(); } });
+  toast("<b>Owner view</b> — you can see progress, results and history.");
+}
+
+/* ── tools tab ── */
+function printCard(){ window.open("/card/?name=" + encodeURIComponent(mgState.name) + "&code=" + encodeURIComponent(mgState.code), "_blank", "noopener"); }
+async function saveOwnerPin(){ const v = document.getElementById("ownerPinInput").value.trim(); const d = await apiPost({action:"setOwnerPin", pin, code:mgCode, ownerPin:v}); if(d.ok){ toast(v ? "<b>Owner PIN set.</b> Give it to the owner with their code." : "Owner PIN cleared."); mgState = d; renderManage(); } else toast("Couldn't: "+esc(d.error)); }
+async function closeMonth(){
+  if(!confirm("Close the month for " + mgState.name + "? Recap is archived, ticks and redos clear.")) return;
+  const d = await apiPost({action:"monthClose", pin, code:mgCode, results: mgState.results || []});
+  if(!d.ok){ toast("Couldn't: "+esc(d.error)); return; }
+  mgState = d.state; renderManage();
+  const r = d.recap;
+  document.getElementById("recapBox").innerHTML = `<div class="recap"><div class="rn">${r.done}/${r.total} filmed · ${fmtV(r.views)} views</div><p>${esc(monthName(r.month))} wrapped.${r.top?` Top clip: <b style="color:var(--goldB)">${esc(r.top.n)}</b> (${fmtV(r.top.v)})${r.top.by?", filmed by "+esc(r.top.by):""}.`:""} Fresh month is live for the team.</p></div>`;
+  toast("<b>Month closed.</b> Recap archived.");
+}
+function renderTools(){
+  if(!mgState) return;
+  document.getElementById("ownerPinState").textContent = mgState.hasOwnerPin ? "OWNER PIN IS SET" : "NO OWNER PIN YET";
+  const hist = mgState.history || [];
+  document.getElementById("mgHistory").innerHTML = hist.length ? hist.slice().reverse().map(h=>
+    `<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span></div></div>`).join("")
+    : '<p class="sub">No closed months yet.</p>';
+}
+
+/* ── editor workspace ── */
+function enterEditorGate(){
+  document.body.classList.add("xc");
+  gate("gatePin");
+  document.querySelector("#gatePin h1").textContent = "Editor PIN.";
+  document.querySelector("#gatePin .eyebrow").textContent = "Editor workspace";
+  window.tryPin = async function(){
+    const v = document.getElementById("pinInput").value.trim(); const err = document.getElementById("pinErr");
+    if(!v){ err.textContent = "Type your PIN."; return; }
+    err.textContent = "Checking…";
+    const d = await apiGet({action:"editor", pin:v});
+    if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server." : "Not it."; return; }
+    LS.set("editorpin", v); renderEditorQueue(d);
+  };
+  const saved = LS.get("editorpin");
+  if(saved) apiGet({action:"editor", pin:saved}).then(d=>{ if(d.ok) renderEditorQueue(d); });
+}
+function renderEditorQueue(d){
+  gate("app"); show("dash");
+  document.getElementById("dashEyebrow").textContent = "Editor workspace";
+  document.getElementById("dashHead").textContent = d.clients.length + " client" + (d.clients.length===1?"":"s") + ".";
+  document.querySelector("#dash .sub").textContent = "Footage in → cut → drop finished reels in Delivered. Sent-back notes appear here.";
+  document.querySelector("#dash .addteam").classList.add("hide");
+  document.querySelector("#dash .demonote").innerHTML = '<b>DELIVERY —</b> upload finished reels into each client\'s Delivered folder. XC reviews in the app.';
+  document.getElementById("roster").innerHTML = d.clients.map(c=>`
+    <div class="cl" style="cursor:default"><div class="r1"><h3>${esc(c.client)}</h3><span class="st ok">${c.clipsIn} clips in</span></div>
+    <div class="r2"><a class="lnk" href="${esc(c.footageUrl)}" target="_blank" rel="noreferrer">Footage folder ↗</a><a class="lnk" href="${esc(c.deliveredUrl)}" target="_blank" rel="noreferrer">Delivered folder ↗</a></div>
+    ${c.sentBack.length?`<div class="mlist" style="margin-top:10px">${c.sentBack.map(f=>`<div class="mrow"><div class="r"><span class="nm">${esc(f.name)}</span><span class="who out">sent back</span></div>${f.note?`<p class="m" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--warn)">${esc(f.note)}</p>`:""}</div>`).join("")}</div>`:""}
+    </div>`).join("");
+}
+
 document.getElementById("buildA").textContent = "v" + BUILD; document.getElementById("buildB").textContent = "v" + BUILD;
 boot();
 </script>
