@@ -264,7 +264,7 @@
       <p class="msect">Studio code</p>
       <p class="mono" style="margin-top:10px;font-size:22px;color:var(--goldB);font-weight:700;letter-spacing:.16em" id="mgCode"></p>
       <p class="msect" style="color:var(--warn)">Danger zone</p>
-      <div class="sheetbtns"><button class="up" style="border-color:var(--warn);color:var(--warn)" onclick="removeClient()">Remove this client</button></div>
+      <div class="sheetbtns"><button class="up" style="border-color:var(--warn);color:var(--warn)" onclick="openDelete()">Delete this client…</button></div>
       <p class="demonote" style="border:0;padding:0;margin-top:8px">Deletes them from the roster and their studio code. Their drop folder is removed only if it's empty. <b>The vault is never touched</b> — every clip they ever sent stays in Drive.</p>
     </div>
     <div id="mvResults" class="hide">
@@ -412,12 +412,30 @@
   </div>
 </div>
 
+<!-- DELETE CLIENT SHEET -->
+<div class="veil" id="dveil" onclick="closeDelete()"></div>
+<div class="sheet" id="dsheet" role="dialog" aria-modal="true" aria-labelledby="dTitle" style="border-color:var(--warn)">
+  <div class="grab"></div>
+  <div class="shead"><h2 id="dTitle" style="color:var(--warn)">Delete client</h2><button class="x" onclick="closeDelete()" aria-label="Close">✕</button></div>
+  <p class="sub" style="margin-top:6px" id="dWhat"></p>
+  <p class="sub" style="margin-top:8px">What happens: their page, code, team and history leave the app. Their <b style="color:var(--ink)">footage vault is never touched</b>. The drop folder is only removed if it's empty. This can't be undone from the app.</p>
+  <p class="msect" style="margin-top:16px">1 · Type their code</p>
+  <div class="codein" style="margin-top:8px"><input id="dCode" placeholder="CLIENT CODE" autocomplete="off" autocapitalize="characters" aria-label="Client code"></div>
+  <p class="msect">2 · Your PIN</p>
+  <div class="codein" style="margin-top:8px"><input id="dPin" type="password" placeholder="PIN" autocomplete="off" aria-label="Your PIN"></div>
+  <p class="err" id="dErr" style="color:var(--warn);font-size:12.5px;margin-top:10px;min-height:18px"></p>
+  <div class="sheetbtns">
+    <button class="bigbtn" style="background:var(--warn)" onclick="confirmDelete()">Delete permanently</button>
+    <button class="up" onclick="closeDelete()">Cancel</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.1";
+const BUILD = "2.2";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -803,13 +821,26 @@ async function confirmFlag(){
 function closeFlag(){ document.getElementById("fveil").classList.remove("show"); document.getElementById("fsheet").classList.remove("show"); }
 async function cancelRedo(i){ await act({action:"cancelRedo", idx:i}, "Redo cancelled."); }
 async function xcTick(i){ await act({action:"tick", idx:i, by:"Team"}, "Marked filmed — counts toward their month."); }
-async function removeClient(){
+function openDelete(){
   const S = mgState; if(!S) return;
-  const typed = prompt(`Remove ${S.name}? Type their code (${S.code}) to confirm.`);
-  if(!typed || typed.trim().toUpperCase() !== S.code) { toast("Not removed."); return; }
-  const d = await apiPost({action:"removeClient", pin, code:S.code});
-  if(!d.ok){ toast("Couldn't remove: " + esc(d.error)); return; }
-  roster = d; toast(`<b>${esc(S.name)}</b> removed. Vault untouched.`); closeManage();
+  document.getElementById("dWhat").innerHTML = `You're about to delete <b style="color:var(--ink)">${esc(S.name)}</b> (code ${esc(S.code)}).`;
+  document.getElementById("dCode").value = ""; document.getElementById("dPin").value = ""; document.getElementById("dErr").textContent = "";
+  document.getElementById("dveil").classList.add("show"); document.getElementById("dsheet").classList.add("show");
+}
+function closeDelete(){ document.getElementById("dveil").classList.remove("show"); document.getElementById("dsheet").classList.remove("show"); }
+async function confirmDelete(){
+  const S = mgState; if(!S) return;
+  const err = document.getElementById("dErr");
+  const typedCode = document.getElementById("dCode").value.trim().toUpperCase();
+  const typedPin = document.getElementById("dPin").value.trim();
+  if(typedCode !== S.code){ err.textContent = "Code doesn't match — type " + S.code + " exactly."; return; }
+  if(!typedPin){ err.textContent = "Enter your PIN."; return; }
+  err.textContent = "Deleting…";
+  const d = await apiPost({action:"removeClient", pin: typedPin, code: S.code});
+  if(!d.ok){ err.textContent = d.error === "pin" ? "Wrong PIN — nothing deleted." : "Couldn't delete: " + d.error; return; }
+  closeDelete(); roster = d;
+  toast(`<b>${esc(S.name)}</b> deleted. Their footage vault is untouched.`);
+  closeManage();
 }
 async function addTeam(){ const v = document.getElementById("newName").value.trim(); if(!v) return; document.getElementById("newName").value=""; await act({action:"teamAdd", name:v}, `<b>${esc(v)}</b> added — on the picker next open.`); }
 async function removeTeam(n){ await act({action:"teamRemove", name:n}); }
