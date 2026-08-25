@@ -855,6 +855,11 @@ async function loadToday(){
   const d = await apiGet({action:"today", pin});
   if(d.ok){ todayData = d; renderToday(); }
   else if(d.error === "pin"){ pin=null; LS.set("pin",null); gate("gatePin"); }
+  else if(d.error === "unknown action"){
+    document.getElementById("todayHead").textContent = "Backend update needed.";
+    document.getElementById("todayBody").innerHTML = '<p class="sub" style="max-width:360px">The Today queue needs backend v2.0 — paste the new script, set your PIN, deploy a New version. Clients still works meanwhile.</p>';
+    xcnav("dash");
+  }
 }
 function renderToday(){
   const T = todayData; if(!T) return;
