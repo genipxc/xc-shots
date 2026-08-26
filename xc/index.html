@@ -178,7 +178,7 @@
 
 <!-- GATE: code -->
 <div class="gate hide" id="gateCode">
-  <div class="glogo"><svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z" fill="#CDA85F"/></svg><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
+  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
   <div class="eyebrow">Your team's filming app</div>
   <h1>Enter your<br>studio code.</h1>
   <p class="sub">It's on the gold card in your staff room — or ask whoever runs your socials.</p>
@@ -220,7 +220,7 @@
 
 <!-- GATE: XC pin -->
 <div class="gate hide" id="gatePin">
-  <div class="glogo"><svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z" fill="#CDA85F"/></svg><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
+  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
   <div class="eyebrow">Studio side</div>
   <h1>Your PIN.</h1>
   <div class="codein"><input id="pinInput" type="password" placeholder="PIN" autocomplete="off" aria-label="PIN" onkeydown="if(event.key==='Enter')tryPin()"><button class="bigbtn" style="flex:none;padding:14px 20px" onclick="tryPin()">Enter</button></div>
@@ -231,7 +231,7 @@
 
 <div class="wrap hide" id="app">
   <div class="top">
-    <div class="brand"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z" fill="#CDA85F"/></svg><div class="t">XC <span>Shots</span></div></div>
+    <div class="brand"><img src="/logo.png" alt="" style="height:24px;width:auto"><div class="t">XC <span>Shots</span></div></div>
     <div class="xcnav" role="tablist"><button id="nvToday" class="on" onclick="xcnav('today')">Today<span class="n hide" id="todayN"></span></button><button id="nvClients" onclick="xcnav('dash')">Clients</button></div>
     <span class="sync live" id="sync">synced</span>
   </div>
@@ -469,7 +469,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "3.0";
+const BUILD = "3.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -753,13 +753,18 @@ function closePreview(){ document.getElementById("pveil").classList.remove("show
 
 /* share card */
 const MARK_PATH = "M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z";
+const LOGO_IMG = new Image(); LOGO_IMG.src = "/logo.png";
+async function drawMark(ctx){
+  try { await LOGO_IMG.decode(); const h = 170, w = h * LOGO_IMG.width / LOGO_IMG.height; ctx.drawImage(LOGO_IMG, 96, 90, w, h); }
+  catch(e){ ctx.save(); ctx.translate(96,110); ctx.scale(5.2,5.2); ctx.fillStyle="#CDA85F"; ctx.fill(new Path2D(MARK_PATH)); ctx.restore(); }
+}
 function wrapText(ctx, text, x, y, maxW, lh){ const words = text.split(" "); let line = "", yy = y; for(const w of words){ const t = line ? line+" "+w : w; if(ctx.measureText(t).width > maxW && line){ ctx.fillText(line, x, yy); line = w; yy += lh; } else line = t; } ctx.fillText(line, x, yy); return yy + lh; }
 async function drawShareCard(r){
   try { await document.fonts.load('900 120px "Schibsted Grotesk"'); await document.fonts.load('700 200px "Space Mono"'); await document.fonts.load('400 40px "Space Mono"'); } catch(e){}
   const c = document.getElementById("shareCanvas"), ctx = c.getContext("2d"), W=1080, H=1920;
   ctx.fillStyle="#0A0A0A"; ctx.fillRect(0,0,W,H);
   const g = ctx.createRadialGradient(W*.85,H*.12,0,W*.85,H*.12,700); g.addColorStop(0,"rgba(205,168,95,.22)"); g.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  ctx.save(); ctx.translate(96,110); ctx.scale(5.2,5.2); ctx.fillStyle="#CDA85F"; ctx.fill(new Path2D(MARK_PATH)); ctx.restore();
+  await drawMark(ctx);
   ctx.fillStyle="#CDA85F"; ctx.font='400 30px "Space Mono", monospace'; ctx.fillText((C.name+"  ·  "+monthName(C.month)).toUpperCase(), 96, 340);
   const hl = ctx.createLinearGradient(96,0,700,0); hl.addColorStop(0,"#CDA85F"); hl.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=hl; ctx.fillRect(96,372,600,2);
   ctx.fillStyle="#E9D3A0"; ctx.font='700 250px "Space Mono", monospace'; ctx.fillText(fmtV(r.v), 84, 740);
@@ -801,7 +806,7 @@ async function drawRecapCard(name, r){
   const c = document.getElementById("shareCanvas"), ctx = c.getContext("2d"), W=1080, H=1920;
   ctx.fillStyle="#0A0A0A"; ctx.fillRect(0,0,W,H);
   const g = ctx.createRadialGradient(W*.85,H*.12,0,W*.85,H*.12,700); g.addColorStop(0,"rgba(205,168,95,.22)"); g.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  ctx.save(); ctx.translate(96,110); ctx.scale(5.2,5.2); ctx.fillStyle="#CDA85F"; ctx.fill(new Path2D(MARK_PATH)); ctx.restore();
+  await drawMark(ctx);
   ctx.fillStyle="#CDA85F"; fitLine(ctx, (name+"  ·  "+monthName(r.month)+"  —  THE WRAP").toUpperCase(), 96, 340, W-192, 30, '"Space Mono", monospace');
   const hl = ctx.createLinearGradient(96,0,700,0); hl.addColorStop(0,"#CDA85F"); hl.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=hl; ctx.fillRect(96,372,600,2);
   ctx.fillStyle="#E9D3A0"; ctx.font='700 230px "Space Mono", monospace'; ctx.fillText(r.done+"/"+r.total, 84, 700);
