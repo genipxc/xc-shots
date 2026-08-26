@@ -114,6 +114,12 @@
   .shotedit{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:8px 10px}.shotedit .i{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);width:18px;flex:none}.shotedit input{flex:1;min-width:0;appearance:none;background:transparent;border:0;border-bottom:1px solid var(--hair);color:var(--ink);font-family:inherit;font-size:13px;padding:4px 2px;outline:none}.shotedit input:focus{border-color:var(--gold)}.shotedit select{appearance:none;background:var(--panel2);border:1px solid var(--hair);color:var(--goldB);font-family:'Space Mono',monospace;font-size:10px;border-radius:8px;padding:6px 8px}
   /* ── studio side on desktop ── */
   body.xc .wrap{max-width:1180px;padding:0 32px 90px}
+  @media (max-width:520px){
+    body.xc .wrap{padding:0 18px 90px}
+    body.xc .sync{font-size:0;letter-spacing:0}
+    body.xc .sync::before{font-size:12px}
+    body.xc .xcnav button{padding:6px 9px}
+  }
   @media (min-width:900px){
     body.xc h1{font-size:38px}
     body.xc .clients{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
@@ -469,7 +475,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "3.2";
+const BUILD = "3.3";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -607,7 +613,7 @@ function enterClient(){
 }
 function startPoll(fn){ stopPoll(); pollT = setInterval(()=>{ if(document.visibilityState==="visible" && !inflight) fn(); }, POLL_MS); }
 function stopPoll(){ if(pollT) clearInterval(pollT); pollT = null; }
-document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible"){ if(C && !document.getElementById("client").classList.contains("hide")) loadClient(); if(pin && !document.getElementById("dash").classList.contains("hide")) loadRoster(); } });
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible"){ if(C && !document.getElementById("client").classList.contains("hide")) loadClient(); if(pin && !document.getElementById("dash").classList.contains("hide")) loadRoster(); if(pin && !document.getElementById("today").classList.contains("hide")) loadToday(); } });
 
 function renderClient(){
   if(!C || !C.shots) return;
@@ -857,6 +863,10 @@ async function loadRoster(){
   const d = await apiGet({action:"roster", pin});
   if(d.ok){ roster = d; renderRoster(); }
   else if(d.error === "pin"){ pin = null; LS.set("pin", null); roster = null; stopPoll(); gate("gatePin"); document.getElementById("pinErr").textContent = "Your saved PIN was rejected — enter it again."; }
+  else if(!roster){
+    document.getElementById("dashHead").textContent = "Can't reach the server — retrying…";
+    setTimeout(()=>{ if(!roster && pin) loadRoster(); }, 5000);
+  }
 }
 function renderRoster(){
   if(!roster) return;
@@ -1036,6 +1046,10 @@ async function loadToday(){
     document.getElementById("todayHead").textContent = "Backend update needed.";
     document.getElementById("todayBody").innerHTML = '<p class="sub" style="max-width:360px">The Today queue needs backend v2.0 — paste the new script, set your PIN, deploy a New version. Clients still works meanwhile.</p>';
     xcnav("dash");
+  }
+  else if(!todayData){
+    document.getElementById("todayHead").textContent = "Can't reach the server — retrying…";
+    setTimeout(()=>{ if(!todayData && pin) loadToday(); }, 5000);
   }
 }
 function renderToday(){
