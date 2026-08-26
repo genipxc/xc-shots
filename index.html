@@ -469,7 +469,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "3.1";
+const BUILD = "3.2";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -933,6 +933,7 @@ function renderManage(){
   document.getElementById("mgPending").innerHTML = D.pending.length ? D.pending.map(f=>fileRow(f, `<button class="mact ok" onclick="approve(${q(f.id)})">Approve</button><button class="mact" onclick="openBack(${q(f.id)},${q(f.name)})">Send back</button>`)).join("") : '<p class="sub">Nothing waiting.</p>';
   document.getElementById("mgApproved").innerHTML = D.approved.length ? D.approved.map(f=>fileRow(f, "")).join("") : '<p class="sub">None yet.</p>';
   if(editShots) renderEdit(); if(editResults) renderResultsEdit();
+  renderTools();
 }
 async function act(body, okMsg){
   const d = await apiPost(Object.assign({pin, code:mgCode}, body));
