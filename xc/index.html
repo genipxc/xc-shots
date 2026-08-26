@@ -302,7 +302,18 @@
     <h1 id="clientHead">Loading…</h1>
     <p class="sub">Tap any shot for a simple how-to. Anyone on the team can film and tick it off.</p>
     <p class="me">You're <b id="meName">—</b> · <a onclick="repick()" role="button" tabindex="0">not you?</a></p>
-    <div class="subtabs"><button id="stShots" class="on" onclick="subtab('shots')">This month</button><button id="stResults" onclick="subtab('results')">Results</button><button id="stBasics" onclick="subtab('basics')">Basics</button></div>
+    <div class="subtabs"><button id="stShots" class="on" onclick="subtab('shots')">This month</button><button id="stResults" onclick="subtab('results')">Results</button><button id="stBasics" onclick="subtab('basics')">Basics</button><button id="stOwner" class="hide" onclick="subtab('owner')">Owner</button></div>
+
+    <div id="ownerView" class="hide">
+      <p class="msect" style="margin-top:18px">Your team — who's on the name picker</p>
+      <div class="team" id="ovTeam"></div>
+      <div class="addteam" style="max-width:420px"><input id="ovNewName" placeholder="Add a team member…" onkeydown="if(event.key==='Enter')ownerAddTeam()"><button onclick="ownerAddTeam()">Add</button></div>
+      <p class="sub" style="margin-top:8px;font-size:11.5px">New hire? Add them here — they pick their name next time they open the app.</p>
+      <p class="msect">The trend</p>
+      <div id="ovSpark" style="margin-top:10px"></div>
+      <p class="msect">Month history</p>
+      <div class="mlist" id="ovHistory"></div>
+    </div>
 
     <div id="basicsView" class="hide">
       <p class="msect" style="margin-top:18px">Before every shot — the five rules</p>
@@ -435,7 +446,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.2";
+const BUILD = "2.3";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -565,6 +576,7 @@ document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState=
 
 function renderClient(){
   if(!C) return;
+  document.getElementById("stOwner").classList.toggle("hide", !(C.role >= 1));
   const WK = C.week, shots = C.shots;
   document.getElementById("clientEyebrow").textContent = `${C.name} · ${monthName(C.month)}`;
   document.getElementById("wkLabel").textContent = `Week ${WK} of 4 · This week`;
@@ -647,9 +659,29 @@ function upload(i){
   toast("In Drive: <b>+ → Upload → pick your video</b>. Use the Drive app so it finishes in the background. The clip vanishes from the folder within a minute — that's XC receiving it. Then tick the shot.");
 }
 function subtab(which){
-  const map = {shots:["shotsView","stShots"], results:["resultsView","stResults"], basics:["basicsView","stBasics"]};
+  const map = {shots:["shotsView","stShots"], results:["resultsView","stResults"], basics:["basicsView","stBasics"], owner:["ownerView","stOwner"]};
   for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); document.getElementById(map[k][1]).classList.toggle("on", which===k); }
+  if(which==="owner") renderOwner();
 }
+function renderOwner(){
+  if(!C || C.role < 1) return;
+  document.getElementById("ovTeam").innerHTML = (C.team||[]).map(n=>`<span class="tchip">${esc(n)}<button aria-label="Remove ${esc(n)}" onclick="ownerRemoveTeam(${q(n)})">✕</button></span>`).join("") || '<p class="sub">No names yet.</p>';
+  const wk = (C.weeks||[]).slice(-4);
+  document.getElementById("ovSpark").innerHTML = wk.length
+    ? '<div style="display:flex;gap:14px;align-items:flex-end">' + wk.map(w=>`<div style="text-align:center"><div style="width:34px;height:${Math.max(4,Math.round((w.total?w.done/w.total:0)*56))}px;background:var(--gold);border-radius:4px 4px 0 0;margin:0 auto"></div><div class="mono" style="font-size:8px;color:var(--dim);margin-top:4px">${w.done}/${w.total}</div></div>`).join("") + '</div>'
+    : '<p class="sub">Builds up week by week — check back after a couple of Mondays.</p>';
+  const hist = C.history||[];
+  document.getElementById("ovHistory").innerHTML = hist.length
+    ? hist.slice().reverse().map(h=>`<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} filmed · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span></div></div>`).join("")
+    : '<p class="sub">First month still in progress.</p>';
+}
+async function ownerPost(body){
+  const d = await apiPost(Object.assign({code, owner: LS.get("ownerpin")}, body));
+  if(d.ok){ C = d; renderClient(); renderOwner(); } else toast("Couldn't save: " + esc(d.error));
+  return d;
+}
+async function ownerAddTeam(){ const v = document.getElementById("ovNewName").value.trim(); if(!v) return; document.getElementById("ovNewName").value=""; const d = await ownerPost({action:"teamAdd", name:v}); if(d.ok) toast(`<b>${esc(v)}</b> added — they'll see their name on the picker.`); }
+async function ownerRemoveTeam(n){ if(!confirm("Remove " + n + " from the name picker?")) return; await ownerPost({action:"teamRemove", name:n}); }
 function renderResults(){
   if(!C) return;
   const rs = [...(C.results||[])].sort((a,b)=>b.v-a.v), total = rs.reduce((a,r)=>a+(r.v||0),0), topV = rs.length ? rs[0].v : 0;
