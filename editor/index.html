@@ -448,7 +448,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.4";
+const BUILD = "2.5";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -955,7 +955,7 @@ function renderToday(){
     h += stackHead("Fresh footage in", T.fresh.length) + '<div class="tq">' + T.fresh.map(x=>
       `<div class="tcard">${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th"></span>'}
        <div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${esc(x.file.name)}</p>
-       <div class="acts"><button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)})">Good ✓</button><button class="mact" onclick="tqRedo(${q(x.code)},${x.idx===null?"null":x.idx},${q(x.file.id)},${q(x.shot)})">Flag redo</button></div></div></div>`).join("") + "</div>";
+       <div class="acts"><button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)},${x.idx===null?"null":x.idx})">Good ✓</button><button class="mact" onclick="tqRedo(${q(x.code)},${x.idx===null?"null":x.idx},${q(x.file.id)},${q(x.shot)})">Flag redo</button></div></div></div>`).join("") + "</div>";
   }
   if(T.quiet.length){
     h += stackHead("Going quiet", T.quiet.length) + '<div class="tq">' + T.quiet.map(x=>
@@ -971,7 +971,7 @@ function renderToday(){
 }
 function stackHead(t, n){ return `<div class="stack"><div class="stackhead"><span class="t">${t}</span><span class="line"></span><span class="ct">${n}</span></div></div>`; }
 async function tqApprove(code, fileId){ const d = await apiPost({action:"approve", pin, code, fileId}); if(d.ok){ toast("<b>Approved.</b>"); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
-async function tqGood(code, fileId){ const d = await apiPost({action:"reviewGood", pin, code, fileId}); if(d.ok){ toast("Marked good."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
+async function tqGood(code, fileId, idx){ const d = await apiPost({action:"reviewGood", pin, code, fileId, idx}); if(d.ok){ toast("Marked good — shot counted as done."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
 function tqRedo(code, idx, fileId, shot){ mgCode = code; flagIdx = idx; flagFile = fileId; flagShot = shot; openFlagToday(shot); }
 let flagFile = null, flagShot = null, flagFromToday = false;
 function openFlagToday(shot){ flagFromToday = true; flagSel = null; document.getElementById("fTitle").textContent = `Redo: ${shot}`; document.getElementById("fCustom").value = ""; document.getElementById("fChips").innerHTML = CANNED.map((c,k)=>`<button id="fc${k}" onclick="pickReason(${k})"><b style="color:var(--gold);font-family:'Space Mono',monospace;margin-right:7px">${k+1}</b>${esc(c)}</button>`).join(""); document.getElementById("fveil").classList.add("show"); document.getElementById("fsheet").classList.add("show"); }
@@ -1000,7 +1000,7 @@ function pShow(){
   document.getElementById("pVid").src = it.file.preview;
 }
 function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; }
-async function pGood(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"reviewGood", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
+async function pGood(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"reviewGood", pin, code:it.code, fileId:it.file.id, idx: it.idx===undefined?null:it.idx}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 async function pApprove(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"approve", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 function pRedo(){ const it = pq[pi]; mgCode = it.code; flagIdx = it.idx===undefined?null:it.idx; flagFile = it.file.id; openFlagToday(it.shot); }
 function pSkip(){ pi++; pShow(); }
