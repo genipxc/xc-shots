@@ -100,6 +100,9 @@
   .gate{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;max-width:440px;margin:0 auto;padding:32px 24px}.gate .glogo{display:flex;align-items:center;gap:10px;margin-bottom:26px}.gate h1{font-size:27px;margin-top:0}.gate .sub{max-width:300px}
   .codein{margin-top:22px;display:flex;gap:10px}.codein input{flex:1;min-width:0;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:16px;letter-spacing:.18em;text-transform:uppercase;padding:14px 16px;outline:none}.codein input:focus{border-color:var(--gold)}.codein input::placeholder{color:var(--dim);letter-spacing:.1em}
   .gate .err{color:var(--warn);font-size:12.5px;margin-top:10px;min-height:18px}
+  .gate .err.busy{color:var(--grey)}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--goldDim);border-top-color:var(--gold);border-radius:99px;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .lnk{appearance:none;background:transparent;border:0;padding:0;color:var(--gold);font:inherit;text-decoration:underline;cursor:pointer;touch-action:manipulation}
   .gatefoot .lnk{color:var(--dim);text-decoration:none}
   .gatefoot .lnk:hover,.gatefoot .lnk:focus-visible{color:var(--grey);text-decoration:underline}
@@ -448,7 +451,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.6";
+const BUILD = "2.7";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -478,7 +481,7 @@ async function apiGet(params){
   inflight++; syncUI("busy");
   try {
     const u = API + "?" + new URLSearchParams(params).toString();
-    const r = await withTimeout(fetch(u, {method:"GET", redirect:"follow", cache:"no-store"}), 25000);
+    const r = await withTimeout(fetch(u, {method:"GET", redirect:"follow", cache:"no-store"}), 45000);
     const txt = await r.text();
     let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + "): " + txt.slice(0,80)); }
     syncUI("live"); lastErr = ""; return d;
@@ -488,7 +491,7 @@ async function apiGet(params){
 async function apiPost(body){
   inflight++; syncUI("busy");
   try {
-    const r = await withTimeout(fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)}), 25000);
+    const r = await withTimeout(fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)}), 45000);
     const txt = await r.text();
     let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + "): " + txt.slice(0,80)); }
     syncUI("live"); lastErr = ""; return d;
@@ -508,7 +511,10 @@ let sheetIdx = null, flagIdx = null, flagSel = null, backFile = null;
 let roster = null, mgCode = null, mgState = null, mgDeliv = null, editShots = null, editResults = null;
 
 /* ═══════════════ gates / boot ═══════════════ */
+let warmed = false;
+function warm(){ if(warmed) return; warmed = true; fetch(API + "?action=ping", {redirect:"follow"}).catch(()=>{}); }
 function gate(which){
+  if(which==="gateCode" || which==="gatePin") warm();
   ["gateCode","gateName","gateGuide","gatePin","app"].forEach(id => document.getElementById(id).classList.toggle("hide", id!==which));
   window.scrollTo({top:0});
   if(which==="gateCode") setTimeout(()=>document.getElementById("codeInput").focus(), 60);
@@ -529,8 +535,11 @@ async function tryCode(){
   const v = document.getElementById("codeInput").value.trim().toUpperCase();
   const err = document.getElementById("codeErr"); const btn = document.getElementById("codeBtn");
   if(!v){ err.textContent = "Type your studio code first."; return; }
-  btn.disabled = true; err.textContent = "";
+  btn.disabled = true; err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
+  const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
+  const t2 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Still going — hang tight, nearly there.'; }, 12000);
   const d = await apiGet({action:"state", code:v});
+  clearTimeout(t1); clearTimeout(t2); err.className = "err"; err.textContent = "";
   btn.disabled = false;
   if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "That's not it — check the gold card in the staff room, or ask your manager."; return; }
   code = v; LS.set("code", v); C = d;
@@ -734,8 +743,10 @@ function closeShare(){ document.getElementById("sveil").classList.remove("show")
 async function tryPin(){
   const v = document.getElementById("pinInput").value.trim(); const err = document.getElementById("pinErr");
   if(!v){ err.textContent = "Type your PIN."; return; }
-  err.textContent = "Checking…";
+  err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
+  const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
   const d = await apiGet({action:"roster", pin:v});
+  clearTimeout(t1); err.className = "err";
   if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Not it — server rejected that PIN (check line 16 + new version)."; return; }
   err.textContent = "";
   pin = v; LS.set("pin", v); roster = d; await enterXC();
