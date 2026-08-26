@@ -207,6 +207,17 @@
   <div class="gatebtns"><button class="bigbtn" onclick="finishGuide()">Done — take me in</button><button class="up" onclick="finishGuide()">Skip</button></div>
 </div>
 
+<!-- GATE: owner -->
+<div class="gate hide" id="gateOwner">
+  <div class="eyebrow">Owner sign-in</div>
+  <h1>Your business,<br>your numbers.</h1>
+  <p class="sub">Your studio code plus the owner PIN XC gave you.</p>
+  <div class="codein" style="margin-top:22px"><input id="ownCode" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" aria-label="Studio code"></div>
+  <div class="codein" style="margin-top:10px"><input id="ownPin" type="password" placeholder="OWNER PIN" autocomplete="off" aria-label="Owner PIN" onkeydown="if(event.key==='Enter')tryOwner()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="ownBtn" onclick="tryOwner()">Enter</button></div>
+  <p class="err" id="ownErr"></p>
+  <p class="gatefoot"><button class="lnk" onclick="gate('gateCode')">← Back to the team app</button></p>
+</div>
+
 <!-- GATE: XC pin -->
 <div class="gate hide" id="gatePin">
   <div class="glogo"><svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z" fill="#CDA85F"/></svg><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
@@ -458,7 +469,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.8";
+const BUILD = "2.9";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -521,8 +532,8 @@ let roster = null, mgCode = null, mgState = null, mgDeliv = null, editShots = nu
 let warmed = false;
 function warm(){ if(warmed) return; warmed = true; fetch(API + "?action=ping", {redirect:"follow"}).catch(()=>{}); }
 function gate(which){
-  if(which==="gateCode" || which==="gatePin") warm();
-  ["gateCode","gateName","gateGuide","gatePin","app"].forEach(id => document.getElementById(id).classList.toggle("hide", id!==which));
+  if(which==="gateCode" || which==="gatePin" || which==="gateOwner") warm();
+  ["gateCode","gateName","gateGuide","gatePin","gateOwner","app"].forEach(id => document.getElementById(id).classList.toggle("hide", id!==which));
   window.scrollTo({top:0});
   if(which==="gateCode") setTimeout(()=>document.getElementById("codeInput").focus(), 60);
   if(which==="gatePin") setTimeout(()=>document.getElementById("pinInput").focus(), 60);
@@ -1062,20 +1073,37 @@ document.addEventListener("keydown", e=>{
 
 /* ── owner mode ── */
 function ownerStart(){
-  const codeV = prompt("Client studio code (e.g. MARRA24):"); if(!codeV) return;
-  const pinV = prompt("Owner PIN (from XC):"); if(!pinV) return;
-  LS.set("ownercode", codeV.trim().toUpperCase()); LS.set("ownerpin", pinV.trim());
-  ownerLoad();
+  gate("gateOwner");
+  const oc = LS.get("ownercode"); if(oc) document.getElementById("ownCode").value = oc;
+  setTimeout(()=>document.getElementById(oc ? "ownPin" : "ownCode").focus(), 60);
+}
+async function tryOwner(){
+  const oc = document.getElementById("ownCode").value.trim().toUpperCase();
+  const op = document.getElementById("ownPin").value.trim();
+  const err = document.getElementById("ownErr"); const btn = document.getElementById("ownBtn");
+  if(!oc || !op){ err.textContent = "Both boxes — code and PIN."; return; }
+  btn.disabled = true; err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
+  const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
+  const d = await apiGet({action:"state", code:oc, owner:op});
+  clearTimeout(t1); btn.disabled = false; err.className = "err";
+  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Code didn't match a client."; return; }
+  if(d.role < 1){ err.textContent = "PIN didn't match — check with XC."; return; }
+  err.textContent = "";
+  LS.set("ownercode", oc); LS.set("ownerpin", op);
+  ownerEnter(d);
+}
+function ownerEnter(d){
+  code = d.code; LS.set("code", d.code); C = d; me = LS.get("me") || "Owner";
+  gate("app"); show("client"); document.getElementById("meName").textContent = me;
+  renderClient(); startPoll(async()=>{ const r = await apiGet({action:"state", code, owner: LS.get("ownerpin")}); if(r.ok){ C = r; renderClient(); } });
+  toast("<b>Owner view</b> — progress, results, history and your documents.");
 }
 async function ownerLoad(){
   const oc = LS.get("ownercode"), op = LS.get("ownerpin");
   if(!oc || !op) return;
   const d = await apiGet({action:"state", code:oc, owner:op});
-  if(!d.ok || d.role < 1){ toast("Owner sign-in didn't match — ask XC for the PIN."); LS.set("ownerpin", null); return; }
-  code = oc; LS.set("code", oc); C = d; me = LS.get("me") || "Owner";
-  gate("app"); show("client"); document.getElementById("meName").textContent = me;
-  renderClient(); startPoll(async()=>{ const r = await apiGet({action:"state", code:oc, owner:op}); if(r.ok){ C = r; renderClient(); } });
-  toast("<b>Owner view</b> — you can see progress, results and history.");
+  if(d.ok && d.role >= 1) ownerEnter(d);
+  else { LS.set("ownerpin", null); ownerStart(); }
 }
 
 /* ── tools tab ── */
