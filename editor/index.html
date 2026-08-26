@@ -448,7 +448,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.5";
+const BUILD = "2.6";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -842,12 +842,14 @@ async function confirmFlag(){
   closeFlag();
   if(flagFromToday){
     flagFromToday = false;
+    const inPlayer = document.getElementById("player").classList.contains("show");
+    if(inPlayer){ pi++; pShow(); }   // advance instantly, same feel as G — the save runs behind
     const body = flagIdx===null || flagIdx===undefined
       ? {action:"reviewGood", pin, code:mgCode, fileId:flagFile}   // unsorted clip: no shot to flag — just clear it from the queue
       : {action:"reviewRedo", pin, code:mgCode, idx:flagIdx, reason, fileId:flagFile};
     const d = await apiPost(body);
-    if(d.ok){ toast("<b>Redo requested.</b>"); if(document.getElementById("player").classList.contains("show")){ pi++; pShow(); } loadToday(); }
-    else toast("Couldn't: "+esc(d.error));
+    if(d.ok){ if(!inPlayer){ toast("<b>Redo requested.</b>"); loadToday(); } }
+    else toast("Redo didn't save — "+esc(d.error));
     return;
   }
   await act({action:"redo", idx:flagIdx, reason}, "<b>Redo requested.</b> The orange card is on their phones now.");
@@ -999,7 +1001,7 @@ function pShow(){
   document.getElementById("pApprove").classList.toggle("hide", it.kind !== "delivery");
   document.getElementById("pVid").src = it.file.preview;
 }
-function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; }
+function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; if(pin) loadToday(); }
 async function pGood(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"reviewGood", pin, code:it.code, fileId:it.file.id, idx: it.idx===undefined?null:it.idx}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 async function pApprove(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"approve", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 function pRedo(){ const it = pq[pi]; mgCode = it.code; flagIdx = it.idx===undefined?null:it.idx; flagFile = it.file.id; openFlagToday(it.shot); }
