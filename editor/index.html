@@ -469,7 +469,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.9";
+const BUILD = "3.0";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -707,7 +707,7 @@ function renderOwner(){
     : '<p class="sub">Builds up week by week — check back after a couple of Mondays.</p>';
   const hist = C.history||[];
   document.getElementById("ovHistory").innerHTML = hist.length
-    ? hist.slice().reverse().map(h=>`<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} filmed · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span></div></div>`).join("")
+    ? hist.slice().reverse().map(h=>`<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} filmed · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span><button class="mact" onclick="ownerShareRecap(${q(h.month)})">Share ↗</button></div></div>`).join("")
     : '<p class="sub">First month still in progress.</p>';
   const docs = C.docs||[];
   document.getElementById("ovDocs").innerHTML = docs.length
@@ -775,10 +775,60 @@ async function openShare(k){
   const rs = [...(C.results||[])].sort((a,b)=>b.v-a.v); const r = rs[k]; if(!r) return;
   document.getElementById("sTitle").textContent = r.v >= 20000 ? "Brag about it." : "Show it off.";
   const url = await drawShareCard(r);
-  document.getElementById("shareImg").src = url; document.getElementById("shareDl").setAttribute("href", url);
+  document.getElementById("shareImg").src = url;
+  const dl = document.getElementById("shareDl"); dl.setAttribute("href", url); dl.setAttribute("download", "xc-shots-card.png");
   document.getElementById("sveil").classList.add("show"); document.getElementById("ssheet").classList.add("show");
 }
 function closeShare(){ document.getElementById("sveil").classList.remove("show"); document.getElementById("ssheet").classList.remove("show"); }
+
+/* month-wrap share card (owner history + XC tools) */
+function fitLine(ctx, text, x, y, maxW, px, family){
+  let s = px; ctx.font = `400 ${s}px ${family}`;
+  while(s > 18 && ctx.measureText(text).width > maxW){ s -= 1; ctx.font = `400 ${s}px ${family}`; }
+  let t = text; while(t.length > 4 && ctx.measureText(t).width > maxW){ t = t.slice(0, -2).trimEnd() + "…"; }
+  ctx.fillText(t, x, y);
+}
+function wrapClamp(ctx, text, x, y, maxW, lh, maxLines){
+  const words = text.split(" "); const lines = []; let line = "";
+  for(const w of words){ const t = line ? line+" "+w : w; if(ctx.measureText(t).width > maxW && line){ lines.push(line); line = w; } else line = t; }
+  if(line) lines.push(line);
+  if(lines.length > maxLines){ lines.length = maxLines; let last = lines[maxLines-1] + "…"; while(last.length > 4 && ctx.measureText(last).width > maxW){ last = last.slice(0, -2).trimEnd() + "…"; } lines[maxLines-1] = last; }
+  let yy = y; for(const l of lines){ ctx.fillText(l, x, yy); yy += lh; }
+  return yy;
+}
+async function drawRecapCard(name, r){
+  try { await document.fonts.load('900 120px "Schibsted Grotesk"'); await document.fonts.load('700 200px "Space Mono"'); await document.fonts.load('400 40px "Space Mono"'); } catch(e){}
+  const c = document.getElementById("shareCanvas"), ctx = c.getContext("2d"), W=1080, H=1920;
+  ctx.fillStyle="#0A0A0A"; ctx.fillRect(0,0,W,H);
+  const g = ctx.createRadialGradient(W*.85,H*.12,0,W*.85,H*.12,700); g.addColorStop(0,"rgba(205,168,95,.22)"); g.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.save(); ctx.translate(96,110); ctx.scale(5.2,5.2); ctx.fillStyle="#CDA85F"; ctx.fill(new Path2D(MARK_PATH)); ctx.restore();
+  ctx.fillStyle="#CDA85F"; fitLine(ctx, (name+"  ·  "+monthName(r.month)+"  —  THE WRAP").toUpperCase(), 96, 340, W-192, 30, '"Space Mono", monospace');
+  const hl = ctx.createLinearGradient(96,0,700,0); hl.addColorStop(0,"#CDA85F"); hl.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=hl; ctx.fillRect(96,372,600,2);
+  ctx.fillStyle="#E9D3A0"; ctx.font='700 230px "Space Mono", monospace'; ctx.fillText(r.done+"/"+r.total, 84, 700);
+  ctx.fillStyle="#6E6B66"; ctx.font='400 34px "Space Mono", monospace'; ctx.fillText("SHOTS FILMED", 96, 770);
+  ctx.fillStyle="#FFFFFF"; ctx.font='900 150px "Schibsted Grotesk", Arial, sans-serif'; ctx.fillText(fmtV(r.views||0), 92, 990);
+  ctx.fillStyle="#6E6B66"; ctx.font='400 34px "Space Mono", monospace'; ctx.fillText("VIEWS THIS MONTH", 96, 1050);
+  if(r.top && r.top.n){
+    ctx.fillStyle="#CDA85F"; ctx.font='400 30px "Space Mono", monospace'; ctx.fillText("TOP CLIP", 96, 1230);
+    ctx.fillStyle="#FFFFFF"; ctx.font='900 84px "Schibsted Grotesk", Arial, sans-serif'; const endY = wrapClamp(ctx, r.top.n, 96, 1330, 900, 94, 2);
+    const byLine = (r.top.v ? fmtV(r.top.v)+" views" : "") + (r.top.by ? (r.top.v ? " — " : "") + "filmed by "+r.top.by+", on a phone, in the shop." : "");
+    if(byLine){ ctx.fillStyle="#A3A09B"; ctx.font='500 44px "Schibsted Grotesk", Arial, sans-serif'; wrapClamp(ctx, byLine, 96, endY+30, 900, 56, 2); }
+  }
+  ctx.fillStyle="#2A2A2A"; ctx.fillRect(96,H-250,W-192,1);
+  ctx.fillStyle="#CDA85F"; fitLine(ctx, (name+"  ×  XC MEDIA").toUpperCase(), 96, H-170, W-192, 30, '"Space Mono", monospace');
+  ctx.fillStyle="#6E6B66"; ctx.font='400 28px "Space Mono", monospace'; ctx.fillText("BECOME THE STANDARD.   xcmedia.co", 96, H-118);
+  return c.toDataURL("image/png");
+}
+async function openRecapShare(name, r){
+  if(!r) return;
+  document.getElementById("sTitle").textContent = "The month, wrapped.";
+  const url = await drawRecapCard(name, r);
+  document.getElementById("shareImg").src = url;
+  const dl = document.getElementById("shareDl"); dl.setAttribute("href", url); dl.setAttribute("download", "xc-month-wrap.png");
+  document.getElementById("sveil").classList.add("show"); document.getElementById("ssheet").classList.add("show");
+}
+function ownerShareRecap(m){ openRecapShare(C.name, (C.history||[]).find(x=>x.month===m)); }
+function mgShareRecap(m){ openRecapShare(mgState.name, (mgState.history||[]).find(x=>x.month===m)); }
 
 /* ═══════════════ XC side ═══════════════ */
 async function tryPin(){
@@ -1118,7 +1168,7 @@ async function closeMonth(){
   if(!d.ok){ toast("Couldn't: "+esc(d.error)); return; }
   mgState = d.state; renderManage();
   const r = d.recap;
-  document.getElementById("recapBox").innerHTML = `<div class="recap"><div class="rn">${r.done}/${r.total} filmed · ${fmtV(r.views)} views</div><p>${esc(monthName(r.month))} wrapped.${r.top?` Top clip: <b style="color:var(--goldB)">${esc(r.top.n)}</b> (${fmtV(r.top.v)})${r.top.by?", filmed by "+esc(r.top.by):""}.`:""} Fresh month is live for the team.</p></div>`;
+  document.getElementById("recapBox").innerHTML = `<div class="recap"><div class="rn">${r.done}/${r.total} filmed · ${fmtV(r.views)} views</div><p>${esc(monthName(r.month))} wrapped.${r.top?` Top clip: <b style="color:var(--goldB)">${esc(r.top.n)}</b> (${fmtV(r.top.v)})${r.top.by?", filmed by "+esc(r.top.by):""}.`:""} Fresh month is live for the team.</p><button class="sharebtn" style="margin-top:10px" onclick="mgShareRecap(${q(r.month)})">Share image ↗</button></div>`;
   toast("<b>Month closed.</b> Recap archived.");
 }
 let editDocs = null;
@@ -1132,7 +1182,7 @@ function renderTools(){
     : '<p class="sub">No documents yet.</p>';
   const hist = mgState.history || [];
   document.getElementById("mgHistory").innerHTML = hist.length ? hist.slice().reverse().map(h=>
-    `<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span></div></div>`).join("")
+    `<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span><button class="mact" onclick="mgShareRecap(${q(h.month)})">Share ↗</button></div></div>`).join("")
     : '<p class="sub">No closed months yet.</p>';
 }
 
