@@ -93,6 +93,8 @@
   .addteam{display:flex;gap:8px;margin-top:10px}.addteam input{flex:1;min-width:0;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:10px;color:var(--ink);font-family:inherit;font-size:13.5px;padding:10px 13px;outline:none}.addteam input:focus{border-color:var(--gold)}.addteam button{appearance:none;cursor:pointer;border:1px solid var(--goldDim);background:transparent;color:var(--goldB);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:10px;padding:10px 14px}
   .rrow{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:10px 13px}.rrow .nm{flex:1;min-width:0;font-weight:700;font-size:13px}.rrow .by2{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}.rrow input{width:84px;appearance:none;background:var(--panel2);border:1px solid var(--hair);border-radius:9px;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:13px;padding:8px 10px;outline:none;text-align:right;font-variant-numeric:tabular-nums}.rrow input:focus{border-color:var(--gold)}
   .nudgebtn{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:5px 11px;border:1px solid var(--warn);background:transparent;color:var(--warn)}.nudgebtn:hover{background:var(--warn);color:#0A0A0A}
+  #fveil{z-index:69}
+  #fsheet{z-index:70}
   .rchips{display:flex;flex-direction:column;gap:8px;margin-top:14px}.rchips button{appearance:none;cursor:pointer;text-align:left;background:var(--panel);border:1px solid var(--hair);border-radius:11px;color:var(--grey);font-family:inherit;font-size:13px;line-height:1.45;padding:11px 13px}.rchips button:hover,.rchips button.sel{border-color:var(--gold);color:var(--ink)}
   .rcustom{margin-top:10px;width:100%;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:11px;color:var(--ink);font-family:inherit;font-size:13px;padding:11px 13px;outline:none;resize:none}.rcustom:focus{border-color:var(--gold)}
   .gate{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;max-width:440px;margin:0 auto;padding:32px 24px}.gate .glogo{display:flex;align-items:center;gap:10px;margin-bottom:26px}.gate h1{font-size:27px;margin-top:0}.gate .sub{max-width:300px}
@@ -446,7 +448,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.3";
+const BUILD = "2.4";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -972,7 +974,13 @@ async function tqApprove(code, fileId){ const d = await apiPost({action:"approve
 async function tqGood(code, fileId){ const d = await apiPost({action:"reviewGood", pin, code, fileId}); if(d.ok){ toast("Marked good."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
 function tqRedo(code, idx, fileId, shot){ mgCode = code; flagIdx = idx; flagFile = fileId; flagShot = shot; openFlagToday(shot); }
 let flagFile = null, flagShot = null, flagFromToday = false;
-function openFlagToday(shot){ flagFromToday = true; flagSel = null; document.getElementById("fTitle").textContent = `Redo: ${shot}`; document.getElementById("fCustom").value = ""; document.getElementById("fChips").innerHTML = CANNED.map((c,k)=>`<button id="fc${k}" onclick="pickReason(${k})">${esc(c)}</button>`).join(""); document.getElementById("fveil").classList.add("show"); document.getElementById("fsheet").classList.add("show"); }
+function openFlagToday(shot){ flagFromToday = true; flagSel = null; document.getElementById("fTitle").textContent = `Redo: ${shot}`; document.getElementById("fCustom").value = ""; document.getElementById("fChips").innerHTML = CANNED.map((c,k)=>`<button id="fc${k}" onclick="pickReason(${k})"><b style="color:var(--gold);font-family:'Space Mono',monospace;margin-right:7px">${k+1}</b>${esc(c)}</button>`).join(""); document.getElementById("fveil").classList.add("show"); document.getElementById("fsheet").classList.add("show"); }
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("fsheet").classList.contains("show") || !flagFromToday) return;
+  if(document.activeElement === document.getElementById("fCustom")) return;   // typing a custom reason
+  const k = e.key;
+  if(k==="1"||k==="2"||k==="3"){ e.preventDefault(); pickReason(Number(k)-1); confirmFlag(); }
+});
 
 /* ── REVIEW PLAYER ── */
 let pq = [], pi = 0;
