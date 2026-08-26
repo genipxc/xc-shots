@@ -286,6 +286,11 @@
       <p class="sub" style="margin-top:8px">Give the business owner their own PIN — they see progress, results and history, and can manage their team. They can't flag redos or see other clients.</p>
       <div class="addteam" style="max-width:420px"><input id="ownerPinInput" placeholder="Set owner PIN…"><button onclick="saveOwnerPin()">Save</button></div>
       <p class="mono" id="ownerPinState" style="margin-top:8px;font-size:10px;color:var(--dim)"></p>
+      <div class="addteam" style="max-width:420px;margin-top:10px"><input id="ownerEmailInput" placeholder="Owner's email (gets the month-wrap email)…"><button onclick="saveOwnerEmail()">Save</button></div>
+      <p class="msect">Documents — what the owner sees under "Your documents"</p>
+      <div class="mlist" id="docsEdit"></div>
+      <div class="addteam" style="max-width:640px"><input id="docLabel" placeholder="Label (e.g. August invoice)…" style="flex:1"><input id="docUrl" placeholder="https:// link (Drive PDF etc.)…" style="flex:2"><button onclick="addDoc()">Add</button></div>
+      <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="saveDocs()">Save documents</button></div>
       <p class="msect">Close the month</p>
       <p class="sub" style="margin-top:8px">Archives this month's recap (filmed count, views, top clip) into history, clears ticks and redos, starts fresh. Do it on the 1st, after the month's reels are delivered and results are in.</p>
       <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="closeMonth()">Close month → recap</button></div>
@@ -318,6 +323,8 @@
       <div id="ovSpark" style="margin-top:10px"></div>
       <p class="msect">Month history</p>
       <div class="mlist" id="ovHistory"></div>
+      <p class="msect">Your documents</p>
+      <div class="mlist" id="ovDocs"></div>
     </div>
 
     <div id="basicsView" class="hide">
@@ -451,7 +458,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "2.7";
+const BUILD = "2.8";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -538,12 +545,16 @@ async function tryCode(){
   btn.disabled = true; err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
   const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
   const t2 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Still going — hang tight, nearly there.'; }, 12000);
-  const d = await apiGet({action:"state", code:v});
+  const d = await apiGet({action:"hello", code:v});
   clearTimeout(t1); clearTimeout(t2); err.className = "err"; err.textContent = "";
   btn.disabled = false;
-  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "That's not it — check the gold card in the staff room, or ask your manager."; return; }
-  code = v; LS.set("code", v); C = d;
+  if(!d.ok){
+    if(d.error === "unknown action"){ const d2 = await apiGet({action:"state", code:v}); if(d2.ok){ code = v; LS.set("code", v); C = d2; buildNames(); gate("gateName"); } else err.textContent = "That's not it — check the gold card in the staff room, or ask your manager."; return; }
+    err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "That's not it — check the gold card in the staff room, or ask your manager."; return;
+  }
+  code = v; LS.set("code", v); C = d;   // partial (name+team) — full state loads on entry
   buildNames(); gate("gateName");
+  loadClient();   // warm the full state in the background while they pick a name
 }
 function buildNames(){
   document.getElementById("nameEyebrow").textContent = C.name;
@@ -579,14 +590,16 @@ async function loadClient(){
 function enterClient(){
   gate("app"); show("client"); document.body.classList.remove("xc");
   document.getElementById("meName").textContent = me || "—";
-  renderClient(); startPoll(loadClient);
+  if(!C || !C.shots){ document.getElementById("clientHead").innerHTML = '<span class="spin"></span>Loading your shots…'; loadClient(); }
+  else renderClient();
+  startPoll(loadClient);
 }
 function startPoll(fn){ stopPoll(); pollT = setInterval(()=>{ if(document.visibilityState==="visible" && !inflight) fn(); }, POLL_MS); }
 function stopPoll(){ if(pollT) clearInterval(pollT); pollT = null; }
 document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible"){ if(C && !document.getElementById("client").classList.contains("hide")) loadClient(); if(pin && !document.getElementById("dash").classList.contains("hide")) loadRoster(); } });
 
 function renderClient(){
-  if(!C) return;
+  if(!C || !C.shots) return;
   document.getElementById("stOwner").classList.toggle("hide", !(C.role >= 1));
   const WK = C.week, shots = C.shots;
   document.getElementById("clientEyebrow").textContent = `${C.name} · ${monthName(C.month)}`;
@@ -685,6 +698,10 @@ function renderOwner(){
   document.getElementById("ovHistory").innerHTML = hist.length
     ? hist.slice().reverse().map(h=>`<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} filmed · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span></div></div>`).join("")
     : '<p class="sub">First month still in progress.</p>';
+  const docs = C.docs||[];
+  document.getElementById("ovDocs").innerHTML = docs.length
+    ? docs.map(d=>`<a class="mrow" style="text-decoration:none;color:inherit" href="${esc(d.url)}" target="_blank" rel="noreferrer"><div class="r"><span class="nm">${esc(d.label)}</span><span class="who">open ↗</span></div></a>`).join("")
+    : '<p class="sub">Nothing here yet — proposals and invoices will appear as XC adds them.</p>';
 }
 async function ownerPost(body){
   const d = await apiPost(Object.assign({code, owner: LS.get("ownerpin")}, body));
@@ -701,7 +718,20 @@ function renderResults(){
   document.getElementById("reelList").innerHTML = rs.map((r,k)=>`<div class="reel${r.v===topV&&r.v>0?" top":""}"><div class="l"><h3>${esc(r.n)}${r.v===topV&&r.v>0?'<span class="star">★ Top clip</span>':""}</h3><p class="by">Filmed by <b>${esc(r.by)}</b> · week ${r.wk}</p><button class="sharebtn" onclick="openShare(${k})">Share card ↗</button></div><div class="v"><div class="n">${fmtV(r.v)}</div><div class="u">views</div></div></div>`).join("");
   const ap = C.approved || [];
   document.getElementById("approvedHead").classList.toggle("hide", !ap.length);
-  document.getElementById("approvedList").innerHTML = ap.map(f=>`<div class="reel" style="cursor:pointer" onclick="openPreview(${q(f.id)},${q(f.name)},'')"><div class="l"><h3>${esc(f.name.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,""))}</h3><p class="by">Tap to watch</p></div><div class="v"><div class="u">▶</div></div></div>`).join("");
+  document.getElementById("approvedList").innerHTML = ap.map(f=>{
+    const fb = (C.feedback||{})[f.id];
+    const chip = fb ? (fb.v==="love" ? '<span class="byme rcv">♥ loved' + (fb.by?` by ${esc(fb.by)}`:"") + '</span>' : '<span class="byme" style="color:var(--warn)">change requested</span>') : "";
+    return `<div class="reel"><div class="l"><h3 style="cursor:pointer" onclick="openPreview(${q(f.id)},${q(f.name)},'')">${esc(f.name.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,""))}</h3><p class="by">Tap title to watch</p>
+      <div style="display:flex;gap:6px;margin-top:8px;align-items:center">${chip || `<button class="sharebtn" onclick="reelFeedback(${q(f.id)},'love')">♥ Love it</button><button class="sharebtn" style="border-color:rgba(197,123,82,.4);color:var(--warn)" onclick="reelFeedback(${q(f.id)},'change')">Request a change</button>`}</div></div>
+      <div class="v" style="cursor:pointer" onclick="openPreview(${q(f.id)},${q(f.name)},'')"><div class="u">▶</div></div></div>`;
+  }).join("");
+}
+async function reelFeedback(fileId, verdict){
+  let note = "";
+  if(verdict === "change"){ note = prompt("What should change?") || ""; if(!note.trim()) return; }
+  const d = await apiPost({action:"feedback", code, fileId, verdict, note, by: me || "Someone"});
+  if(d.ok){ C = d; renderClient(); toast(verdict==="love" ? "<b>Nice.</b> XC sees the love." : "<b>Sent.</b> XC gets your note."); }
+  else toast("Couldn't send: "+esc(d.error));
 }
 function openPreview(id, title, note){
   document.getElementById("pTitle").textContent = title; document.getElementById("pNote").textContent = note || "";
@@ -790,7 +820,7 @@ async function addClient(){
 
 /* manage */
 async function openManage(c){
-  mgCode = c; stopPoll();
+  mgCode = c; stopPoll(); editDocs = null;
   document.getElementById("dash").classList.add("hide"); document.getElementById("manage").classList.remove("hide");
   document.getElementById("mgName").textContent = "Loading…"; window.scrollTo({top:0});
   await loadManage(); startPoll(loadManage);
@@ -944,7 +974,7 @@ async function loadToday(){
 function renderToday(){
   const T = todayData; if(!T) return;
   document.getElementById("todayEyebrow").textContent = `${monthName(T.month)} · Week ${T.week} · Today`;
-  const total = T.counts.deliveries + T.counts.fresh + T.counts.quiet + T.counts.redos;
+  const total = T.counts.deliveries + T.counts.fresh + T.counts.quiet + T.counts.redos + (T.counts.feedback || 0);
   const badge = document.getElementById("todayN");
   badge.classList.toggle("hide", !total); badge.textContent = total;
   const head = document.getElementById("todayHead");
@@ -975,6 +1005,11 @@ function renderToday(){
       `<div class="tcard warn"><div class="b"><h4>${esc(x.client)}</h4><p class="m">${x.quietDays===null?"no ticks yet":"quiet "+x.quietDays+" days"} · week ${x.wkDone} of ${x.wkTotal}</p>
        <div class="acts"><button class="nudgebtn" onclick="nudge()">Nudge ↗</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
   }
+  if(T.feedback && T.feedback.length){
+    h += stackHead("Client feedback", T.feedback.length) + '<div class="tq">' + T.feedback.map(x=>
+      `<div class="tcard${x.v==="change"?" warn":""}"><div class="b"><h4>${esc(x.client)} — ${x.v==="love"?"♥ loved":"change requested"}</h4><p class="m">${esc(x.by)}${x.note?": "+esc(x.note):""}</p>
+       <div class="acts"><button class="mact ok" onclick="ackFb(${q(x.code)},${q(x.fileId)})">Got it</button><button class="mact cancel" onclick="openPreview(${q(x.fileId)},'Reel','')">Watch</button></div></div></div>`).join("") + "</div>";
+  }
   if(T.redosAging.length){
     h += stackHead("Redos aging", T.redosAging.length) + '<div class="tq">' + T.redosAging.map(x=>
       `<div class="tcard warn"><div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${x.days===null?"":"out "+x.days+" days · "}${esc(x.reason)}</p>
@@ -983,6 +1018,7 @@ function renderToday(){
   body.innerHTML = h;
 }
 function stackHead(t, n){ return `<div class="stack"><div class="stackhead"><span class="t">${t}</span><span class="line"></span><span class="ct">${n}</span></div></div>`; }
+async function ackFb(code, fileId){ const d = await apiPost({action:"ackFeedback", pin, code, fileId}); if(d.ok){ toast("Acknowledged."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
 async function tqApprove(code, fileId){ const d = await apiPost({action:"approve", pin, code, fileId}); if(d.ok){ toast("<b>Approved.</b>"); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
 async function tqGood(code, fileId, idx){ const d = await apiPost({action:"reviewGood", pin, code, fileId, idx}); if(d.ok){ toast("Marked good — shot counted as done."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
 function tqRedo(code, idx, fileId, shot){ mgCode = code; flagIdx = idx; flagFile = fileId; flagShot = shot; openFlagToday(shot); }
@@ -1044,6 +1080,9 @@ async function ownerLoad(){
 
 /* ── tools tab ── */
 function printCard(){ window.open("/card/?name=" + encodeURIComponent(mgState.name) + "&code=" + encodeURIComponent(mgState.code), "_blank", "noopener"); }
+async function saveOwnerEmail(){ const v = document.getElementById("ownerEmailInput").value.trim(); const d = await apiPost({action:"setOwnerEmail", pin, code:mgCode, ownerEmail:v}); if(d.ok){ toast(v ? "<b>Owner email saved</b> — they get the month-wrap email at close." : "Owner email cleared."); mgState = d; } else toast("Couldn't: "+esc(d.error)); }
+function addDoc(){ const l = document.getElementById("docLabel").value.trim(), u = document.getElementById("docUrl").value.trim(); if(!l || !/^https:\/\//.test(u)){ toast("Need a label and a full https:// link."); return; } editDocs.push({label:l, url:u}); document.getElementById("docLabel").value=""; document.getElementById("docUrl").value=""; renderTools(); }
+async function saveDocs(){ const d = await apiPost({action:"setDocs", pin, code:mgCode, docs:editDocs}); if(d.ok){ toast("<b>Documents saved.</b> The owner sees them now."); mgState = d; editDocs = null; renderTools(); } else toast("Couldn't: "+esc(d.error)); }
 async function saveOwnerPin(){ const v = document.getElementById("ownerPinInput").value.trim(); const d = await apiPost({action:"setOwnerPin", pin, code:mgCode, ownerPin:v}); if(d.ok){ toast(v ? "<b>Owner PIN set.</b> Give it to the owner with their code." : "Owner PIN cleared."); mgState = d; renderManage(); } else toast("Couldn't: "+esc(d.error)); }
 async function closeMonth(){
   if(!confirm("Close the month for " + mgState.name + "? Recap is archived, ticks and redos clear.")) return;
@@ -1054,9 +1093,15 @@ async function closeMonth(){
   document.getElementById("recapBox").innerHTML = `<div class="recap"><div class="rn">${r.done}/${r.total} filmed · ${fmtV(r.views)} views</div><p>${esc(monthName(r.month))} wrapped.${r.top?` Top clip: <b style="color:var(--goldB)">${esc(r.top.n)}</b> (${fmtV(r.top.v)})${r.top.by?", filmed by "+esc(r.top.by):""}.`:""} Fresh month is live for the team.</p></div>`;
   toast("<b>Month closed.</b> Recap archived.");
 }
+let editDocs = null;
 function renderTools(){
   if(!mgState) return;
   document.getElementById("ownerPinState").textContent = mgState.hasOwnerPin ? "OWNER PIN IS SET" : "NO OWNER PIN YET";
+  const em = document.getElementById("ownerEmailInput"); if(document.activeElement !== em) em.value = mgState.ownerEmail || "";
+  if(!editDocs) editDocs = JSON.parse(JSON.stringify(mgState.docs || []));
+  document.getElementById("docsEdit").innerHTML = editDocs.length
+    ? editDocs.map((d,k)=>`<div class="mrow"><div class="r"><span class="nm">${esc(d.label)}</span><span class="who" style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(d.url)}</span><button class="mact" onclick="editDocs.splice(${k},1);renderTools()">✕</button></div></div>`).join("")
+    : '<p class="sub">No documents yet.</p>';
   const hist = mgState.history || [];
   document.getElementById("mgHistory").innerHTML = hist.length ? hist.slice().reverse().map(h=>
     `<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span></div></div>`).join("")
