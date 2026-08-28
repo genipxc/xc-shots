@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>XC Media — Invoice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0A0A0A;
+    --mute: #6E6E6E;
+    --hair: rgba(10,10,10,0.14);
+    --gold: #CDA85F;
+    --gold-text: #A67F3B;
+    --paper: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #E9E7E2; }
+  body { font-family: Inter, -apple-system, "Helvetica Neue", sans-serif; color: var(--ink); }
+  .mono { font-family: "Space Mono", ui-monospace, Menlo, monospace; letter-spacing: 0.13em; text-transform: uppercase; }
+
+  /* ── the sheet ── */
+  .sheet { width: 210mm; min-height: 297mm; margin: 28px auto; background: var(--paper); padding: 18mm 16mm 14mm; box-shadow: 0 24px 70px rgba(10,10,10,0.18); display: flex; flex-direction: column; }
+
+  /* ── editable affordance (screen only) ── */
+  [contenteditable="true"] { outline: none; border-radius: 2px; transition: background 0.15s ease, box-shadow 0.15s ease; }
+  [contenteditable="true"]:hover { background: rgba(205,168,95,0.10); }
+  [contenteditable="true"]:focus { background: rgba(205,168,95,0.16); box-shadow: 0 0 0 2px rgba(205,168,95,0.35); }
+  [contenteditable="true"]:empty::before { content: attr(data-ph); color: rgba(10,10,10,0.28); }
+
+  /* ── header ── */
+  .top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { width: 44px; height: 44px; filter: invert(1); display: block; }
+  .brand-name { font-family: "Schibsted Grotesk", "Helvetica Neue", sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.02em; line-height: 1.05; }
+  .brand-sub { font-size: 9px; color: var(--gold-text); margin-top: 3px; }
+  .doc { text-align: right; }
+  .doc-title { font-family: "Schibsted Grotesk", "Helvetica Neue", sans-serif; font-weight: 800; font-size: 40px; letter-spacing: -0.03em; line-height: 0.95; }
+  .doc-no { font-size: 11px; color: var(--gold-text); margin-top: 8px; font-weight: 700; }
+
+  .rule { border: 0; border-top: 1px solid var(--hair); margin: 9mm 0 0; }
+  .rule-gold { border: 0; border-top: 2px solid var(--gold); margin: 0; }
+
+  /* ── meta strip ── */
+  .meta { display: flex; gap: 34px; padding: 6mm 0; }
+  .meta div { display: flex; flex-direction: column; gap: 4px; }
+  .lbl { font-size: 8.5px; color: var(--gold-text); font-weight: 700; }
+  .val { font-size: 12.5px; font-weight: 500; min-width: 70px; }
+
+  /* ── parties ── */
+  .parties { display: flex; gap: 12mm; padding: 2mm 0 8mm; }
+  .party { flex: 1 1 0; display: flex; flex-direction: column; gap: 5px; }
+  .party .who { font-family: "Schibsted Grotesk", "Helvetica Neue", sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .party .line { font-size: 11.5px; color: var(--mute); line-height: 1.5; }
+
+  /* ── jobs table ── */
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 8.5px; color: var(--gold-text); font-weight: 700; padding: 0 8px 7px 0; border-bottom: 2px solid var(--ink); }
+  thead th.r, td.r { text-align: right; padding-right: 0; }
+  tbody td { padding: 12px 8px 12px 0; border-bottom: 1px solid var(--hair); vertical-align: top; font-size: 12px; }
+  td.num { width: 26px; font-size: 10px; color: var(--gold-text); font-weight: 700; padding-top: 14px; }
+  .job-title { font-weight: 600; font-size: 12.5px; }
+  .job-desc { font-size: 10.5px; color: var(--mute); margin-top: 3px; line-height: 1.5; }
+  td.date { width: 88px; white-space: nowrap; font-size: 11px; color: var(--mute); }
+  td.amt { width: 92px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ── totals ── */
+  .totals { display: flex; justify-content: flex-end; padding: 6mm 0 0; }
+  .tbox { width: 74mm; display: flex; flex-direction: column; gap: 7px; }
+  .trow { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; }
+  .trow .lbl { font-size: 8.5px; }
+  .trow .tval { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .trow.grand { border-top: 2px solid var(--gold); margin-top: 4px; padding-top: 9px; }
+  .trow.grand .lbl { color: var(--gold-text); font-size: 9.5px; }
+  .trow.grand .tval { font-family: "Schibsted Grotesk", "Helvetica Neue", sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.01em; }
+
+  /* ── payment ── */
+  .pay { margin-top: auto; padding-top: 9mm; }
+  .pay-grid { display: flex; gap: 34px; padding-top: 5mm; }
+  .pay-grid div { display: flex; flex-direction: column; gap: 4px; }
+  .note { font-size: 10.5px; color: var(--mute); padding-top: 5mm; line-height: 1.55; }
+
+  /* ── footer ── */
+  .foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--hair); margin-top: 7mm; padding-top: 4mm; font-size: 8.5px; color: var(--mute); }
+  .foot .gold { color: var(--gold-text); font-weight: 700; }
+
+  /* ── toolbar (screen only) ── */
+  .bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; background: #0A0A0A; border-radius: 4px; padding: 10px 12px; box-shadow: 0 18px 50px rgba(0,0,0,0.35); z-index: 10; }
+  .bar button { font-family: "Space Mono", ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; border: 0; border-radius: 2px; padding: 10px 16px; cursor: pointer; }
+  .bar .add { background: #CDA85F; color: #0A0A0A; }
+  .bar .print { background: #FFFFFF; color: #0A0A0A; }
+  .bar .ghost { background: transparent; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.3); }
+  .bar .hint { color: rgba(255,255,255,0.55); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-family: "Space Mono", monospace; padding: 0 4px; }
+  .row-x { position: absolute; left: -22px; top: 12px; width: 16px; height: 16px; border: 0; background: none; color: #B33; font-size: 13px; cursor: pointer; opacity: 0; }
+  tbody tr { position: relative; }
+  tbody tr:hover .row-x { opacity: 0.7; }
+
+  @media print {
+    html, body { background: #FFFFFF; }
+    .sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+    .bar, .row-x { display: none !important; }
+    [contenteditable="true"]:hover, [contenteditable="true"]:focus { background: none; box-shadow: none; }
+    [contenteditable="true"]:empty::before { content: ""; }
+  }
+  @page { size: A4; margin: 14mm 12mm; }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="top">
+    <div class="brand">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANwAAADcCAYAAAAbWs+BAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAUGVYSWZNTQAqAAAACAACARIAAwAAAAEAAQAAh2kABAAAAAEAAAAmAAAAAAADoAEAAwAAAAEAAQAAoAIABAAAAAEAAADcoAMABAAAAAEAAADcAAAAAHi/nHsAAAIyaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA2LjAuMCI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOmV4aWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vZXhpZi8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyI+CiAgICAgICAgIDxleGlmOlBpeGVsWURpbWVuc2lvbj4zNjA8L2V4aWY6UGl4ZWxZRGltZW5zaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFhEaW1lbnNpb24+MzYwPC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgrkLg9JAAAaiUlEQVR4Ae2dCXhNV7vHMyFNEGKIpJpUiOFDS8VQvfnS4lPKh7Z6a7jm+lyX0rpVWuN1n1LzTEvVTEtoGmJuiDE1J6aIKol5iCQiiEjy/Zf29EmIJCfnrD3+9/NwcvbZew2/9b57rf2ud73LwYEHCZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACZAACTxDwLlNmza1cLbyM7/wBAmQgN0JeO7Zsyds/fr1u0uVKhVk99SZYFEIeHl4eJQtyo28R/sEKhzGkY3j9OnT0cOGDeuPIpfSfrENWULXvn37do2Kito2a9asjoasISvlUOHQoUNRQuHEcRfHpk2bltStW7cB2DiRjzIE6tSp0zQ0NPSb1NTUWw8ePMieP39+T2VyZi5KE8ilcH+oXXb22bNnT3711Ve9UZgyShfIZPmVHT16dL9z586dsrC/d+9exsyZM3uYjINpqpunwonGz8jISN61a1dYly5d3gENZ9MQUaairj169Gj366+/rkGPlmZRNvGZlpaWMWfOHCqcMu2geC7PVTiLECQnJ8evWrVq0ksvvRSoeOmMl6FTrVq16oSHh09KTEy8ZWGc85MKZ7xGz1mjAhXOIgxxcXHHvv766//CzSVzJsC/C02g3OTJk3v9/vvvJyxM8/oUCjdv3jz2cIXGqq8LC61wQjjS09OTMMz8vkOHDm+imhxmFq6tXT766KN3jh49ujkrKyspLyXLeY4KVzioer3KKoWzCMa1a9fif/zxx89RaV+9VlyBcjsFBAQ03rlz52QYQhIs7Ar6pMIp0DIqZlEkhRNC8/jx44wjR45sHTJkSFuUn3N3uRvRa+rUqYMuXLgQV5CCPf07FS43SKN9K7LCWQTlzp07t3/66acfateu3QhwzD5359q1a9cumNuMePjw4X0LI2s+qXBGU7Hc9bFZ4SzChLm705MmTfoMyZfPnYU5vvn7+1ffuHHjXFh187Q+WjgV9EmFM7a82E3hhCDdv38/bfv27SHBwcENgc3F2Oj+ql25CRMmDIT18SCMIpkFKVRBv1Ph/uJqyD/sqnAWYUpISDj3/fffDwKxSoak9kelXDt16tTmwIED64o6fLTwyvlJhTOwxKBqUhROCBA8VR7AFB756aef/ifycTUSRqysqLl27drpSUlJt3Mq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" alt="XC Media">
+      <div>
+        <div class="brand-name">XC MEDIA</div>
+        <div class="brand-sub mono">Creative Marketing Studio</div>
+      </div>
+    </div>
+    <div class="doc">
+      <div class="doc-title">Invoice.</div>
+      <div class="doc-no mono">Nº <span contenteditable="true" data-ph="0001">0001</span></div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="meta">
+    <div><span class="lbl mono">Issue date</span><span class="val" contenteditable="true" data-ph="DD.MM.YYYY"></span></div>
+    <div><span class="lbl mono">Due date</span><span class="val" contenteditable="true" data-ph="DD.MM.YYYY"></span></div>
+    <div><span class="lbl mono">ABN</span><span class="val" contenteditable="true" data-ph="XX XXX XXX XXX"></span></div>
+    <div><span class="lbl mono">Reference</span><span class="val" contenteditable="true" data-ph="—"></span></div>
+  </div>
+
+  <div class="parties">
+    <div class="party">
+      <span class="lbl mono">From</span>
+      <span class="who">XC Media</span>
+      <span class="line" contenteditable="true">Christian Zagar<br>info@xcmedia.co<br>xcmedia.co</span>
+    </div>
+    <div class="party">
+      <span class="lbl mono">Billed to</span>
+      <span class="who" contenteditable="true" data-ph="Client / business name"></span>
+      <span class="line" contenteditable="true" data-ph="Contact name&#10;email@client.com&#10;Address (optional)"></span>
+    </div>
+  </div>
+
+  <table id="jobs">
+    <thead>
+      <tr>
+        <th class="mono">Nº</th>
+        <th class="mono">Job</th>
+        <th class="mono">Date</th>
+        <th class="mono r">Amount (AUD)</th>
+      </tr>
+    </thead>
+    <tbody id="jobbody">
+      <tr>
+        <td class="num mono">01</td>
+        <td>
+          <div class="job-title" contenteditable="true" data-ph="Job title — e.g. Content Pack, July"></div>
+          <div class="job-desc" contenteditable="true" data-ph="What was delivered — e.g. 8 reels + photo set, shot 04.07, delivered weekly"></div>
+        </td>
+        <td class="date" contenteditable="true" data-ph="DD.MM"></td>
+        <td class="amt r" contenteditable="true" data-ph="$0.00"></td>
+      </tr>
+      <tr>
+        <td class="num mono">02</td>
+        <td>
+          <div class="job-title" contenteditable="true" data-ph="Job title"></div>
+          <div class="job-desc" contenteditable="true" data-ph="What was delivered"></div>
+        </td>
+        <td class="date" contenteditable="true" data-ph="DD.MM"></td>
+        <td class="amt r" contenteditable="true" data-ph="$0.00"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <div class="tbox">
+      <div class="trow"><span class="lbl mono">Subtotal</span><span class="tval" id="subtotal">$0.00</span></div>
+      <div class="trow" id="gstrow"><span class="lbl mono">GST 10%</span><span class="tval" id="gst">$0.00</span></div>
+      <div class="trow grand"><span class="lbl mono">Total due</span><span class="tval" id="total" contenteditable="true">$0.00</span></div>
+    </div>
+  </div>
+
+  <div class="pay">
+    <hr class="rule-gold">
+    <div class="pay-grid">
+      <div><span class="lbl mono">Account name</span><span class="val" contenteditable="true" data-ph="XC Media"></span></div>
+      <div><span class="lbl mono">BSB</span><span class="val" contenteditable="true" data-ph="XXX-XXX"></span></div>
+      <div><span class="lbl mono">Account Nº</span><span class="val" contenteditable="true" data-ph="XXXX XXXX"></span></div>
+      <div><span class="lbl mono">Payment reference</span><span class="val" contenteditable="true" data-ph="Invoice Nº"></span></div>
+    </div>
+    <div class="note" contenteditable="true">Payment due within 7 days of issue. Questions about this invoice — reply to info@xcmedia.co and it gets sorted same-day.</div>
+  </div>
+
+  <div class="foot mono">
+    <span>XC Media · info@xcmedia.co · xcmedia.co</span>
+    <span class="gold">Shot. Cut. Shipped.</span>
+  </div>
+
+</div>
+
+<div class="bar">
+  <button class="add" onclick="addJob()">+ Add job</button>
+  <button class="ghost" id="gstbtn" onclick="toggleGst()">GST: on</button>
+  <button class="ghost" onclick="newInvoice()">New invoice</button>
+  <button class="print" onclick="window.print()">Print / Save PDF</button>
+  <span class="hint" id="saveHint">Click any text to edit</span>
+</div>
+
+<script>
+  var gstOn = true;
+
+  function money(n) {
+    return "$" + n.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function parseAmt(el) {
+    var m = (el.textContent || "").replace(/[^0-9.\-]/g, "");
+    var v = parseFloat(m);
+    return isNaN(v) ? 0 : v;
+  }
+  function recalc() {
+    var sub = 0;
+    document.querySelectorAll("#jobbody .amt").forEach(function (el) { sub += parseAmt(el); });
+    var gst = gstOn ? sub * 0.1 : 0;
+    document.getElementById("subtotal").textContent = money(sub);
+    document.getElementById("gst").textContent = money(gst);
+    document.getElementById("total").textContent = money(sub + gst);
+  }
+  function renumber() {
+    document.querySelectorAll("#jobbody .num").forEach(function (el, i) {
+      el.textContent = (i + 1 < 10 ? "0" : "") + (i + 1);
+    });
+  }
+  function wireRow(tr) {
+    tr.querySelectorAll("[contenteditable]").forEach(function (el) {
+      el.addEventListener("input", recalc);
+    });
+    var x = document.createElement("button");
+    x.className = "row-x";
+    x.title = "Remove job";
+    x.textContent = "✕";
+    x.onclick = function () { tr.remove(); renumber(); recalc(); };
+    tr.querySelector(".num").appendChild(x);
+  }
+  function addJob() {
+    var body = document.getElementById("jobbody");
+    var rows = body.querySelectorAll("tr");
+    var tr = rows[rows.length - 1].cloneNode(true);
+    tr.querySelectorAll("[contenteditable]").forEach(function (el) { el.textContent = ""; });
+    tr.querySelector(".row-x") && tr.querySelector(".row-x").remove();
+    body.appendChild(tr);
+    wireRow(tr);
+    renumber();
+    recalc();
+    tr.querySelector(".job-title").focus();
+  }
+  function toggleGst() {
+    gstOn = !gstOn;
+    document.getElementById("gstrow").style.display = gstOn ? "" : "none";
+    document.getElementById("gstbtn").textContent = "GST: " + (gstOn ? "on" : "off");
+    recalc();
+  }
+  document.querySelectorAll("#jobbody tr").forEach(wireRow);
+  recalc();
+
+  /* ── draft autosave (this device only) ── */
+  var SAVE_KEY = "xcinv.v1";
+  function fields(){ return Array.prototype.slice.call(document.querySelectorAll(".sheet [contenteditable]")); }
+  function saveDraft(){
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        rows: document.querySelectorAll("#jobbody tr").length,
+        gst: gstOn,
+        f: fields().map(function(el){ return el.innerHTML; })
+      }));
+      var h = document.getElementById("saveHint"); h.textContent = "Draft saved on this device";
+      clearTimeout(saveDraft._t2); saveDraft._t2 = setTimeout(function(){ h.textContent = "Click any text to edit"; }, 1600);
+    } catch(e){}
+  }
+  var saveT = null;
+  function queueSave(){ clearTimeout(saveT); saveT = setTimeout(saveDraft, 500); }
+  function restoreDraft(){
+    var raw = null; try { raw = localStorage.getItem(SAVE_KEY); } catch(e){}
+    if(!raw) return;
+    try {
+      var d = JSON.parse(raw);
+      while(document.querySelectorAll("#jobbody tr").length < d.rows) addJob();
+      while(document.querySelectorAll("#jobbody tr").length > d.rows && document.querySelectorAll("#jobbody tr").length > 1){
+        var trs = document.querySelectorAll("#jobbody tr"); trs[trs.length-1].remove();
+      }
+      renumber();
+      fields().forEach(function(el, i){ if(d.f[i] !== undefined) el.innerHTML = d.f[i]; });
+      if(d.gst === false && gstOn) toggleGst();
+      recalc();
+    } catch(e){}
+  }
+  document.addEventListener("input", queueSave);
+  document.addEventListener("click", queueSave);
+  window.addEventListener("beforeunload", saveDraft);
+  restoreDraft();
+
+  /* ── new invoice: keep identity (From, ABN, bank, note), clear the job ── */
+  function newInvoice(){
+    if(!confirm("Start a new invoice? Your details (From, ABN, bank) stay — client, jobs and dates clear.")) return;
+    var no = document.querySelector(".doc-no span[contenteditable]");
+    var n = parseInt((no.textContent||"").replace(/\D/g,""), 10);
+    no.textContent = isNaN(n) ? "0001" : String(n+1).padStart(4,"0");
+    var meta = document.querySelectorAll(".meta .val");
+    meta[0].innerHTML = ""; meta[1].innerHTML = ""; meta[3].innerHTML = "";   // issue, due, reference — ABN (index 2) stays
+    document.querySelector(".parties .party:nth-child(2) .who").innerHTML = "";
+    document.querySelector(".parties .party:nth-child(2) .line").innerHTML = "";
+    var trs = document.querySelectorAll("#jobbody tr");
+    for(var i = trs.length-1; i >= 1; i--) trs[i].remove();
+    document.querySelectorAll("#jobbody tr [contenteditable]").forEach(function(el){ el.innerHTML = ""; });
+    renumber(); recalc(); saveDraft();
+    window.scrollTo({top:0});
+  }
+</script>
+
+</body>
+</html>
