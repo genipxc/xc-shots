@@ -6,39 +6,27 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="robots" content="noindex">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>XC Shots</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>XC Shots — Demo</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800;900&family=Space+Mono:wght@400;700&display=swap">
 <style>
-  :root{
-    --bg:#0A0A0A; --panel:#141414; --panel2:#1B1B1B; --hair:#232323;
-    --ink:#FFFFFF; --grey:#A3A09B; --dim:#6E6B66;
-    --gold:#CDA85F; --goldB:#E9D3A0; --goldDim:rgba(205,168,95,.16);
-    --warn:#C57B52;
-  }
+  :root{--bg:#0A0A0A;--panel:#141414;--panel2:#1B1B1B;--hair:#232323;--ink:#FFFFFF;--grey:#A3A09B;--dim:#6E6B66;--gold:#CDA85F;--goldB:#E9D3A0;--goldDim:rgba(205,168,95,.16);--warn:#C57B52;--ok:#8FBF8F}
   *{margin:0;padding:0;box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
   body{background:var(--bg);color:var(--ink);font-family:'Schibsted Grotesk',-apple-system,'Helvetica Neue',Arial,sans-serif;min-height:100vh}
   .wrap{max-width:440px;margin:0 auto;padding:0 18px 90px}
   .mono{font-family:'Space Mono',ui-monospace,Menlo,monospace}
-
   .top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 14px;position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 82%,rgba(10,10,10,0));z-index:10}
-  .brand{display:flex;align-items:center;gap:10px}
-  .brand svg{display:block}
-  .brand .t{font-weight:900;font-size:17px;letter-spacing:-.01em}
-  .brand .t span{color:var(--gold)}
+  .brand{display:flex;align-items:center;gap:10px}.brand .t{font-weight:900;font-size:17px;letter-spacing:-.01em}.brand .t span{color:var(--gold)}
   .switch{display:flex;background:var(--panel);border:1px solid var(--hair);border-radius:999px;padding:3px}
   .switch button{appearance:none;border:0;background:transparent;color:var(--dim);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:6px 11px;border-radius:999px;cursor:pointer}
   .switch button.on{background:var(--gold);color:#0A0A0A;font-weight:700}
-  .switch button:focus-visible,.tick:focus-visible,.up:focus-visible,.cl:focus-visible,.card:focus-visible,.bigbtn:focus-visible,.x:focus-visible{outline:2px solid var(--goldB);outline-offset:2px}
-
+  button:focus-visible,[tabindex]:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--goldB);outline-offset:2px}
   .eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase}
   h1{font-weight:900;font-size:30px;letter-spacing:-.02em;line-height:1.02;text-wrap:balance;margin-top:6px}
   .sub{color:var(--grey);font-size:13.5px;line-height:1.5;margin-top:8px}
-
-  /* weekly hero */
   .prog{margin-top:18px;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px}
   .prog .wk{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase}
   .prog .row{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px}
@@ -48,314 +36,330 @@
   .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--goldB));border-radius:99px;transition:width .5s cubic-bezier(.22,1,.36,1)}
   .pace{color:var(--grey);font-size:12.5px;line-height:1.5;margin-top:11px}
   .month{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:10.5px;color:var(--dim);margin-top:12px;padding-top:11px;border-top:1px solid var(--hair);letter-spacing:.06em;font-variant-numeric:tabular-nums}
-
-  /* week sections */
-  .wksect{display:flex;align-items:center;gap:9px;margin:24px 2px 10px}
-  .wksect .t{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
-  .wksect.now .t{color:var(--gold)}
-  .wksect .line{flex:1;height:1px;background:var(--hair)}
-  .wksect.now .line{background:var(--goldDim)}
-  .wksect .done{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em}
-
+  .wksect{display:flex;align-items:center;gap:9px;margin:24px 2px 10px}.wksect .t{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}.wksect.now .t{color:var(--gold)}.wksect .line{flex:1;height:1px;background:var(--hair)}.wksect.now .line{background:var(--goldDim)}.wksect .done{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em}
   .shots{display:flex;flex-direction:column;gap:10px}
   .card{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px;display:flex;gap:13px;align-items:flex-start;cursor:pointer;text-align:left;width:100%;appearance:none;color:var(--ink);font-family:inherit;transition:opacity .3s,border-color .2s}
-  .card:hover{border-color:var(--gold)}
-  .card.done{opacity:.5;border-color:var(--goldDim)}
-  .card.future{opacity:.75}
-  .tick{flex:none;width:26px;height:26px;border-radius:8px;border:1.5px solid var(--dim);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:background .2s,border-color .2s;appearance:none}
-  .tick svg{opacity:0;transform:scale(.5);transition:opacity .18s,transform .18s}
-  .done .tick,.tick.on{background:var(--gold);border-color:var(--gold)}
-  .done .tick svg,.tick.on svg{opacity:1;transform:scale(1)}
-  .card.redo{border-color:var(--warn)}
+  .card:hover{border-color:var(--gold)}.card.done{opacity:.5;border-color:var(--goldDim)}.card.future{opacity:.75}.card.redo{border-color:var(--warn)}
+  .tick{flex:none;width:26px;height:26px;border-radius:8px;border:1.5px solid var(--dim);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:background .2s,border-color .2s}
+  .tick svg{opacity:0;transform:scale(.5);transition:opacity .18s,transform .18s}.done .tick,.tick.on{background:var(--gold);border-color:var(--gold)}.done .tick svg,.tick.on svg{opacity:1;transform:scale(1)}
   .redochip{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#0A0A0A;background:var(--warn);border-radius:99px;padding:3px 8px}
-  .reason{margin-top:8px;background:rgba(197,123,82,.1);border:1px solid rgba(197,123,82,.35);border-radius:9px;padding:8px 10px;color:var(--grey);font-size:12px;line-height:1.45}
+  .reason{margin-top:8px;background:rgba(197,123,82,.1);border:1px solid rgba(197,123,82,.35);border-radius:9px;padding:8px 10px;color:var(--grey);font-size:12px;line-height:1.45;display:block}
   .reason b{color:var(--warn);font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;font-weight:700}
-  .card .body{flex:1;min-width:0}
-  .card h3{font-size:15px;font-weight:800;letter-spacing:-.01em}
-  .card.done h3{text-decoration:line-through;text-decoration-color:var(--gold);text-decoration-thickness:1.5px}
-  .how{color:var(--grey);font-size:12.5px;line-height:1.45;margin-top:3px}
+  .card .body{flex:1;min-width:0}.card h3{font-size:15px;font-weight:800;letter-spacing:-.01em}.card.done h3{text-decoration:line-through;text-decoration-color:var(--gold);text-decoration-thickness:1.5px}
+  .how{color:var(--grey);font-size:12.5px;line-height:1.45;margin-top:3px;display:block}
   .meta{display:flex;gap:8px;margin-top:9px;align-items:center;flex-wrap:wrap}
-  .chip{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--dim);border:1px solid var(--hair);border-radius:99px;padding:3px 8px;text-transform:uppercase}
-  .chip.open{color:var(--gold);border-color:var(--goldDim)}
+  .chip{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--dim);border:1px solid var(--hair);border-radius:99px;padding:3px 8px;text-transform:uppercase}.chip.open{color:var(--gold);border-color:var(--goldDim)}
+  .byme{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase}.byme.wait{color:var(--dim)}.byme.rcv{color:var(--goldB)}
   .frame{flex:none;margin-top:2px}
-
-  /* dashboard */
   .clients{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-  .cl{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:16px;cursor:pointer;text-align:left;width:100%;appearance:none;color:var(--ink);font-family:inherit;transition:border-color .2s}
-  .cl:hover{border-color:var(--gold)}
-  .cl .r1{display:flex;justify-content:space-between;align-items:center}
-  .cl h3{font-size:16px;font-weight:800;letter-spacing:-.01em}
-  .st{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:4px 9px}
-  .st.ok{color:#0A0A0A;background:var(--gold)}
-  .st.behind{color:#0A0A0A;background:var(--warn)}
-  .cl .r2{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:10.5px;color:var(--dim);margin-top:10px;letter-spacing:.05em;font-variant-numeric:tabular-nums}
-  .cl .bar{margin-top:8px}
-  .cl.quiet .bar i{background:var(--dim)}
-
-  /* guide sheet */
-  .veil{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s;z-index:40}
-  .veil.show{opacity:1;pointer-events:auto}
-  .sheet{position:fixed;left:0;right:0;bottom:0;max-width:440px;margin:0 auto;background:var(--panel2);border:1px solid var(--hair);border-bottom:0;border-radius:20px 20px 0 0;padding:20px 20px 28px;transform:translateY(105%);transition:transform .32s cubic-bezier(.22,1,.36,1);z-index:41;max-height:86vh;overflow-y:auto}
-  .sheet.show{transform:translateY(0)}
-  .sheet .grab{width:36px;height:4px;border-radius:99px;background:var(--hair);margin:0 auto 14px}
-  .sheet .shead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-  .sheet h2{font-weight:900;font-size:22px;letter-spacing:-.015em;line-height:1.05;text-wrap:balance}
+  .cl{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:16px;cursor:pointer;text-align:left;width:100%;appearance:none;color:var(--ink);font-family:inherit;transition:border-color .2s}.cl:hover{border-color:var(--gold)}
+  .cl .r1{display:flex;justify-content:space-between;align-items:center;gap:8px}.cl h3{font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .st{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:4px 9px;white-space:nowrap}.st.ok{color:#0A0A0A;background:var(--gold)}.st.behind{color:#0A0A0A;background:var(--warn)}.st.quiet{color:var(--grey);border:1px solid var(--hair)}
+  .cl .r2{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:10.5px;color:var(--dim);margin-top:10px;letter-spacing:.05em;font-variant-numeric:tabular-nums;flex-wrap:wrap;gap:6px}.cl .bar{margin-top:8px}
+  .veil{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s;z-index:40}.veil.show{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;max-width:440px;margin:0 auto;background:var(--panel2);border:1px solid var(--hair);border-bottom:0;border-radius:20px 20px 0 0;padding:20px 20px 28px;transform:translateY(105%);transition:transform .32s cubic-bezier(.22,1,.36,1);z-index:41;max-height:88vh;overflow-y:auto}.sheet.show{transform:translateY(0)}
+  .sheet .grab{width:36px;height:4px;border-radius:99px;background:var(--hair);margin:0 auto 14px}.sheet .shead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.sheet h2{font-weight:900;font-size:22px;letter-spacing:-.015em;line-height:1.05;text-wrap:balance}
   .x{appearance:none;border:1px solid var(--hair);background:var(--panel);color:var(--grey);width:32px;height:32px;border-radius:99px;cursor:pointer;font-size:15px;flex:none;line-height:1}
-  .sheet .chips{display:flex;gap:8px;margin-top:10px}
-  .sheet .bigframe{margin:16px auto 4px;display:block}
+  .sheet .chips{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.bigframe{margin:16px auto 4px;display:block}
   .framecap{text-align:center;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:4px}
-  .steps{margin-top:16px;display:flex;flex-direction:column;gap:10px}
-  .step{display:flex;gap:12px;align-items:flex-start}
-  .step .num{flex:none;width:24px;height:24px;border-radius:99px;background:var(--goldDim);color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px}
-  .step p{color:var(--ink);font-size:14px;line-height:1.5;font-weight:500}
-  .dont{margin-top:14px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start}
-  .dont .ic{color:var(--warn);font-family:'Space Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.1em;margin-top:2px}
-  .dont p{color:var(--grey);font-size:12.5px;line-height:1.5}
+  .steps{margin-top:16px;display:flex;flex-direction:column;gap:10px}.step{display:flex;gap:12px;align-items:flex-start}.step .num{flex:none;width:24px;height:24px;border-radius:99px;background:var(--goldDim);color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px}.step p{color:var(--ink);font-size:14px;line-height:1.5;font-weight:500}.step p b{color:var(--goldB)}
+  .dont{margin-top:14px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start}.dont .ic{color:var(--warn);font-family:'Space Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.1em;margin-top:2px}.dont p{color:var(--grey);font-size:12.5px;line-height:1.5}
   .sheetbtns{display:flex;gap:10px;margin-top:18px}
-  .bigbtn{appearance:none;border:0;cursor:pointer;flex:1;font-family:inherit;font-weight:800;font-size:14px;padding:14px;border-radius:12px;background:var(--gold);color:#0A0A0A;transition:background .2s}
-  .bigbtn.donebtn{background:var(--panel);color:var(--goldB);border:1px solid var(--gold)}
+  .bigbtn{appearance:none;border:0;cursor:pointer;flex:1;font-family:inherit;font-weight:800;font-size:14px;padding:14px;border-radius:12px;background:var(--gold);color:#0A0A0A;transition:background .2s;text-align:center;text-decoration:none}.bigbtn.donebtn{background:var(--panel);color:var(--goldB);border:1px solid var(--gold)}.bigbtn:disabled{opacity:.5;cursor:default}
   .up{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--goldB);background:transparent;border:1px solid var(--goldDim);border-radius:12px;padding:14px 16px}
-
-  /* results */
-  .subtabs{display:flex;gap:8px;margin-top:16px}
-  .subtabs button{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;border-radius:99px;border:1px solid var(--hair);background:transparent;color:var(--dim)}
-  .subtabs button.on{border-color:var(--gold);color:var(--goldB);font-weight:700}
-  .rsum{margin-top:16px;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px}
-  .rsum .big{font-family:'Space Mono',monospace;font-weight:700;font-size:26px;color:var(--goldB);font-variant-numeric:tabular-nums}
-  .rsum .lab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;margin-top:2px}
-  .rsum .line{color:var(--grey);font-size:12.5px;line-height:1.5;margin-top:10px}
-  .reels{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-  .reel{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .reel.top{border-color:var(--gold)}
-  .reel .l h3{font-size:14.5px;font-weight:800;letter-spacing:-.01em}
-  .reel .by{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-top:4px}
-  .reel .by b{color:var(--goldB);font-weight:400}
-  .reel .v{text-align:right;flex:none}
-  .reel .v .n{font-family:'Space Mono',monospace;font-weight:700;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}
-  .reel.top .v .n{color:var(--goldB)}
-  .reel .v .u{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:2px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--panel2);color:var(--ink);border:1px solid var(--gold);border-radius:12px;padding:12px 18px;font-size:13px;line-height:1.45;max-width:340px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.5)}.toast.show{opacity:1;transform:translate(-50%,0)}.toast b{color:var(--goldB)}
+  .demonote{margin-top:26px;border-top:1px solid var(--hair);padding-top:14px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--dim);line-height:1.7}.demonote b{color:var(--gold);font-weight:400}.demonote a{color:var(--gold);cursor:pointer;text-decoration:underline}
+  .hide{display:none !important}
+  .subtabs{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.subtabs button{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;border-radius:99px;border:1px solid var(--hair);background:transparent;color:var(--dim)}.subtabs button.on{border-color:var(--gold);color:var(--goldB);font-weight:700}
+  .rsum{margin-top:16px;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px}.rsum .big{font-family:'Space Mono',monospace;font-weight:700;font-size:26px;color:var(--goldB);font-variant-numeric:tabular-nums}.rsum .lab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;margin-top:2px}.rsum .line{color:var(--grey);font-size:12.5px;line-height:1.5;margin-top:10px}
+  .reels{display:flex;flex-direction:column;gap:10px;margin-top:14px}.reel{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}.reel.top{border-color:var(--gold)}.reel .l h3{font-size:14.5px;font-weight:800;letter-spacing:-.01em}.reel .by{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-top:4px}.reel .by b{color:var(--goldB);font-weight:400}.reel .v{text-align:right;flex:none}.reel .v .n{font-family:'Space Mono',monospace;font-weight:700;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}.reel.top .v .n{color:var(--goldB)}.reel .v .u{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:2px}
   .star{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;color:#0A0A0A;background:var(--gold);border-radius:99px;padding:3px 8px;font-weight:700;margin-left:8px;vertical-align:middle}
-  /* received state */
-  .byme.wait{color:var(--dim)}
-  .byme.rcv{color:var(--goldB)}
-  /* basics tab */
-  .rule{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px}
-  .rule .num{flex:none;width:26px;height:26px;border-radius:99px;background:var(--goldDim);color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
-  .rule h3{font-size:14.5px;font-weight:800;letter-spacing:-.01em}
-  .rule p{color:var(--grey);font-size:12.5px;line-height:1.45;margin-top:3px}
-  .rules{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-  .frames3{display:flex;gap:10px;margin-top:12px}
-  .frames3 div{flex:1;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px 8px;text-align:center}
-  .frames3 svg{display:block;margin:0 auto 8px}
-  .frames3 b{display:block;font-size:12px;font-weight:800}
-  .frames3 span{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;display:block;margin-top:3px}
-  .settings{margin-top:12px;background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px}
-  .settings h3{font-size:14px;font-weight:800}
-  .settings ul{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:6px}
-  .settings li{color:var(--grey);font-size:12.5px;line-height:1.45;padding-left:14px;position:relative}
-  .settings li::before{content:"—";position:absolute;left:0;color:var(--gold)}
-  .settings li b{color:var(--ink);font-weight:700}
+  .sharebtn{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:5px 10px;border:1px solid var(--goldDim);background:transparent;color:var(--goldB);margin-top:6px}.sharebtn:hover{background:var(--gold);color:#0A0A0A;border-color:var(--gold)}
+  #shareImg{display:block;width:62%;margin:14px auto 0;border-radius:10px;border:1px solid var(--hair)}.sharenote{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--dim);line-height:1.6;text-align:center;margin-top:12px}.sharenote b{color:var(--gold);font-weight:400}
+  .vid{margin-top:10px;background:#000;border:1px solid var(--hair);border-radius:12px;overflow:hidden;aspect-ratio:9/16;max-height:420px}.vid iframe{width:100%;height:100%;border:0;display:block}
+  .rule{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px}.rule .num{flex:none;width:26px;height:26px;border-radius:99px;background:var(--goldDim);color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}.rule h3{font-size:14.5px;font-weight:800;letter-spacing:-.01em}.rule p{color:var(--grey);font-size:12.5px;line-height:1.45;margin-top:3px}.rules{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .frames3{display:flex;gap:10px;margin-top:12px}.frames3 div{flex:1;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px 8px;text-align:center}.frames3 svg{display:block;margin:0 auto 8px}.frames3 b{display:block;font-size:12px;font-weight:800}.frames3 span{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;display:block;margin-top:3px}
+  .settings{margin-top:12px;background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px}.settings h3{font-size:14px;font-weight:800}.settings ul{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:6px}.settings li{color:var(--grey);font-size:12.5px;line-height:1.45;padding-left:14px;position:relative}.settings li::before{content:"—";position:absolute;left:0;color:var(--gold)}.settings li b{color:var(--ink);font-weight:700}
   .mantra{margin-top:16px;text-align:center;font-weight:900;font-size:20px;letter-spacing:-.015em;color:var(--goldB);line-height:1.15}
-  /* share */
-  .sharebtn{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:5px 10px;border:1px solid var(--goldDim);background:transparent;color:var(--goldB);margin-top:6px}
-  .sharebtn:hover{background:var(--gold);color:#0A0A0A;border-color:var(--gold)}
-  #shareImg{display:block;width:62%;margin:14px auto 0;border-radius:10px;border:1px solid var(--hair)}
-  .sharenote{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--dim);line-height:1.6;text-align:center;margin-top:12px}
-  .sharenote b{color:var(--gold);font-weight:400}
-  /* XC manage view */
-  .back{appearance:none;cursor:pointer;background:transparent;border:0;color:var(--dim);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:0;margin-bottom:10px}
-  .back:hover{color:var(--gold)}
-  .mstat{display:flex;gap:10px;margin-top:16px}
-  .mstat .box{flex:1;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px}
-  .mstat .n{font-family:'Space Mono',monospace;font-weight:700;font-size:19px;color:var(--goldB);font-variant-numeric:tabular-nums}
-  .mstat .l{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:3px}
-  .mrow{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:11px 13px}
-  .mrow.redo{border-color:var(--warn)}
-  .mrow .nm{flex:1;min-width:0;font-weight:700;font-size:13.5px}
-  .mrow .who{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;flex:none}
-  .mrow .who.todo{color:var(--dim)}
-  .mrow .who.out{color:var(--warn)}
-  .mact{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:5px 10px;border:1px solid var(--hair);background:transparent;color:var(--grey);flex:none}
-  .mact:hover{border-color:var(--warn);color:var(--warn)}
-  .mact.cancel:hover{border-color:var(--gold);color:var(--gold)}
-  .mlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-  .msect{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin:22px 2px 0}
-  .team{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .tchip{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--hair);border-radius:99px;padding:7px 8px 7px 13px;font-weight:700;font-size:13px}
-  .tchip button{appearance:none;cursor:pointer;border:0;background:var(--panel2);color:var(--dim);width:20px;height:20px;border-radius:99px;font-size:11px;line-height:1}
-  .tchip button:hover{color:var(--warn)}
-  .addteam{display:flex;gap:8px;margin-top:10px}
-  .addteam input{flex:1;min-width:0;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:10px;color:var(--ink);font-family:inherit;font-size:13.5px;padding:10px 13px;outline:none}
-  .addteam input:focus{border-color:var(--gold)}
-  .addteam button{appearance:none;cursor:pointer;border:1px solid var(--goldDim);background:transparent;color:var(--goldB);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:10px;padding:10px 14px}
-  .rrow{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:10px 13px}
-  .rrow .nm{flex:1;min-width:0;font-weight:700;font-size:13px}
-  .rrow .by2{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
-  .rrow input{width:84px;appearance:none;background:var(--panel2);border:1px solid var(--hair);border-radius:9px;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:13px;padding:8px 10px;outline:none;text-align:right;font-variant-numeric:tabular-nums}
-  .rrow input:focus{border-color:var(--gold)}
-  .nudgebtn{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:5px 11px;border:1px solid var(--warn);background:transparent;color:var(--warn)}
-  .nudgebtn:hover{background:var(--warn);color:#0A0A0A}
-  /* reason chips in flag sheet */
-  .rchips{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-  .rchips button{appearance:none;cursor:pointer;text-align:left;background:var(--panel);border:1px solid var(--hair);border-radius:11px;color:var(--grey);font-family:inherit;font-size:13px;line-height:1.45;padding:11px 13px}
-  .rchips button:hover,.rchips button.sel{border-color:var(--gold);color:var(--ink)}
-  .rcustom{margin-top:10px;width:100%;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:11px;color:var(--ink);font-family:inherit;font-size:13px;padding:11px 13px;outline:none;resize:none}
-  .rcustom:focus{border-color:var(--gold)}
-  /* first-open gates */
-  .gate{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;max-width:440px;margin:0 auto;padding:32px 24px}
-  .gate .glogo{display:flex;align-items:center;gap:10px;margin-bottom:26px}
-  .gate h1{font-size:27px;margin-top:0}
-  .gate .sub{max-width:300px}
-  .codein{margin-top:22px;display:flex;gap:10px}
-  .codein input{flex:1;min-width:0;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:16px;letter-spacing:.18em;text-transform:uppercase;padding:14px 16px;outline:none}
-  .codein input:focus{border-color:var(--gold)}
-  .codein input::placeholder{color:var(--dim);letter-spacing:.1em}
+  .back{appearance:none;cursor:pointer;background:transparent;border:0;color:var(--dim);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:0;margin-bottom:10px}.back:hover{color:var(--gold)}
+  .mstat{display:flex;gap:10px;margin-top:16px}.mstat .box{flex:1;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px}.mstat .n{font-family:'Space Mono',monospace;font-weight:700;font-size:19px;color:var(--goldB);font-variant-numeric:tabular-nums}.mstat .l{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:3px}
+  .mrow{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:11px 13px}.mrow.redo{border-color:var(--warn)}
+  .mrow .r{display:flex;align-items:center;gap:10px}.mrow .nm{flex:1;min-width:0;font-weight:700;font-size:13.5px}
+  .mrow .who{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;flex:none}.mrow .who.todo{color:var(--dim)}.mrow .who.out{color:var(--warn)}
+  .mact{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:5px 10px;border:1px solid var(--hair);background:transparent;color:var(--grey);flex:none}.mact:hover{border-color:var(--warn);color:var(--warn)}.mact.cancel:hover,.mact.ok:hover{border-color:var(--gold);color:var(--gold)}
+  .files{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}.file{flex:none;width:88px;text-decoration:none;color:var(--grey)}.file .th{width:88px;height:118px;border-radius:8px;background:var(--panel2);border:1px solid var(--hair);object-fit:cover;display:block}.file .fn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.04em;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .mlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}.msect{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin:22px 2px 0}
+  .team{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.tchip{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--hair);border-radius:99px;padding:7px 8px 7px 13px;font-weight:700;font-size:13px}.tchip button{appearance:none;cursor:pointer;border:0;background:var(--panel2);color:var(--dim);width:20px;height:20px;border-radius:99px;font-size:11px;line-height:1}.tchip button:hover{color:var(--warn)}
+  .addteam{display:flex;gap:8px;margin-top:10px}.addteam input{flex:1;min-width:0;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:10px;color:var(--ink);font-family:inherit;font-size:13.5px;padding:10px 13px;outline:none}.addteam input:focus{border-color:var(--gold)}.addteam button{appearance:none;cursor:pointer;border:1px solid var(--goldDim);background:transparent;color:var(--goldB);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:10px;padding:10px 14px}
+  .rrow{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:10px 13px}.rrow .nm{flex:1;min-width:0;font-weight:700;font-size:13px}.rrow .by2{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}.rrow input{width:84px;appearance:none;background:var(--panel2);border:1px solid var(--hair);border-radius:9px;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:13px;padding:8px 10px;outline:none;text-align:right;font-variant-numeric:tabular-nums}.rrow input:focus{border-color:var(--gold)}
+  .nudgebtn{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:5px 11px;border:1px solid var(--warn);background:transparent;color:var(--warn)}.nudgebtn:hover{background:var(--warn);color:#0A0A0A}
+  #fveil{z-index:69}
+  #fsheet{z-index:70}
+  .rchips{display:flex;flex-direction:column;gap:8px;margin-top:14px}.rchips button{appearance:none;cursor:pointer;text-align:left;background:var(--panel);border:1px solid var(--hair);border-radius:11px;color:var(--grey);font-family:inherit;font-size:13px;line-height:1.45;padding:11px 13px}.rchips button:hover,.rchips button.sel{border-color:var(--gold);color:var(--ink)}
+  .rcustom{margin-top:10px;width:100%;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:11px;color:var(--ink);font-family:inherit;font-size:13px;padding:11px 13px;outline:none;resize:none}.rcustom:focus{border-color:var(--gold)}
+  .gate{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;max-width:440px;margin:0 auto;padding:32px 24px}.gate .glogo{display:flex;align-items:center;gap:10px;margin-bottom:26px}.gate h1{font-size:27px;margin-top:0}.gate .sub{max-width:300px}
+  .codein{margin-top:22px;display:flex;gap:10px}.codein input{flex:1;min-width:0;appearance:none;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:16px;letter-spacing:.18em;text-transform:uppercase;padding:14px 16px;outline:none}.codein input:focus{border-color:var(--gold)}.codein input::placeholder{color:var(--dim);letter-spacing:.1em}
   .gate .err{color:var(--warn);font-size:12.5px;margin-top:10px;min-height:18px}
-  .gatefoot{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--dim);line-height:1.7;margin-top:26px}
-  .gatefoot b{color:var(--gold);font-weight:400}
-  .names{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
-  .names button{appearance:none;cursor:pointer;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--ink);font-family:inherit;font-weight:800;font-size:16px;padding:18px 10px;transition:border-color .2s}
-  .names button:hover{border-color:var(--gold)}
-  .names button:focus-visible{outline:2px solid var(--goldB);outline-offset:2px}
-  .gsteps{margin-top:20px;display:flex;flex-direction:column;gap:12px}
-  .gsteps .step p{font-size:14.5px}
-  .gsteps .step p b{color:var(--goldB)}
-  .platpill{display:inline-block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;color:var(--gold);border:1px solid var(--goldDim);border-radius:99px;padding:4px 10px;text-transform:uppercase;margin-top:14px}
-  .gatebtns{display:flex;gap:10px;margin-top:24px}
-  .me{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-top:10px}
-  .me b{color:var(--goldB);font-weight:700}
-  .me a{color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
-  .byme{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase}
-  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--panel2);color:var(--ink);border:1px solid var(--gold);border-radius:12px;padding:12px 18px;font-size:13px;line-height:1.45;max-width:340px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.5)}
-  .toast.show{opacity:1;transform:translate(-50%,0)}
-  .toast b{color:var(--goldB)}
-  .demonote{margin-top:26px;border-top:1px solid var(--hair);padding-top:14px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--dim);line-height:1.7}
-  .demonote b{color:var(--gold);font-weight:400}
-  .hide{display:none}
-  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+  .gate .err.busy{color:var(--grey)}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--goldDim);border-top-color:var(--gold);border-radius:99px;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .lnk{appearance:none;background:transparent;border:0;padding:0;color:var(--gold);font:inherit;text-decoration:underline;cursor:pointer;touch-action:manipulation}
+  .gatefoot .lnk{color:var(--dim);text-decoration:none}
+  .gatefoot .lnk:hover,.gatefoot .lnk:focus-visible{color:var(--grey);text-decoration:underline}
+  .diag{font-family:'Space Mono',monospace;font-size:9px;color:var(--warn);line-height:1.5;margin-top:10px;word-break:break-all}.gatefoot{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--dim);line-height:1.7;margin-top:26px}.gatefoot b{color:var(--gold);font-weight:400}.gatefoot a{color:var(--gold);cursor:pointer;text-decoration:underline}
+  .names{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}.names button{appearance:none;cursor:pointer;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--ink);font-family:inherit;font-weight:800;font-size:16px;padding:18px 10px;transition:border-color .2s}.names button:hover{border-color:var(--gold)}
+  .gsteps{margin-top:20px;display:flex;flex-direction:column;gap:12px}.gsteps .step p{font-size:14.5px}.platpill{display:inline-block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;color:var(--gold);border:1px solid var(--goldDim);border-radius:99px;padding:4px 10px;text-transform:uppercase;margin-top:14px}.gatebtns{display:flex;gap:10px;margin-top:24px}
+  .me{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-top:10px}.me b{color:var(--goldB);font-weight:700}.me a{color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  .sync{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}.sync.live::before{content:"● ";color:var(--ok)}.sync.busy::before{content:"◌ ";color:var(--gold)}.sync.err::before{content:"● ";color:var(--warn)}
+  .shotedit{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:8px 10px}.shotedit .i{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);width:18px;flex:none}.shotedit input{flex:1;min-width:0;appearance:none;background:transparent;border:0;border-bottom:1px solid var(--hair);color:var(--ink);font-family:inherit;font-size:13px;padding:4px 2px;outline:none}.shotedit input:focus{border-color:var(--gold)}.shotedit select{appearance:none;background:var(--panel2);border:1px solid var(--hair);color:var(--goldB);font-family:'Space Mono',monospace;font-size:10px;border-radius:8px;padding:6px 8px}
+  /* ── studio side on desktop ── */
+  body.xc .wrap{max-width:1180px;padding:0 32px 90px}
+  @media (max-width:520px){
+    body.xc .wrap{padding:0 18px 90px}
+    body.xc .sync{font-size:0;letter-spacing:0}
+    body.xc .sync::before{font-size:12px}
+    body.xc .xcnav button{padding:6px 9px}
+  }
+  @media (min-width:900px){
+    body.xc h1{font-size:38px}
+    body.xc .clients{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    body.xc #dash .addteam{max-width:560px}
+    body.xc .mstat{max-width:560px}
+    body.xc #mgShots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+    body.xc .file{width:132px}body.xc .file .th{width:132px;height:176px}body.xc .file .fn{font-size:9px}
+    body.xc #mvDeliv{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+    body.xc #mvDeliv .demonote{grid-column:1/-1}
+    body.xc #mvTeam,body.xc #mvResults{max-width:640px}
+    body.xc #mgEdit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    body.xc .sheet{max-width:640px;border-radius:20px;bottom:auto;top:50%;transform:translate(0,-45%) scale(.98);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+    body.xc .sheet.show{transform:translate(0,-50%) scale(1);opacity:1;pointer-events:auto}
+    body.xc .vid{max-height:70vh}
+    body.xc .toast{left:auto;right:28px;bottom:28px;transform:translate(0,20px)}body.xc .toast.show{transform:none}
+  }
+  /* v2: studio nav pills + today queue + player + spark + wizard */
+  .xcnav{display:none;gap:8px}
+  body.xc .xcnav{display:flex}
+  .xcnav button{appearance:none;border:1px solid var(--hair);background:transparent;color:var(--dim);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-radius:99px;cursor:pointer;position:relative}
+  .xcnav button.on{border-color:var(--gold);color:var(--goldB);font-weight:700}
+  .xcnav .n{display:inline-block;min-width:16px;padding:1px 5px;border-radius:99px;background:var(--gold);color:#0A0A0A;font-weight:700;font-size:9px;margin-left:5px}
+  .stack{margin-top:22px}
+  .stackhead{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .stackhead .t{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+  .stackhead .line{flex:1;height:1px;background:var(--goldDim)}
+  .stackhead .ct{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim)}
+  .tq{display:flex;flex-direction:column;gap:10px}
+  body.xc .tq{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
+  .tcard{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:13px;display:flex;gap:12px;align-items:flex-start}
+  .tcard.warn{border-color:var(--warn)}
+  .tcard .th{flex:none;width:76px;height:102px;border-radius:8px;object-fit:cover;background:var(--panel2);border:1px solid var(--hair);cursor:pointer}
+  .tcard .b{flex:1;min-width:0}
+  .tcard h4{font-size:13.5px;font-weight:800;letter-spacing:-.01em}
+  .tcard .m{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-top:3px}
+  .tcard .acts{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .zero{margin-top:48px;text-align:center}
+  .zero .big{font-weight:900;font-size:34px;letter-spacing:-.02em;color:var(--goldB)}
+  .zero .sml{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;margin-top:10px}
+  .spark{display:flex;gap:3px;align-items:flex-end;height:16px;margin-top:8px}
+  .spark i{width:10px;background:var(--goldDim);border-radius:2px 2px 0 0;display:block}
+  .spark i.hi{background:var(--gold)}
+  /* review player */
+  .player{position:fixed;inset:0;background:#000;z-index:60;display:none;flex-direction:column}
+  .player.show{display:flex}
+  .player .ptop{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;color:var(--grey)}
+  .player .ptop b{color:var(--ink)}
+  .player .pmid{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+  .player iframe{width:min(56vh,92vw);aspect-ratio:9/16;border:0;background:#111;border-radius:12px}
+  .player .pbar{display:flex;gap:10px;justify-content:center;padding:16px;flex-wrap:wrap}
+  .pkey{appearance:none;cursor:pointer;border:1px solid var(--hair);background:var(--panel);color:var(--ink);font-family:inherit;font-weight:800;font-size:14px;padding:12px 18px;border-radius:12px}
+  .pkey b{font-family:'Space Mono',monospace;color:var(--gold);margin-right:7px}
+  .pkey.good{border-color:var(--gold)}
+  .pkey.redo{border-color:var(--warn)}
+  .pcount{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--dim)}
+  /* wizard recap */
+  .recap{background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-top:14px}
+  .recap .rn{font-family:'Space Mono',monospace;font-weight:700;font-size:24px;color:var(--goldB)}
+  .recap p{color:var(--grey);font-size:12.5px;margin-top:6px}
+  /* splash — instant branded paint while boot() works */
+  #splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:100}
+  #splash.hide{display:none}
+  #splash img{height:44px;width:auto}
+  #splash .t{font-weight:900;font-size:20px;letter-spacing:-.01em}#splash .t span{color:var(--gold)}
+  #splash .sbar{width:120px;height:2px;background:var(--panel2);border-radius:99px;overflow:hidden}
+  #splash .sbar i{display:block;height:100%;width:40%;background:linear-gradient(90deg,var(--gold),var(--goldB));border-radius:99px;animation:sslide 1.1s ease-in-out infinite}
+  @keyframes sslide{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+  #splash .msg{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);min-height:14px}
+  .subtabs button.dot::after{content:"";display:inline-block;width:6px;height:6px;border-radius:99px;background:var(--gold);margin-left:6px;vertical-align:middle}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}#splash .sbar i{animation:none}}
 </style>
 
-<!-- GATE 1 — studio code -->
+<!-- SPLASH: visible the instant HTML paints; hidden by the first gate() -->
+<div id="splash">
+  <img src="/logo.png" alt="">
+  <div class="t">XC <span>Shots</span></div>
+  <div class="sbar"><i></i></div>
+  <p class="msg" id="splashMsg"></p>
+</div>
+
+<!-- GATE: code -->
 <div class="gate hide" id="gateCode">
-  <div class="glogo">
-    <svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z" fill="#CDA85F"/></svg>
-    <span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span>
-  </div>
+  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
   <div class="eyebrow">Your team's filming app</div>
   <h1>Enter your<br>studio code.</h1>
   <p class="sub">It's on the gold card in your staff room — or ask whoever runs your socials.</p>
-  <div class="codein">
-    <input id="codeInput" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" aria-label="Studio code"
-      onkeydown="if(event.key==='Enter')tryCode()">
-    <button class="bigbtn" style="flex:none;padding:14px 20px" onclick="tryCode()">Enter</button>
-  </div>
+  <div class="codein"><input id="codeInput" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" aria-label="Studio code" onkeydown="if(event.key==='Enter')tryCode()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="codeBtn" onclick="tryCode()">Enter</button></div>
   <p class="err" id="codeErr"></p>
-  <p class="gatefoot"><b>DEMO —</b> the code is MARRA24. Real app: one code per client, handed over at kickoff. Scanning the staff-room QR card skips this screen entirely.</p>
+  <p class="gatefoot">XC Media · <button class="lnk" onclick="gate('gatePin')">XC sign-in</button> · <button class="lnk" onclick="ownerStart()">Owner sign-in</button> · <span id="buildA"></span></p>
+  <p class="diag" id="diagA"></p>
 </div>
 
-<!-- GATE 2 — who are you -->
+<!-- GATE: name -->
 <div class="gate hide" id="gateName">
-  <div class="eyebrow">Marra &amp; Co. Café</div>
+  <div class="eyebrow" id="nameEyebrow">Your team</div>
   <h1>Who are you?</h1>
   <p class="sub">One tap — this phone remembers you. Every shot you film gets your name on it.</p>
   <div class="names" id="nameGrid"></div>
   <p class="gatefoot">Not on the list? Ask your manager to text XC — takes two minutes to add you.</p>
 </div>
 
-<!-- GATE 3 — install guide -->
+<!-- GATE: install -->
 <div class="gate hide" id="gateGuide">
   <div class="eyebrow" id="guideHi">Good to meet you</div>
   <h1>Put me on your<br>home screen.</h1>
   <p class="sub">So next time it's one tap — no links, no codes, just the app.</p>
   <span class="platpill" id="platPill">Your phone</span>
   <div class="gsteps" id="guideSteps"></div>
-  <div class="gatebtns">
-    <button class="bigbtn" onclick="finishGuide()">Done — take me in</button>
-    <button class="up" onclick="finishGuide()">Skip</button>
-  </div>
+  <div class="gatebtns"><button class="bigbtn" onclick="finishGuide()">Done — take me in</button><button class="up" onclick="finishGuide()">Skip</button></div>
+</div>
+
+<!-- GATE: owner -->
+<div class="gate hide" id="gateOwner">
+  <div class="eyebrow">Owner sign-in</div>
+  <h1>Your business,<br>your numbers.</h1>
+  <p class="sub">Your studio code plus the owner PIN XC gave you.</p>
+  <div class="codein" style="margin-top:22px"><input id="ownCode" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" aria-label="Studio code"></div>
+  <div class="codein" style="margin-top:10px"><input id="ownPin" type="password" placeholder="OWNER PIN" autocomplete="off" aria-label="Owner PIN" onkeydown="if(event.key==='Enter')tryOwner()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="ownBtn" onclick="tryOwner()">Enter</button></div>
+  <p class="err" id="ownErr"></p>
+  <p class="gatefoot"><button class="lnk" onclick="gate('gateCode')">← Back to the team app</button></p>
+</div>
+
+<!-- GATE: XC pin -->
+<div class="gate hide" id="gatePin">
+  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
+  <div class="eyebrow">Studio side</div>
+  <h1>Your PIN.</h1>
+  <div class="codein"><input id="pinInput" type="password" placeholder="PIN" autocomplete="off" aria-label="PIN" onkeydown="if(event.key==='Enter')tryPin()"><button class="bigbtn" style="flex:none;padding:14px 20px" onclick="tryPin()">Enter</button></div>
+  <p class="err" id="pinErr"></p>
+  <p class="gatefoot"><button class="lnk" onclick="gate('gateCode')">← Back to the team app</button> · <span id="buildB"></span></p>
+  <p class="diag" id="diagB"></p>
 </div>
 
 <div class="wrap hide" id="app">
   <div class="top">
-    <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z" fill="#CDA85F"/></svg>
-      <div class="t">XC <span>Shots</span></div>
-    </div>
-    <div class="switch" role="tablist" aria-label="View">
-      <button id="tabYou" role="tab" aria-selected="false">You</button>
-      <button id="tabClient" role="tab" aria-selected="true" class="on">Client link</button>
-    </div>
+    <div class="brand"><img src="/logo.png" alt="" style="height:24px;width:auto"><div class="t">XC <span>Shots</span></div></div>
+    <div class="xcnav" role="tablist"><button id="nvToday" class="on" onclick="xcnav('today')">Today<span class="n hide" id="todayN"></span></button><button id="nvClients" onclick="xcnav('dash')">Clients</button></div>
+    <span class="sync live" id="sync">synced</span>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- XC: today -->
+  <section id="today" class="hide">
+    <div class="eyebrow" id="todayEyebrow">Today</div>
+    <h1 id="todayHead">Loading…</h1>
+    <div id="todayBody"></div>
+  </section>
+
+  <!-- XC: roster -->
   <section id="dash" class="hide">
-    <div class="eyebrow">August · Week 3 · Your roster</div>
-    <h1>Three clients filming.<br>One's gone quiet.</h1>
-    <p class="sub">Tap a client to see their list exactly as their team sees it.</p>
-    <div class="clients">
-      <button class="cl" onclick="openManage()">
-        <div class="r1"><h3>Marra &amp; Co. Café</h3><span class="st ok" id="marraSt">On track</span></div>
-        <div class="r2"><span id="marraCount">— of 12 this month</span><span id="marraRedo" style="color:var(--warn)">1 redo out</span><span id="marraWk">week: —</span></div>
-        <div class="bar"><i id="marraBar" style="width:0%"></i></div>
-      </button>
-      <button class="cl" onclick="toast('Demo — only Marra &amp; Co. is wired up. Real app: every client opens.')">
-        <div class="r1"><h3>Fitzroy Strength Gym</h3><span class="st ok">On track</span></div>
-        <div class="r2"><span>10 of 12 this month</span><span>week: 2 of 3</span></div>
-        <div class="bar"><i style="width:83%"></i></div>
-      </button>
-      <div class="cl quiet" style="cursor:default">
-        <div class="r1"><h3>Sunraysia Homes</h3><span style="display:flex;gap:8px;align-items:center"><button class="nudgebtn" onclick="nudge(event)">Nudge ↗</button><span class="st behind">3 days quiet</span></span></div>
-        <div class="r2"><span>2 of 10 this month</span><span>week: 0 of 3</span></div>
-        <div class="bar"><i style="width:20%"></i></div>
-      </div>
-    </div>
-    <p class="demonote"><b>THE POINT —</b> you see trouble on Tuesday, not after Sunday's deadline. Ticks from any staff phone land here live.</p>
+    <div class="eyebrow" id="dashEyebrow">Your roster</div>
+    <h1 id="dashHead">Loading…</h1>
+    <p class="sub">Tap a client to manage them.</p>
+    <div class="clients" id="roster"></div>
+    <div class="addteam" style="margin-top:18px"><input id="newClient" placeholder="New client name…" onkeydown="if(event.key==='Enter')addClient()"><button onclick="addClient()">Add client</button></div>
+    <p class="demonote"><b>ADD CLIENT —</b> creates their drop folder + 12 shot folders + a studio code in one go. <br><a onclick="xcSignOut()" role="button" tabindex="0">Sign out of the studio side</a></p>
   </section>
 
-  <!-- XC MANAGE VIEW (one client) -->
+  <!-- XC: manage one client -->
   <section id="manage" class="hide">
-    <button class="back" onclick="closeManage()">← All clients</button>
-    <div class="eyebrow">Marra &amp; Co. Café · August · code MARRA24</div>
-    <h1>Marra &amp; Co.</h1>
-    <div class="mstat">
-      <div class="box"><div class="n" id="mgMonth">—</div><div class="l">Month</div></div>
-      <div class="box"><div class="n" id="mgWeek">—</div><div class="l">This week</div></div>
-      <div class="box"><div class="n" id="mgRedo">—</div><div class="l">Redos out</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><button class="back" onclick="closeManage()">← All clients</button><button class="back" onclick="loadManage();toast('Refreshing…')">↻ Refresh</button></div>
+    <div class="eyebrow" id="mgEyebrow"></div>
+    <h1 id="mgName"></h1>
+    <div class="mstat"><div class="box"><div class="n" id="mgMonth">—</div><div class="l">Month</div></div><div class="box"><div class="n" id="mgWeek">—</div><div class="l">This week</div></div><div class="box"><div class="n" id="mgRedo">—</div><div class="l">Redos out</div></div></div>
+    <div class="subtabs"><button id="mtShots" class="on" onclick="mtab('shots')">Shots</button><button id="mtDeliv" onclick="mtab('deliv')">Deliveries <span id="delivCount"></span></button><button id="mtTeam" onclick="mtab('team')">Team</button><button id="mtResults" onclick="mtab('results')">Results</button><button id="mtEdit" onclick="mtab('edit')">Shot list</button><button id="mtTools" onclick="mtab('tools')">Tools</button></div>
+
+    <div id="mvShots">
+      <p class="msect">Shots — clips land here automatically</p>
+      <div class="mlist" id="mgShots"></div>
+      <div id="mgUnsorted"></div>
     </div>
-
-    <p class="msect">Shots — flag anything unusable</p>
-    <div class="mlist" id="mgShots"></div>
-
-    <p class="msect">Drive folder — where their uploads land</p>
-    <div class="addteam" style="margin-top:12px">
-      <input id="driveUrl" placeholder="Paste the shared Drive folder link…" oninput="S.drive=this.value.trim(); save()">
-      <button onclick="if(S.drive)window.open(S.drive,'_blank','noopener');else toast('Paste a folder link first.')">Open</button>
+    <div id="mvDeliv" class="hide">
+      <div><p class="msect">From the editor — to review</p><div class="mlist" id="mgPending"></div></div>
+      <div><p class="msect">Approved — the client can watch these</p><div class="mlist" id="mgApproved"></div></div>
+      <p class="demonote"><b>EDITOR —</b> they drop finished reels in <b>XC Footage — Received / [client] / Delivered</b>. Approve → it appears on the client's Results tab. Send back → it moves to "Sent back" with your note.</p>
     </div>
-    <p class="demonote" style="margin-top:8px;border:0;padding:0"><b>SETUP —</b> Drive → folder per client → Share → Anyone with the link → <b>Editor</b>. Paste it here; the team's Upload buttons open it.</p>
-
-    <p class="msect">Team — who's on the name picker</p>
-    <div class="team" id="mgTeam"></div>
-    <div class="addteam">
-      <input id="newName" placeholder="Add a name…" onkeydown="if(event.key==='Enter')addTeam()">
-      <button onclick="addTeam()">Add</button>
+    <div id="mvTeam" class="hide">
+      <p class="msect">Team — who's on the name picker</p>
+      <div class="team" id="mgTeam"></div>
+      <div class="addteam"><input id="newName" placeholder="Add a name…" onkeydown="if(event.key==='Enter')addTeam()"><button onclick="addTeam()">Add</button></div>
+      <p class="msect">Drop folder</p>
+      <div class="addteam" style="margin-top:12px"><input id="driveUrl" readonly><button onclick="window.open(document.getElementById('driveUrl').value,'_blank','noopener')">Open</button></div>
+      <p class="msect">Studio code</p>
+      <p class="mono" style="margin-top:10px;font-size:22px;color:var(--goldB);font-weight:700;letter-spacing:.16em" id="mgCode"></p>
+      <p class="msect" style="color:var(--warn)">Danger zone</p>
+      <div class="sheetbtns"><button class="up" style="border-color:var(--warn);color:var(--warn)" onclick="openDelete()">Delete this client…</button></div>
+      <p class="demonote" style="border:0;padding:0;margin-top:8px">Deletes them from the roster and their studio code. Their drop folder is removed only if it's empty. <b>The vault is never touched</b> — every clip they ever sent stays in Drive.</p>
     </div>
-
-    <p class="msect">July results — paste views, their app updates</p>
-    <div class="mlist" id="mgResults"></div>
-    <p class="demonote"><b>FIVE MINUTES A MONTH —</b> read the public numbers off their profile, type them here. Their Results tab updates instantly — that's the screen the renewal conversation happens on. <a style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="show('client');subtab('results')" role="button" tabindex="0">See it as they see it ↗</a></p>
+    <div id="mvResults" class="hide">
+      <p class="msect">Results — paste views, their app updates</p>
+      <div class="mlist" id="mgResults"></div>
+      <div class="addteam"><input id="newReel" placeholder="Add a reel (title)…"><button onclick="addReel()">Add</button></div>
+      <div class="sheetbtns"><button class="bigbtn" onclick="saveResults()">Save results</button></div>
+    </div>
+    <div id="mvTools" class="hide">
+      <p class="msect">Staff-room card</p>
+      <p class="sub" style="margin-top:8px">A5, print and laminate. QR opens the app; the code's on the card.</p>
+      <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="printCard()">Open printable card ↗</button></div>
+      <p class="msect">Owner access</p>
+      <p class="sub" style="margin-top:8px">Give the business owner their own PIN — they see progress, results and history, and can manage their team. They can't flag redos or see other clients.</p>
+      <div class="addteam" style="max-width:420px"><input id="ownerPinInput" placeholder="Set owner PIN…"><button onclick="saveOwnerPin()">Save</button></div>
+      <p class="mono" id="ownerPinState" style="margin-top:8px;font-size:10px;color:var(--dim)"></p>
+      <div class="addteam" style="max-width:420px;margin-top:10px"><input id="ownerEmailInput" placeholder="Owner's email (gets the month-wrap email)…"><button onclick="saveOwnerEmail()">Save</button></div>
+      <p class="msect">Documents — what the owner sees under "Your documents"</p>
+      <div class="mlist" id="docsEdit"></div>
+      <div class="addteam" style="max-width:640px"><input id="docLabel" placeholder="Label (e.g. August invoice)…" style="flex:1"><input id="docUrl" placeholder="https:// link (Drive PDF etc.)…" style="flex:2"><button onclick="addDoc()">Add</button></div>
+      <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="saveDocs()">Save documents</button></div>
+      <p class="msect">Close the month</p>
+      <p class="sub" style="margin-top:8px">Archives this month's recap (filmed count, views, top clip) into history, clears ticks and redos, starts fresh. Do it on the 1st, after the month's reels are delivered and results are in.</p>
+      <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="closeMonth()">Close month → recap</button></div>
+      <div id="recapBox"></div>
+      <p class="msect">History</p>
+      <div class="mlist" id="mgHistory"></div>
+    </div>
+    <div id="mvEdit" class="hide">
+      <p class="msect">This month's shot list</p>
+      <div class="mlist" id="mgEdit"></div>
+      <div class="sheetbtns"><button class="bigbtn" onclick="saveShots()">Save shot list</button><button class="up" onclick="newMonth()">New month</button></div>
+      <p class="demonote"><b>SAVE —</b> renames the drop folders to match. Guides keep their steps. <b>NEW MONTH —</b> clears ticks and redos (results stay), starts a fresh vault month.</p>
+    </div>
   </section>
 
-  <!-- CLIENT VIEW -->
-  <section id="client">
-    <div class="eyebrow">Marra &amp; Co. Café · August</div>
-    <h1 id="clientHead">This week: just 3 shots.</h1>
+  <!-- CLIENT -->
+  <section id="client" class="hide">
+    <div class="eyebrow" id="clientEyebrow"></div>
+    <h1 id="clientHead">Loading…</h1>
     <p class="sub">Tap any shot for a simple how-to. Anyone on the team can film and tick it off.</p>
-    <p class="me">You're <b id="meName">—</b> · <a onclick="repick()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')repick()">not you?</a></p>
+    <p class="me">You're <b id="meName">—</b> · <a onclick="repick()" role="button" tabindex="0">not you?</a></p>
+    <div class="subtabs"><button id="stShots" class="on" onclick="subtab('shots')">This month</button><button id="stResults" onclick="subtab('results')">Results</button><button id="stBasics" onclick="subtab('basics')">Basics</button><button id="stOwner" class="hide" onclick="subtab('owner')">Owner</button></div>
 
-    <div class="subtabs" role="tablist" aria-label="Client section">
-      <button id="stShots" class="on" role="tab" aria-selected="true" onclick="subtab('shots')">This month</button>
-      <button id="stResults" role="tab" aria-selected="false" onclick="subtab('results')">Results</button>
-      <button id="stBasics" role="tab" aria-selected="false" onclick="subtab('basics')">Basics</button>
+    <div id="ownerView" class="hide">
+      <p class="msect" style="margin-top:18px">Your team — who's on the name picker</p>
+      <div class="team" id="ovTeam"></div>
+      <div class="addteam" style="max-width:420px"><input id="ovNewName" placeholder="Add a team member…" onkeydown="if(event.key==='Enter')ownerAddTeam()"><button onclick="ownerAddTeam()">Add</button></div>
+      <p class="sub" style="margin-top:8px;font-size:11.5px">New hire? Add them here — they pick their name next time they open the app.</p>
+      <p class="msect">The trend</p>
+      <div id="ovSpark" style="margin-top:10px"></div>
+      <p class="msect">Month history</p>
+      <div class="mlist" id="ovHistory"></div>
+      <p class="msect">Your documents</p>
+      <div class="mlist" id="ovDocs"></div>
     </div>
 
     <div id="basicsView" class="hide">
@@ -367,68 +371,36 @@
         <div class="rule"><span class="num">4</span><div><h3>Get closer than feels normal.</h3><p>Then closer again. Never zoom — zoom makes it blurry. Move your feet.</p></div></div>
         <div class="rule"><span class="num">5</span><div><h3>Count it out. Then stop.</h3><p>Every shot says how long. Count in your head, stop on the number. Long is fine; short can't be fixed.</p></div></div>
       </div>
-
       <p class="msect">The three framings</p>
       <div class="frames3">
         <div><svg width="44" viewBox="0 0 44 34" aria-hidden="true"><rect x="1" y="1" width="42" height="32" rx="4" fill="none" stroke="#3A3A3A"/><rect x="6" y="20" width="32" height="8" rx="1.5" fill="#CDA85F" opacity=".8"/></svg><b>Wide</b><span>whole scene in</span></div>
         <div><svg width="44" viewBox="0 0 44 34" aria-hidden="true"><rect x="1" y="1" width="42" height="32" rx="4" fill="none" stroke="#3A3A3A"/><rect x="13" y="9" width="18" height="19" rx="1.5" fill="#CDA85F" opacity=".8"/></svg><b>Mid</b><span>person-sized</span></div>
         <div><svg width="44" viewBox="0 0 44 34" aria-hidden="true"><rect x="1" y="1" width="42" height="32" rx="4" fill="none" stroke="#3A3A3A"/><rect x="8" y="5" width="28" height="24" rx="1.5" fill="#CDA85F" opacity=".8"/></svg><b>Close-up</b><span>fill the screen</span></div>
       </div>
-
       <p class="msect">Phone setup — once, then forget it</p>
-      <div class="settings">
-        <h3>iPhone</h3>
-        <ul>
-          <li>Settings → Camera → Record Video → <b>4K at 30 fps</b></li>
-          <li>Settings → Camera → <b>Grid ON</b> (helps you keep things straight)</li>
-          <li>In the camera: tap the subject, then <b>hold</b> until "AE/AF LOCK" — light stops jumping</li>
-        </ul>
-      </div>
-      <div class="settings">
-        <h3>Android</h3>
-        <ul>
-          <li>Camera → Settings → Video → <b>4K (UHD) 30 fps</b></li>
-          <li>Camera → Settings → <b>Grid lines ON</b></li>
-          <li>Tap the subject, then the <b>lock</b> icon so exposure stays put</li>
-        </ul>
-      </div>
-
-      <div class="settings">
-        <h3>Uploading</h3>
-        <ul>
-          <li>Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li>
-          <li>Clips <b>disappear from the folder within a minute</b> — that's XC receiving them, not a failure</li>
-          <li>Upload first, <b>then tick</b> the shot</li>
-        </ul>
-      </div>
-
+      <div class="settings"><h3>iPhone</h3><ul><li>Settings → Camera → Record Video → <b>4K at 30 fps</b></li><li>Settings → Camera → <b>Grid ON</b></li><li>In the camera: tap the subject, then <b>hold</b> until "AE/AF LOCK"</li></ul></div>
+      <div class="settings"><h3>Android</h3><ul><li>Camera → Settings → Video → <b>4K (UHD) 30 fps</b></li><li>Camera → Settings → <b>Grid lines ON</b></li><li>Tap the subject, then the <b>lock</b> icon</li></ul></div>
+      <div class="settings"><h3>Uploading</h3><ul><li>Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li><li>Clips <b>disappear from the folder within a minute</b> — that's XC receiving them, not a failure</li><li>Upload first, <b>then tick</b> the shot</li></ul></div>
       <p class="mantra">When in doubt:<br>slower, closer, stiller.</p>
-      <p class="demonote"><b>FROM THE WORKSHOP —</b> this tab is everything from your XC session, kept. New staff read this before their first shot.</p>
     </div>
 
     <div id="resultsView" class="hide">
-      <div class="rsum">
-        <div class="big" id="rTotal">—</div>
-        <div class="lab">July — total reel views</div>
-        <p class="line">12 shots filmed → 12 reels delivered. Your best month yet — and the top clip came off a phone behind the counter.</p>
-      </div>
+      <div class="rsum"><div class="big" id="rTotal">—</div><div class="lab">Total reel views</div><p class="line" id="rLine">Numbers come from XC each month.</p></div>
       <div class="reels" id="reelList"></div>
-      <p class="demonote"><b>WHY THIS TAB EXISTS —</b> the person who filmed the top clip shows their mates. Filming stops being homework. Numbers pasted in by XC monthly — five minutes per client.</p>
+      <p class="msect" id="approvedHead" class="hide">Your finished reels</p>
+      <div class="reels" id="approvedList"></div>
     </div>
 
     <div id="shotsView">
-    <div class="prog">
-      <span class="wk">Week 3 of 4 · This week</span>
-      <div class="row"><span class="n" id="wkN">0 / 3</span><span class="lab">This week's shots</span></div>
-      <div class="bar"><i id="wkBar" style="width:0%"></i></div>
-      <p class="pace" id="paceLine">That's one every couple of days. No rush — just don't leave all three for Sunday night.</p>
-      <div class="month"><span id="moN">Month: 0 of 12</span><span>uploads due Sun 9pm</span></div>
-    </div>
-
-    <div id="shotList"></div>
-
-    <p class="demonote"><b>DEMO —</b> ticks save on this device only. Real app: they sync to the whole team and XC's dashboard, and Upload opens your shared Drive folder.
-    <br><b>REPLAY —</b> <a style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="resetDemo()" role="button" tabindex="0">restart the first-open flow</a> (code → name → install).</p>
+      <div class="prog">
+        <span class="wk" id="wkLabel">This week</span>
+        <div class="row"><span class="n" id="wkN">— / —</span><span class="lab">This week's shots</span></div>
+        <div class="bar"><i id="wkBar" style="width:0%"></i></div>
+        <p class="pace" id="paceLine"></p>
+        <div class="month"><span id="moN">Month: —</span><span>uploads due Sun 9pm</span></div>
+      </div>
+      <div id="shotList"></div>
+      <p class="demonote"><b>SYNCED —</b> ticks are shared with your whole team and with XC. <a onclick="resetDevice()" role="button" tabindex="0">Use a different studio code</a> · <a onclick="gate('gatePin')" role="button" tabindex="0">Studio side</a></p>
     </div>
   </section>
 </div>
@@ -437,126 +409,102 @@
 <div class="veil" id="veil" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle">
   <div class="grab"></div>
-  <div class="shead">
-    <h2 id="shTitle">Shot</h2>
-    <button class="x" onclick="closeSheet()" aria-label="Close">✕</button>
-  </div>
+  <div class="shead"><h2 id="shTitle">Shot</h2><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>
   <div class="chips" id="shChips"></div>
-  <div id="shFrame"></div>
-  <p class="framecap" id="shCap"></p>
+  <div id="shFrame"></div><p class="framecap" id="shCap"></p>
   <div class="steps" id="shSteps"></div>
   <div class="dont"><span class="ic">DON'T</span><p id="shDont"></p></div>
-  <div class="sheetbtns">
-    <button class="bigbtn" id="shTick" onclick="tickFromSheet()">Mark as filmed ✓</button>
-    <button class="up" onclick="upload(sheetIdx)">Upload ↗</button>
-  </div>
+  <div class="sheetbtns"><button class="bigbtn" id="shTick" onclick="tick(sheetIdx)">Mark as filmed ✓</button><button class="up" onclick="upload(sheetIdx)">Upload ↗</button></div>
 </div>
 
-<!-- FLAG REDO SHEET (XC side) -->
+<!-- FLAG REDO SHEET -->
 <div class="veil" id="fveil" onclick="closeFlag()"></div>
-<div class="sheet" id="fsheet" role="dialog" aria-modal="true" aria-labelledby="fTitle">
+<div class="sheet" id="fsheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
-  <div class="shead">
-    <h2 id="fTitle">Flag for redo</h2>
-    <button class="x" onclick="closeFlag()" aria-label="Close">✕</button>
-  </div>
+  <div class="shead"><h2 id="fTitle">Flag for redo</h2><button class="x" onclick="closeFlag()" aria-label="Close">✕</button></div>
   <p class="sub" style="margin-top:6px">Pick the reason — it lands on their card word-for-word. Fix first, compliment second, never a telling-off.</p>
   <div class="rchips" id="fChips"></div>
   <textarea class="rcustom" id="fCustom" rows="2" placeholder="…or write your own"></textarea>
-  <div class="sheetbtns">
-    <button class="bigbtn" onclick="confirmFlag()">Send redo request</button>
-    <button class="up" onclick="closeFlag()">Cancel</button>
-  </div>
+  <div class="sheetbtns"><button class="bigbtn" onclick="confirmFlag()">Send redo request</button><button class="up" onclick="closeFlag()">Cancel</button></div>
+</div>
+
+<!-- SEND BACK SHEET -->
+<div class="veil" id="bveil" onclick="closeBack()"></div>
+<div class="sheet" id="bsheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="shead"><h2 id="bTitle">Send back to editor</h2><button class="x" onclick="closeBack()" aria-label="Close">✕</button></div>
+  <textarea class="rcustom" id="bNote" rows="3" placeholder="What to change…"></textarea>
+  <div class="sheetbtns"><button class="bigbtn" onclick="confirmBack()">Send back</button><button class="up" onclick="closeBack()">Cancel</button></div>
+</div>
+
+<!-- PREVIEW SHEET -->
+<div class="veil" id="pveil" onclick="closePreview()"></div>
+<div class="sheet" id="psheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="shead"><h2 id="pTitle">Clip</h2><button class="x" onclick="closePreview()" aria-label="Close">✕</button></div>
+  <div class="vid"><iframe id="pFrame" allow="autoplay; fullscreen" title="Clip preview"></iframe></div>
+  <p class="sharenote" id="pNote"></p>
 </div>
 
 <!-- SHARE CARD SHEET -->
 <div class="veil" id="sveil" onclick="closeShare()"></div>
-<div class="sheet" id="ssheet" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+<div class="sheet" id="ssheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
-  <div class="shead">
-    <h2 id="sTitle">Brag about it.</h2>
-    <button class="x" onclick="closeShare()" aria-label="Close">✕</button>
-  </div>
+  <div class="shead"><h2 id="sTitle">Brag about it.</h2><button class="x" onclick="closeShare()" aria-label="Close">✕</button></div>
   <p class="sub" style="margin-top:6px">Made for your story. Post it — your team gets the credit, and people see what your shop's doing.</p>
   <canvas id="shareCanvas" width="1080" height="1920" style="display:none"></canvas>
   <img id="shareImg" alt="Share card preview">
-  <div class="sheetbtns">
-    <a class="bigbtn" id="shareDl" download="xc-shots-card.png" style="text-align:center;text-decoration:none">Save image</a>
-    <button class="up" onclick="closeShare()">Close</button>
-  </div>
+  <div class="sheetbtns"><a class="bigbtn" id="shareDl" download="xc-shots-card.png">Save image</a><button class="up" onclick="closeShare()">Close</button></div>
   <p class="sharenote"><b>ON A PHONE —</b> long-press the image → Save, then post it to your story.</p>
+</div>
+
+<!-- REVIEW PLAYER -->
+<div class="player" id="player">
+  <div class="ptop"><span id="pInfo"><b>—</b></span><span class="pcount" id="pCount"></span><button class="x" onclick="closePlayer()" aria-label="Close">✕</button></div>
+  <div class="pmid"><iframe id="pVid" allow="autoplay; fullscreen" title="Clip"></iframe></div>
+  <div class="pbar">
+    <button class="pkey good" onclick="pGood()"><b>G</b>Good</button>
+    <button class="pkey redo" onclick="pRedo()"><b>R</b>Redo</button>
+    <button class="pkey good hide" id="pApprove" onclick="pApprove()"><b>A</b>Approve</button>
+    <button class="pkey" onclick="pSkip()"><b>S</b>Skip</button>
+  </div>
+</div>
+
+<!-- DELETE CLIENT SHEET -->
+<div class="veil" id="dveil" onclick="closeDelete()"></div>
+<div class="sheet" id="dsheet" role="dialog" aria-modal="true" aria-labelledby="dTitle" style="border-color:var(--warn)">
+  <div class="grab"></div>
+  <div class="shead"><h2 id="dTitle" style="color:var(--warn)">Delete client</h2><button class="x" onclick="closeDelete()" aria-label="Close">✕</button></div>
+  <p class="sub" style="margin-top:6px" id="dWhat"></p>
+  <p class="sub" style="margin-top:8px">What happens: their page, code, team and history leave the app. Their <b style="color:var(--ink)">footage vault is never touched</b>. The drop folder is only removed if it's empty. This can't be undone from the app.</p>
+  <p class="msect" style="margin-top:16px">1 · Type their code</p>
+  <div class="codein" style="margin-top:8px"><input id="dCode" placeholder="CLIENT CODE" autocomplete="off" autocapitalize="characters" aria-label="Client code"></div>
+  <p class="msect">2 · Your PIN</p>
+  <div class="codein" style="margin-top:8px"><input id="dPin" type="password" placeholder="PIN" autocomplete="off" aria-label="Your PIN"></div>
+  <p class="err" id="dErr" style="color:var(--warn);font-size:12.5px;margin-top:10px;min-height:18px"></p>
+  <div class="sheetbtns">
+    <button class="bigbtn" style="background:var(--warn)" onclick="confirmDelete()">Delete permanently</button>
+    <button class="up" onclick="closeDelete()">Cancel</button>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const THIS_WEEK = 3;
-const SHOTS = [
-  {w:1, n:"Roller door opening", h:"You arriving, lights coming on.", t:"wide", d:"20s",
-   steps:["Stand across the street. Rest your phone on the bin or a ledge so it's dead still.","Hold it upright (portrait), press record BEFORE you touch the door.","Open up like normal — door, lights, walk in. Don't look at the camera.","Let it run to a slow count of 20, then stop."],
-   dont:"Don't hold the phone while filming this one — it'll be shaky. Lean it on something."},
-  {w:1, n:"Milk steam, up close", h:"The jug and the hiss, close up.", t:"close", d:"15s",
-   steps:["Wipe your camera lens on your shirt. Ten seconds, changes everything.","Get closer than feels normal — the jug and wand should FILL the screen.","Press record, steam the milk like usual. The hiss is the star, no talking.","Count to 15, stop."],
-   dont:"Don't zoom. Move your feet closer instead — zoom makes it blurry."},
-  {w:1, n:"Cake slice, plated", h:"Slow push-in near the window.", t:"close", d:"10s",
-   steps:["Put the plate on the bench nearest the window. Natural light only.","Hold the phone upright, about a ruler's length from the cake.","Press record, then move the phone slowly toward the cake — about a hand-span over 10 seconds.","Stop. If it felt too fast, do it once more, slower."],
-   dont:"Don't use the kitchen's overhead lights — they make food look yellow."},
-  {w:2, n:"Counter during the rush", h:"Busy shop, real customers, real noise.", t:"wide", d:"30s",
-   steps:["Pick the busiest 10 minutes of the morning.","Stand at the END of the counter, out of everyone's way.","Hold the phone upright with both hands, elbows against your body to stay steady.","Press record and just… stand there. Count to 30. Don't follow anyone around."],
-   dont:"Don't ask people to act busy. Real beats staged every single time."},
-  {w:2, n:"Latte art pour", h:"Straight down over the cup, whole pour.", t:"close", d:"20s",
-   steps:["Rest your elbows on the machine so your arms don't wobble.","Hold the phone flat, directly ABOVE the cup, looking straight down.","Press record before the pour starts. Film the whole thing, start to finish.","One take is fine. Two if the first spilled."],
-   dont:"Don't cut the pour short — the end of the pour is the best bit."},
-  {w:2, n:"Handing a coffee over", h:"The smile and the hand-off.", t:"mid", d:"10s",
-   steps:["Ask a regular — regulars always say yes.","Stand behind the register, phone upright at chest height.","Press record, hand the coffee over like normal, smile like normal.","Count to 10, stop. Done."],
-   dont:"Don't film strangers without asking — a quick 'mind if we film this for our socials?' is all it takes."},
-  {w:3, n:"Beans into the grinder", h:"Slow pour, side-on, close.", t:"close", d:"10s",
-   steps:["Wipe the lens. Stand side-on to the grinder, a forearm's length away.","Hold the phone upright, nice and still.","Press record, pour the beans in SLOWLY — slower than feels right.","Count to 10, stop."],
-   dont:"Don't rush the pour. This becomes a 3-second moment in the edit — slow gives us options."},
-  {w:3, n:"Pastry tray out of the oven", h:"Steam and all, from the side.", t:"mid", d:"15s",
-   steps:["Time it for a real bake — morning is best (window light beats every filter).","Stand to the side of the oven, phone upright, both hands.","Press record BEFORE the door opens. Catch the door, the slide, the steam.","Count to 15, stop."],
-   dont:"Don't wave the steam away — the steam is the whole point."},
-  {w:3, n:"Staff being staff", h:"The in-joke between rushes.", t:"mid", d:"20s",
-   steps:["Wait for a quiet moment — the wipe-down, the restock, the laugh.","Film from a few steps back. Phone upright, hold still.","Press record and let whatever's happening happen. NOBODY looks at the phone.","Count to 20, stop. This is the one people share."],
-   dont:"Don't announce you're filming. The moment it's posed, it's dead."},
-  {w:4, n:"Exterior sign, late arvo", h:"Golden hour from the footpath.", t:"wide", d:"15s",
-   steps:["Go out an hour before sunset — the golden light does the work.","Stand on the footpath, sign in the TOP THIRD of your screen.","Press record. Hold still for 10 seconds.","Then walk slowly toward the door for 5 more. Stop."],
-   dont:"Don't film at midday — harsh overhead sun makes everything look flat."},
-  {w:4, n:"The owner, one line", h:"What you're proud of this month.", t:"mid", d:"30s",
-   steps:["Lean the phone against a cup on a table, screen facing you, at eye level.","Sit by the window so the light is ON your face, not behind you.","Press record. Say one thing you're proud of this month. Keep it under a sentence.","Say it three times. Don't pick the best one — that's XC's job."],
-   dont:"Don't script it word-for-word. Say it like you'd say it to a mate."},
-  {w:4, n:"Menu board chalk", h:"This week's specials, close.", t:"close", d:"5s",
-   steps:["Stand square-on to the board so the words aren't slanted.","Get close enough that the specials fill the screen.","Press record, hold dead still, count to 5, stop."],
-   dont:"Don't reuse last week's clip — this one dates the reel, film it fresh weekly."},
-];
-const KEY = "xcshots-demo-v5";
-const CODE = "MARRA24";
-const store = (()=>{ try { localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return localStorage; } catch(e){ const m={}; return {getItem:k=>m[k]??null, setItem:(k,v)=>{m[k]=v}, removeItem:k=>{delete m[k]}}; } })();
-const DEFAULTS = {entered:false, me:null, guided:false,
-  team:["Jess","Marco","Sam","Antonia"],
-  by:{0:"Sam",1:"Jess",2:"Antonia",3:"Jess",5:"Marco"},
-  received:{0:true,1:true,2:true,5:true},
-  drive:"https://drive.google.com/drive/folders/1D36iNhyBiLJYjJg8ANKyOk5RhlXa8a-m",
-  folders:["1vIEKzllfC6NS2IeNje02r1JLAQcO6MPg", "1B667suldwEiqkOB7xiEMHT-vWKvkUdS9", "1e0tgOt6wf4NF3MqZGwoR__LmL-2GtzCO", "1xG_6rb0wxKFLuIQZ0-Q6-RIjbXihIXrb", "1Nrh2OmHLOJV70WCq3z8EjKt81KOg1MVC", "1CTcNpFNaLdR9c5UPJpFBlEybCVm7c0xP", "11KCUIMow6KtxjNGCmg3Q6VShAqzObiSl", "1zFQr1TXa4vueXO_B_S4gSHBUJytIoVfc", "1Ln7J69pS_f0J9SHYBoj5PEbnHouSrtdR", "1liVpqAnq-UwC-Yb_ZOPzcdNUZRouNjJu", "1SbhRuPy1i9UcgFmTEvOTAEnRePQgVZtV", "1MdH3Snqk0dmp7dgyAtJgGNB0MjnwZfF1"],
-  redo:[4],
-  reasons:{4:"Bit dark — try again nearer the window. The pour itself was spot on."},
-  results:[
-    {n:"Counter during the rush", by:"Jess", wk:2, v:38200},
-    {n:"Staff being staff", by:"Marco", wk:3, v:21700},
-    {n:"Latte art pour", by:"Jess", wk:2, v:12400},
-    {n:"Roller door opening", by:"Sam", wk:1, v:9100},
-    {n:"The owner, one line", by:"Antonia", wk:4, v:8600},
-  ]};
-let S = Object.assign({}, JSON.parse(JSON.stringify(DEFAULTS)), JSON.parse(store.getItem(KEY) || "{}"));
-let done = new Set(Object.keys(S.by).map(Number));
-let redo = new Set(S.redo);
-let sheetIdx = null;
-function save(){
-  S.redo = [...redo];
-  store.setItem(KEY, JSON.stringify(S));
-}
-const fmtV = v => v >= 1000 ? (v/1000).toFixed(1).replace(/\.0$/,"") + "k" : String(v);
-
+/* ═══════════════ config ═══════════════ */
+const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
+const BUILD = "3.5";
+const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
+const FORCE_XC = /\/xc\/?$/.test(location.pathname);
+const POLL_MS = 20000;
+const LS = {
+  get: (k)=>{ try { return localStorage.getItem("xcs."+k); } catch(e){ return null; } },
+  set: (k,v)=>{ try { v===null ? localStorage.removeItem("xcs."+k) : localStorage.setItem("xcs."+k, v); } catch(e){} },
+};
+/* last-known-good server responses — rendered instantly on reopen, refreshed in the background */
+const readCache = k => { try { const v = JSON.parse(LS.get("cache."+k) || "null"); return v && v.data ? v.data : null; } catch(e){ return null; } };
+const writeCache = (k,d) => LS.set("cache."+k, JSON.stringify({at:Date.now(), data:d}));
+const dropCache = k => LS.set("cache."+k, null);
 const FRAMES = {
   wide:'<svg width="{S}" viewBox="0 0 44 34" aria-hidden="true"><rect x="1" y="1" width="42" height="32" rx="4" fill="none" stroke="#3A3A3A"/><rect x="6" y="20" width="32" height="8" rx="1.5" fill="#CDA85F" opacity=".8"/></svg>',
   mid:'<svg width="{S}" viewBox="0 0 44 34" aria-hidden="true"><rect x="1" y="1" width="42" height="32" rx="4" fill="none" stroke="#3A3A3A"/><rect x="13" y="9" width="18" height="19" rx="1.5" fill="#CDA85F" opacity=".8"/></svg>',
@@ -564,391 +512,883 @@ const FRAMES = {
 };
 const TLAB = {wide:"Wide", mid:"Mid", close:"Close-up"};
 const CAP = {wide:"Fit the whole scene in", mid:"Person-sized framing", close:"Fill the screen with it"};
+const CANNED = ["Bit dark — try again nearer the window. Framing was spot on.","Bit shaky — lean the phone on something and go again. Great instinct on the moment.","Cut off too early — same shot, just let it run a slow count of 20."];
+const q = v => JSON.stringify(v).replace(/"/g,"&quot;");   // safe inside double-quoted onclick attributes
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtV = v => v >= 1000 ? (v/1000).toFixed(1).replace(/\.0$/,"") + "k" : String(v||0);
+function frame(t, s){ return (FRAMES[t]||FRAMES.mid).replace("{S}", s).replace('<svg', s>50 ? '<svg class="bigframe"' : '<svg class="frame"'); }
 
-function frame(t, s){ return FRAMES[t].replace("{S}", s).replace('<svg', s>50 ? '<svg class="bigframe"' : '<svg class="frame"'); }
+/* ═══════════════ api ═══════════════ */
+let pollT = null, inflight = 0;
+function syncUI(state){ const el = document.getElementById("sync"); el.className = "sync " + state; el.textContent = state==="live" ? "synced" : state==="busy" ? "syncing" : "offline"; }
+let lastErr = "";
+function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout after "+ms/1000+"s")), ms))]); }
+async function apiGet(params){
+  inflight++; syncUI("busy");
+  try {
+    const u = API + "?" + new URLSearchParams(params).toString();
+    const r = await withTimeout(fetch(u, {method:"GET", redirect:"follow", cache:"no-store"}), 45000);
+    const txt = await r.text();
+    let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + "): " + txt.slice(0,80)); }
+    syncUI("live"); lastErr = ""; return d;
+  } catch(e){ syncUI("err"); lastErr = String(e && e.message || e); diag(lastErr); return {ok:false, error:"network"}; }
+  finally { inflight--; }
+}
+async function apiPost(body){
+  inflight++; syncUI("busy");
+  try {
+    const r = await withTimeout(fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)}), 45000);
+    const txt = await r.text();
+    let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + "): " + txt.slice(0,80)); }
+    syncUI("live"); lastErr = ""; return d;
+  } catch(e){ syncUI("err"); lastErr = String(e && e.message || e); diag(lastErr); return {ok:false, error:"network"}; }
+  finally { inflight--; }
+}
+function diag(msg){ ["diagA","diagB"].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = msg ? "⚠ " + msg : ""; }); }
+window.addEventListener("error", e=>diag("JS error: " + (e.message||"") + " @" + (e.lineno||"")));
+window.addEventListener("unhandledrejection", e=>diag("Promise error: " + (e.reason && e.reason.message || e.reason)));
 
-function render(){
-  const host = document.getElementById("shotList");
-  host.innerHTML = "";
+/* ═══════════════ state ═══════════════ */
+let C = null;          // client state from API
+let me = LS.get("me");
+let code = LS.get("code");
+let pin = LS.get("pin");
+let sheetIdx = null, flagIdx = null, flagSel = null, backFile = null;
+let roster = null, mgCode = null, mgState = null, mgDeliv = null, editShots = null, editResults = null;
+
+/* ═══════════════ gates / boot ═══════════════ */
+let warmed = false;
+function warm(){ if(warmed) return; warmed = true; fetch(API + "?action=ping", {redirect:"follow"}).catch(()=>{}); }
+let splashT1 = null, splashT2 = null;
+function splashDone(){
+  const s = document.getElementById("splash"); if(s) s.classList.add("hide");
+  if(splashT1){ clearTimeout(splashT1); splashT1 = null; }
+  if(splashT2){ clearTimeout(splashT2); splashT2 = null; }
+}
+function gate(which){
+  splashDone();
+  if(which==="gateCode" || which==="gatePin" || which==="gateOwner") warm();
+  ["gateCode","gateName","gateGuide","gatePin","gateOwner","app"].forEach(id => document.getElementById(id).classList.toggle("hide", id!==which));
+  window.scrollTo({top:0});
+  if(which==="gateCode") setTimeout(()=>document.getElementById("codeInput").focus(), 60);
+  if(which==="gatePin") setTimeout(()=>document.getElementById("pinInput").focus(), 60);
+}
+async function boot(){
+  if(FORCE_EDITOR){ enterEditorGate(); return; }
+  warm();   // wake Apps Script immediately — the cached UI renders while it spins up
+  splashT1 = setTimeout(()=>{ const m = document.getElementById("splashMsg"); if(m) m.textContent = "Waking the server…"; }, 5000);
+  splashT2 = setTimeout(()=>{ const m = document.getElementById("splashMsg"); if(m) m.textContent = "Still going — hang tight"; }, 14000);
+  const isXC = FORCE_XC || location.hash === "#xc" || /[?&]xc(=|&|$)/.test(location.search);
+  if(isXC || (pin && !code)){ if(pin){ await enterXC(); } else gate("gatePin"); return; }
+  // returning owner: last-known state instantly, verify + refresh in the background
+  if(code && LS.get("ownerpin") && LS.get("ownercode")){
+    const co = readCache("owner");
+    if(co && co.code === code && co.shots){ ownerEnter(co, true); ownerLoad(); return; }
+  }
+  if(!code){ gate("gateCode"); return; }
+  // returning team member: last-known state instantly, refresh in the background
+  const cs = readCache("state");
+  if(cs && cs.code === code && cs.shots && me && cs.team && cs.team.indexOf(me) !== -1 && LS.get("guided")){
+    C = cs; enterClient(); loadClient(); return;
+  }
+  await loadClient();
+  if(!C){ gate("gateCode"); return; }
+  if(!me || C.team.indexOf(me) === -1){ buildNames(); gate("gateName"); return; }
+  if(!LS.get("guided")){ buildGuide(); gate("gateGuide"); return; }
+  enterClient();
+}
+async function tryCode(){
+  const v = document.getElementById("codeInput").value.trim().toUpperCase();
+  const err = document.getElementById("codeErr"); const btn = document.getElementById("codeBtn");
+  if(!v){ err.textContent = "Type your studio code first."; return; }
+  btn.disabled = true; err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
+  const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
+  const t2 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Still going — hang tight, nearly there.'; }, 12000);
+  const d = await apiGet({action:"hello", code:v});
+  clearTimeout(t1); clearTimeout(t2); err.className = "err"; err.textContent = "";
+  btn.disabled = false;
+  if(!d.ok){
+    if(d.error === "unknown action"){ const d2 = await apiGet({action:"state", code:v}); if(d2.ok){ code = v; LS.set("code", v); C = d2; buildNames(); gate("gateName"); } else err.textContent = "That's not it — check the gold card in the staff room, or ask your manager."; return; }
+    err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "That's not it — check the gold card in the staff room, or ask your manager."; return;
+  }
+  code = v; LS.set("code", v); C = d;   // partial (name+team) — full state loads on entry
+  buildNames(); gate("gateName");
+  loadClient();   // warm the full state in the background while they pick a name
+}
+function buildNames(){
+  document.getElementById("nameEyebrow").textContent = C.name;
+  document.getElementById("nameGrid").innerHTML = C.team.length ? C.team.map(n=>`<button onclick="pickName(${q(n).replace(/"/g,'&quot;')})">${esc(n)}</button>`).join("") : '<p class="sub">No names yet — ask XC to add the team.</p>';
+}
+function pickName(n){
+  me = n; LS.set("me", n);
+  if(!LS.get("guided")){ document.getElementById("guideHi").textContent = `Good to meet you, ${n}`; buildGuide(); gate("gateGuide"); }
+  else enterClient();
+}
+function repick(){ buildNames(); gate("gateName"); }
+function buildGuide(){
+  const ua = navigator.userAgent, isIOS = /iPhone|iPad|iPod/.test(ua), isAndroid = /Android/.test(ua);
+  const pill = document.getElementById("platPill"), steps = document.getElementById("guideSteps");
+  const st = (n,t)=>`<div class="step"><span class="num">${n}</span><p>${t}</p></div>`;
+  if(isIOS){ pill.textContent="iPhone · Safari"; steps.innerHTML = st(1,"Tap the <b>Share</b> button — the square with the arrow, bottom of Safari.")+st(2,"Scroll down, tap <b>Add to Home Screen</b>.")+st(3,"Tap <b>Add</b>. Gold icon, one tap from now on.")+st(4,"Install the <b>Google Drive</b> app from the App Store if it's not on your phone — uploads finish in the background."); }
+  else if(isAndroid){ pill.textContent="Android · Chrome"; steps.innerHTML = st(1,"Tap the <b>⋮ menu</b>, top-right of Chrome.")+st(2,"Tap <b>Add to Home screen</b>.")+st(3,"Tap <b>Add</b>. Gold icon, one tap from now on.")+st(4,"Make sure the <b>Google Drive</b> app is installed — uploads finish in the background."); }
+  else { pill.textContent="You're on a computer"; steps.innerHTML = st(1,"This app lives on phones — open the same link on your phone.")+st(2,"iPhone: Share → <b>Add to Home Screen</b>. Android: ⋮ → <b>Add to Home screen</b>."); }
+}
+function finishGuide(){ LS.set("guided","1"); enterClient(); }
+function resetDevice(){ LS.set("code",null); LS.set("me",null); LS.set("ownercode",null); LS.set("ownerpin",null); dropCache("state"); dropCache("owner"); code=null; me=null; C=null; stopPoll(); gate("gateCode"); }
+
+/* ═══════════════ client side ═══════════════ */
+let writeSeq = 0;   // bumped on every write; stale polls that started earlier are discarded
+async function loadClient(){
+  if(!code) return;
+  const seq = writeSeq;
+  const d = await apiGet({action:"state", code});
+  if(seq !== writeSeq) return;   // a write happened while this was in flight — its response is newer
+  if(d.ok){ C = d; writeCache("state", d); if(!document.getElementById("client").classList.contains("hide")) renderClient(); }
+  else if(d.error !== "network"){
+    C = null; dropCache("state");
+    if(!document.getElementById("app").classList.contains("hide")){ stopPoll(); gate("gateCode"); }   // code revoked while showing cached state
+  }
+}
+function enterClient(){
+  gate("app"); show("client"); document.body.classList.remove("xc");
+  document.getElementById("meName").textContent = me || "—";
+  if(!C || !C.shots){ document.getElementById("clientHead").innerHTML = '<span class="spin"></span>Loading your shots…'; loadClient(); }
+  else renderClient();
+  startPoll(loadClient);
+}
+function startPoll(fn){ stopPoll(); pollT = setInterval(()=>{ if(document.visibilityState==="visible" && !inflight) fn(); }, POLL_MS); }
+function stopPoll(){ if(pollT) clearInterval(pollT); pollT = null; }
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible"){ if(C && !document.getElementById("client").classList.contains("hide")){ if(LS.get("ownerpin") && LS.get("ownercode")) ownerLoad(); else loadClient(); } if(pin && !document.getElementById("dash").classList.contains("hide")) loadRoster(); if(pin && !document.getElementById("today").classList.contains("hide")) loadToday(); } });
+
+function renderClient(){
+  if(!C || !C.shots) return;
+  document.getElementById("stOwner").classList.toggle("hide", !(C.role >= 1));
+  document.getElementById("stResults").classList.toggle("dot", (C.approved||[]).some(f=>!(C.feedback||{})[f.id]));   // reels awaiting a verdict
+  const WK = C.week, shots = C.shots;
+  document.getElementById("clientEyebrow").textContent = `${C.name} · ${monthName(C.month)}`;
+  document.getElementById("wkLabel").textContent = `Week ${WK} of 4 · This week`;
+  const host = document.getElementById("shotList"); host.innerHTML = "";
   for(let w=1; w<=4; w++){
-    const idxs = SHOTS.map((s,i)=>[s,i]).filter(([s])=>s.w===w);
-    const doneCt = idxs.filter(([,i])=>done.has(i)).length;
-    const head = document.createElement("div");
-    head.className = "wksect" + (w===THIS_WEEK ? " now":"");
-    const label = w===THIS_WEEK ? `Week ${w} — this week` : (w<THIS_WEEK ? `Week ${w}` : `Week ${w} — not yet, chill`);
-    head.innerHTML = `<span class="t">${label}</span><span class="line"></span><span class="done">${doneCt}/${idxs.length}${w<THIS_WEEK&&doneCt===idxs.length?" ✓":""}</span>`;
+    const idxs = shots.map((s,i)=>[s,i]).filter(([s])=>s.w===w);
+    if(!idxs.length) continue;
+    const doneCt = idxs.filter(([,i])=>C.by[i]).length;
+    const head = document.createElement("div"); head.className = "wksect" + (w===WK?" now":"");
+    const label = w===WK ? `Week ${w} — this week` : (w<WK ? `Week ${w}` : `Week ${w} — not yet, chill`);
+    head.innerHTML = `<span class="t">${label}</span><span class="line"></span><span class="done">${doneCt}/${idxs.length}${w<WK&&doneCt===idxs.length?" ✓":""}</span>`;
     host.appendChild(head);
     const box = document.createElement("div"); box.className="shots"; host.appendChild(box);
     idxs.forEach(([s,i])=>{
-      const isDone = done.has(i), isRedo = redo.has(i);
-      const el = document.createElement("button");
-      el.className = "card" + (isDone?" done":"") + (isRedo?" redo":"") + (s.w>THIS_WEEK && !isRedo?" future":"");
-      el.id = "shot"+i;
-      el.setAttribute("aria-label", `Open guide: ${s.n}`);
-      el.onclick = ()=>openSheet(i);
+      const isDone = !!C.by[i], isRedo = !!C.redo[i], rcv = !!C.received[i];
+      const el = document.createElement("div");
+      el.className = "card" + (isDone?" done":"") + (isRedo?" redo":"") + (s.w>WK && !isRedo?" future":"");
+      el.setAttribute("role","button"); el.tabIndex = 0;
+      el.onclick = ()=>openSheet(i); el.onkeydown = e=>{ if(e.key==="Enter") openSheet(i); };
       el.innerHTML = `
         <span class="tick${isDone?" on":""}" role="checkbox" aria-checked="${isDone}" aria-label="Mark filmed" tabindex="0"
-          onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();event.stopPropagation();tick(${i})}"
-          onclick="event.stopPropagation();tick(${i})">
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7.5L5.5 11L12 3.5" fill="none" stroke="#0A0A0A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
-        <span class="body">
-          <h3>${s.n}</h3>
-          <span class="how">${s.h}</span>
-          ${isRedo ? `<span class="reason"><b>XC ASKED FOR A REDO —</b> ${S.reasons[i]}</span>` : ""}
-          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]}</span><span class="chip">${s.d}</span><span class="chip open">How-to ↗</span><span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>${isDone&&S.by[i]?(S.received[i]?`<span class="byme rcv">✓ ${S.by[i]} · received</span>`:`<span class="byme wait">✓ ${S.by[i]} · waiting for upload</span>`):""}</span>
-        </span>
+          onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();event.stopPropagation();tick(${i})}" onclick="event.stopPropagation();tick(${i})">
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7.5L5.5 11L12 3.5" fill="none" stroke="#0A0A0A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="body"><h3>${esc(s.n)}</h3><span class="how">${esc(s.h)}</span>
+          ${isRedo ? `<span class="reason"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</span>` : ""}
+          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip open">How-to ↗</span>
+            <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>
+            ${isDone ? (rcv ? `<span class="byme rcv">✓ ${esc(C.by[i])} · received</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for upload</span>`) : (rcv ? `<span class="byme rcv">clip received — tick it!</span>` : "")}
+          </span></span>
         ${frame(s.t, 44)}`;
       box.appendChild(el);
     });
   }
-  sync();
-}
-function sync(){
-  const total = SHOTS.length, n = done.size;
-  const wkIdx = SHOTS.map((s,i)=>[s,i]).filter(([s])=>s.w===THIS_WEEK).map(([,i])=>i);
-  const wkDone = wkIdx.filter(i=>done.has(i)).length, wkTotal = wkIdx.length;
+  // pacing
+  const wkIdx = shots.map((s,i)=>[s,i]).filter(([s])=>s.w===WK).map(([,i])=>i);
+  const wkDone = wkIdx.filter(i=>C.by[i]).length, wkTotal = wkIdx.length, n = Object.keys(C.by).length;
   document.getElementById("wkN").textContent = `${wkDone} / ${wkTotal}`;
-  document.getElementById("wkBar").style.width = Math.round(wkDone/wkTotal*100) + "%";
-  document.getElementById("moN").textContent = `Month: ${n} of ${total}`;
-  const left = wkTotal - wkDone;
-  const pace = document.getElementById("paceLine");
-  const head = document.getElementById("clientHead");
-  if(left <= 0){ head.textContent = "Week done. Kick back."; pace.textContent = "All three in. Nothing else needed until Monday — genuinely, go do something else."; }
+  document.getElementById("wkBar").style.width = (wkTotal ? Math.round(wkDone/wkTotal*100) : 0) + "%";
+  document.getElementById("moN").textContent = `Month: ${n} of ${shots.length}`;
+  const left = wkTotal - wkDone, pace = document.getElementById("paceLine"), head = document.getElementById("clientHead");
+  if(!wkTotal){ head.textContent = "Nothing due this week."; pace.textContent = "Enjoy it."; }
+  else if(left <= 0){ head.textContent = "Week done. Kick back."; pace.textContent = "All in. Nothing else needed until Monday — genuinely, go do something else."; }
   else if(left === 1){ head.textContent = "This week: 1 shot left."; pace.textContent = "One to go. Two minutes with your phone and the week's done."; }
-  else { head.textContent = `This week: just ${left} shots.`; pace.textContent = `That's one every couple of days. No rush — just don't leave ${left===3?"all three":"them"} for Sunday night.`; }
-  if(redo.size) pace.textContent += ` (Plus ${redo.size===1?"one quick redo":redo.size+" redos"} from earlier — look for the orange card.)`;
-  document.getElementById("marraCount").textContent = `${n} of ${total} this month`;
-  document.getElementById("marraWk").textContent = `week: ${wkDone} of ${wkTotal}`;
-  document.getElementById("marraBar").style.width = Math.round(n/total*100) + "%";
-  document.getElementById("marraSt").textContent = wkDone>=wkTotal ? "Week done" : "On track";
-  const mr = document.getElementById("marraRedo");
-  mr.textContent = redo.size ? `${redo.size} redo out` : "";
-  renderManage();
+  else { head.textContent = `This week: just ${left} shots.`; pace.textContent = `That's one every couple of days. No rush — just don't leave them for Sunday night.`; }
+  const redos = Object.keys(C.redo).length;
+  if(redos) pace.textContent += ` (Plus ${redos===1?"one quick redo":redos+" redos"} — look for the orange card.)`;
+  if(sheetIdx !== null) syncSheetBtn();
+  renderResults();
 }
-function subtab(which){
-  if(which==="results") renderResults();
-  const map = {shots:["shotsView","stShots"], results:["resultsView","stResults"], basics:["basicsView","stBasics"]};
-  for(const k in map){
-    document.getElementById(map[k][0]).classList.toggle("hide", which!==k);
-    document.getElementById(map[k][1]).classList.toggle("on", which===k);
-    document.getElementById(map[k][1]).setAttribute("aria-selected", String(which===k));
-  }
-}
-function tick(i){
-  const was = done.has(i);
-  const wasRedo = redo.has(i);
-  if(was){ done.delete(i); delete S.by[i]; delete S.received[i]; }
-  else { done.add(i); S.by[i] = S.me || "Someone"; }
-  if(!was && wasRedo){ redo.delete(i); }
-  save();
-  render();
-  if(sheetIdx === i) syncSheetBtn();
-  if(!was && wasRedo) toast("Nice — <b>redo's in</b>. XC gets the new take with Sunday's uploads.");
-  else if(!was && done.size === SHOTS.length) toast("<b>12 of 12.</b> Month wrapped — XC gets pinged, your reels keep coming.");
+async function tick(i){
+  if(!C) return;
+  const was = !!C.by[i];
+  writeSeq++;
+  // optimistic
+  if(was) delete C.by[i]; else { C.by[i] = me || "Someone"; delete C.redo[i]; delete C.reasons[i]; }
+  renderClient();
+  const d = await apiPost(was ? {action:"untick", code, idx:i} : {action:"tick", code, idx:i, by: me || "Someone"});
+  if(d.ok){ C = d; renderClient(); if(!was && Object.keys(C.by).length === C.shots.length) toast("<b>Month done.</b> XC gets pinged, your reels keep coming."); }
+  else { toast("Couldn't save that — <b>check your signal</b> and try again."); loadClient(); }
 }
 function openSheet(i){
-  sheetIdx = i;
-  const s = SHOTS[i];
+  sheetIdx = i; const s = C.shots[i];
   document.getElementById("shTitle").textContent = s.n;
-  document.getElementById("shChips").innerHTML = `<span class="chip">${TLAB[s.t]}</span><span class="chip">${s.d}</span><span class="chip">Week ${s.w}</span>`;
+  document.getElementById("shChips").innerHTML = `<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip">Week ${s.w}</span>`;
   document.getElementById("shFrame").innerHTML = frame(s.t, 120);
-  document.getElementById("shCap").textContent = CAP[s.t];
-  const redoNote = redo.has(i) ? `<div class="reason" style="margin-bottom:4px"><b>XC ASKED FOR A REDO —</b> ${S.reasons[i]}</div>` : "";
-  document.getElementById("shSteps").innerHTML = redoNote + s.steps.map((st,k)=>`<div class="step"><span class="num">${k+1}</span><p>${st}</p></div>`).join("");
-  document.getElementById("shDont").textContent = s.dont;
+  document.getElementById("shCap").textContent = CAP[s.t] || "";
+  const redoNote = C.redo[i] ? `<div class="reason" style="margin-bottom:4px"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</div>` : "";
+  document.getElementById("shSteps").innerHTML = redoNote + (s.steps||[]).map((st,k)=>`<div class="step"><span class="num">${k+1}</span><p>${esc(st)}</p></div>`).join("");
+  document.getElementById("shDont").textContent = s.dont || "";
   syncSheetBtn();
-  document.getElementById("veil").classList.add("show");
-  document.getElementById("sheet").classList.add("show");
+  document.getElementById("veil").classList.add("show"); document.getElementById("sheet").classList.add("show");
 }
-function syncSheetBtn(){
-  const b = document.getElementById("shTick");
-  const isDone = done.has(sheetIdx);
-  b.textContent = isDone ? "Filmed ✓ (tap to undo)" : "Mark as filmed ✓";
-  b.classList.toggle("donebtn", isDone);
-}
-function tickFromSheet(){ tick(sheetIdx); }
-function closeSheet(){
-  document.getElementById("veil").classList.remove("show");
-  document.getElementById("sheet").classList.remove("show");
-  sheetIdx = null;
-}
-document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeSheet(); });
-let toastT;
-function toast(msg){
-  const t = document.getElementById("toast");
-  t.innerHTML = msg; t.classList.add("show");
-  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3400);
-}
-function show(view){
-  document.getElementById("manage").classList.add("hide");
-  document.getElementById("dash").classList.toggle("hide", view!=="dash");
-  document.getElementById("client").classList.toggle("hide", view!=="client");
-  document.getElementById("tabYou").classList.toggle("on", view==="dash");
-  document.getElementById("tabYou").setAttribute("aria-selected", String(view==="dash"));
-  document.getElementById("tabClient").classList.toggle("on", view==="client");
-  document.getElementById("tabClient").setAttribute("aria-selected", String(view==="client"));
-  window.scrollTo({top:0});
-}
-document.getElementById("tabYou").onclick = ()=>show("dash");
-document.getElementById("tabClient").onclick = ()=>show("client");
-
-/* ── first-open gates ── */
-function gate(which){
-  ["gateCode","gateName","gateGuide","app"].forEach(id=>
-    document.getElementById(id).classList.toggle("hide", id!==which));
-  window.scrollTo({top:0});
-  if(which==="gateCode") setTimeout(()=>document.getElementById("codeInput").focus(), 60);
-}
-function boot(){
-  if(!S.entered) gate("gateCode");
-  else if(!S.me) gate("gateName");
-  else if(!S.guided) gate("gateGuide");
-  else enterApp();
-}
-function tryCode(){
-  const v = document.getElementById("codeInput").value.trim().toUpperCase();
-  const err = document.getElementById("codeErr");
-  if(v === CODE){
-    err.textContent = "";
-    S.entered = true; save();
-    buildNames(); gate("gateName");
-  } else {
-    err.textContent = v ? "That's not it — check the gold card in the staff room, or ask your manager." : "Type your studio code first.";
-  }
-}
-function buildNames(){
-  document.getElementById("nameGrid").innerHTML = S.team.map(n=>
-    `<button onclick="pickName('${n}')">${n}</button>`).join("");
-}
-function pickName(n){
-  S.me = n; save();
-  if(!S.guided){
-    document.getElementById("guideHi").textContent = `Good to meet you, ${n}`;
-    buildGuide(); gate("gateGuide");
-  } else enterApp();
-}
-function repick(){ buildNames(); gate("gateName"); }
-function buildGuide(){
-  const ua = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/.test(ua);
-  const isAndroid = /Android/.test(ua);
-  const pill = document.getElementById("platPill");
-  const steps = document.getElementById("guideSteps");
-  if(isIOS){
-    pill.textContent = "iPhone · Safari";
-    steps.innerHTML = step(1,"Tap the <b>Share</b> button — the square with the arrow, bottom of Safari.")
-      + step(2,"Scroll down, tap <b>Add to Home Screen</b>.")
-      + step(3,"Tap <b>Add</b>. That's it — gold icon, one tap from now on.")
-      + step(4,"Install the <b>Google Drive</b> app from the App Store if it's not on your phone — uploads finish in the background, even with the phone locked.");
-  } else if(isAndroid){
-    pill.textContent = "Android · Chrome";
-    steps.innerHTML = step(1,"Tap the <b>⋮ menu</b>, top-right of Chrome.")
-      + step(2,"Tap <b>Add to Home screen</b>.")
-      + step(3,"Tap <b>Add</b>. Done — gold icon, one tap from now on.")
-      + step(4,"Make sure the <b>Google Drive</b> app is installed — uploads finish in the background, even with the phone locked.");
-  } else {
-    pill.textContent = "You're on a computer";
-    steps.innerHTML = step(1,"This app lives on phones — open the same link on your phone.")
-      + step(2,"On iPhone: Share → <b>Add to Home Screen</b>. On Android: ⋮ → <b>Add to Home screen</b>.");
-  }
-}
-function step(n,txt){ return `<div class="step"><span class="num">${n}</span><p>${txt}</p></div>`; }
-function finishGuide(){ S.guided = true; save(); enterApp(); }
-function enterApp(){
-  gate("app");
-  document.getElementById("meName").textContent = S.me || "—";
-  render();
-}
-/* ── XC manage view ── */
-let flagIdx = null, flagSel = null;
-const CANNED = [
-  "Bit dark — try again nearer the window. Framing was spot on.",
-  "Bit shaky — lean the phone on something and go again. Great instinct on the moment.",
-  "Cut off too early — same shot, just let it run a slow count of 20.",
-];
-function openManage(){
-  document.getElementById("dash").classList.add("hide");
-  document.getElementById("manage").classList.remove("hide");
-  renderManage();
-  window.scrollTo({top:0});
-}
-function closeManage(){
-  document.getElementById("manage").classList.add("hide");
-  document.getElementById("dash").classList.remove("hide");
-}
-function renderManage(){
-  if(document.getElementById("manage").classList.contains("hide")) return;
-  document.getElementById("mgMonth").textContent = `${done.size}/${SHOTS.length}`;
-  const wkIdx = SHOTS.map((s,i)=>[s,i]).filter(([s])=>s.w===THIS_WEEK).map(([,i])=>i);
-  document.getElementById("mgWeek").textContent = `${wkIdx.filter(i=>done.has(i)).length}/${wkIdx.length}`;
-  document.getElementById("mgRedo").textContent = String(redo.size);
-  document.getElementById("mgShots").innerHTML = SHOTS.map((s,i)=>{
-    const isDone = done.has(i), isRedo = redo.has(i);
-    const who = isRedo ? '<span class="who out">redo out</span>'
-      : isDone ? `<span class="who${S.received[i]?"":" todo"}">✓ ${S.by[i]||""}${S.received[i]?"":" · no file yet"}</span>`
-      : `<span class="who todo">wk ${s.w} · to-do</span>`;
-    const act = isDone ? `<button class="mact cancel" onclick="toggleReceived(${i})">${S.received[i]?"Received ✓":"Mark received"}</button><button class="mact" onclick="openFlag(${i})">Flag redo</button>`
-      : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : "";
-    return `<div class="mrow${isRedo?" redo":""}"><span class="nm">${s.n}</span>${who}${act}</div>`;
-  }).join("");
-  const du = document.getElementById("driveUrl"); if(document.activeElement !== du) du.value = S.drive || "";
-  document.getElementById("mgTeam").innerHTML = S.team.map(n=>
-    `<span class="tchip">${n}<button aria-label="Remove ${n}" onclick="removeTeam('${n}')">✕</button></span>`).join("");
-  document.getElementById("mgResults").innerHTML = S.results.map((r,k)=>
-    `<div class="rrow"><span class="nm">${r.n}<br><span class="by2">by ${r.by} · wk ${r.wk}</span></span>
-     <input type="number" inputmode="numeric" value="${r.v}" aria-label="Views for ${r.n}"
-       oninput="S.results[${k}].v = Number(this.value)||0; save(); renderResults()"></div>`).join("");
-}
-function openFlag(i){
-  flagIdx = i; flagSel = null;
-  document.getElementById("fTitle").textContent = `Redo: ${SHOTS[i].n}`;
-  document.getElementById("fCustom").value = "";
-  document.getElementById("fChips").innerHTML = CANNED.map((c,k)=>
-    `<button id="fc${k}" onclick="pickReason(${k})">${c}</button>`).join("");
-  document.getElementById("fveil").classList.add("show");
-  document.getElementById("fsheet").classList.add("show");
-}
-function pickReason(k){
-  flagSel = k;
-  CANNED.forEach((_,j)=>document.getElementById("fc"+j).classList.toggle("sel", j===k));
-  document.getElementById("fCustom").value = "";
-}
-function confirmFlag(){
-  const custom = document.getElementById("fCustom").value.trim();
-  const reason = custom || (flagSel!==null ? CANNED[flagSel] : null);
-  if(!reason){ toast("Pick a reason or write one — it's what their team sees."); return; }
-  S.reasons[flagIdx] = reason;
-  done.delete(flagIdx); delete S.by[flagIdx];
-  redo.add(flagIdx);
-  save(); closeFlag(); render(); renderManage();
-  toast(`<b>Redo requested.</b> The orange card is on their phones now — reason and all.`);
-}
-function cancelRedo(i){
-  redo.delete(i); delete S.reasons[i];
-  done.add(i); S.by[i] = S.by[i] || "Team";
-  save(); render(); renderManage();
-  toast("Redo cancelled — shot restored to done.");
-}
-function closeFlag(){
-  document.getElementById("fveil").classList.remove("show");
-  document.getElementById("fsheet").classList.remove("show");
-  flagIdx = null;
-}
-function renderResults(){
-  const rs = [...S.results].sort((a,b)=>b.v-a.v);
-  const total = S.results.reduce((a,r)=>a+r.v,0);
-  document.getElementById("rTotal").textContent = fmtV(total);
-  const topV = rs.length ? rs[0].v : 0;
-  document.getElementById("reelList").innerHTML = rs.map(r=>
-    `<div class="reel${r.v===topV&&r.v>0?" top":""}">
-      <div class="l"><h3>${r.n}${r.v===topV&&r.v>0?'<span class="star">★ Top clip</span>':""}</h3>
-      <p class="by">Filmed by <b>${r.by}</b> · week ${r.wk}</p>
-      <button class="sharebtn" onclick="openShare(${S.results.indexOf(r)})">Share card ↗</button></div>
-      <div class="v"><div class="n">${fmtV(r.v)}</div><div class="u">views</div></div>
-    </div>`).join("");
-}
-function nudge(e){
-  e.stopPropagation();
-  toast("SMS drafted to the owner: <b>“Hey mate — week's shots are still open, three quick ones whenever suits. All good if it's a mad week, they'll roll.”</b> You hit send, not the robot.");
-}
-function addTeam(){
-  const v = document.getElementById("newName").value.trim();
-  if(!v) return;
-  if(S.team.some(t=>t.toLowerCase()===v.toLowerCase())){ toast("Already on the list."); return; }
-  S.team.push(v); save();
-  document.getElementById("newName").value = "";
-  renderManage();
-  toast(`<b>${v}</b> added — they'll see their name on the picker next open.`);
-}
-function removeTeam(n){
-  S.team = S.team.filter(t=>t!==n);
-  if(S.me === n) S.me = null;
-  save(); renderManage();
-}
-
-/* ── upload → the client's shared Drive folder ── */
+function syncSheetBtn(){ const b = document.getElementById("shTick"); const d = !!(C && C.by[sheetIdx]); b.textContent = d ? "Filmed ✓ (tap to undo)" : "Mark as filmed ✓"; b.classList.toggle("donebtn", d); }
+function closeSheet(){ document.getElementById("veil").classList.remove("show"); document.getElementById("sheet").classList.remove("show"); sheetIdx = null; }
 function upload(i){
-  const fid = (S.folders && typeof i === "number") ? S.folders[i] : null;
-  const url = fid ? "https://drive.google.com/drive/folders/" + fid : S.drive;
+  const s = (C && typeof i === "number") ? C.shots[i] : null;
+  const url = (s && s.folder) || (C && C.drive);
   if(!url){ toast("No Drive folder set for this client yet — ask XC."); return; }
   window.open(url, "_blank", "noopener");
-  toast("In Drive: <b>+ → Upload → pick your video</b>. Use the Drive app (not the browser) so it finishes in the background. Clips vanish from the folder within a minute — that's XC receiving them. Then tick the shot.");
+  toast("In Drive: <b>+ → Upload → pick your video</b>. Use the Drive app so it finishes in the background. The clip vanishes from the folder within a minute — that's XC receiving it. Then tick the shot.");
 }
-
-/* ── received state (XC flips it) ── */
-function toggleReceived(i){
-  if(S.received[i]) delete S.received[i]; else S.received[i] = true;
-  save(); render(); renderManage();
-  toast(S.received[i] ? "Marked <b>received</b> — their card now says so." : "Unmarked — their card shows <b>waiting for upload</b>.");
+function subtab(which){
+  const map = {shots:["shotsView","stShots"], results:["resultsView","stResults"], basics:["basicsView","stBasics"], owner:["ownerView","stOwner"]};
+  for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); document.getElementById(map[k][1]).classList.toggle("on", which===k); }
+  if(which==="owner") renderOwner();
 }
+function renderOwner(){
+  if(!C || C.role < 1) return;
+  document.getElementById("ovTeam").innerHTML = (C.team||[]).map(n=>`<span class="tchip">${esc(n)}<button aria-label="Remove ${esc(n)}" onclick="ownerRemoveTeam(${q(n)})">✕</button></span>`).join("") || '<p class="sub">No names yet.</p>';
+  const wk = (C.weeks||[]).slice(-4);
+  document.getElementById("ovSpark").innerHTML = wk.length
+    ? '<div style="display:flex;gap:14px;align-items:flex-end">' + wk.map(w=>`<div style="text-align:center"><div style="width:34px;height:${Math.max(4,Math.round((w.total?w.done/w.total:0)*56))}px;background:var(--gold);border-radius:4px 4px 0 0;margin:0 auto"></div><div class="mono" style="font-size:8px;color:var(--dim);margin-top:4px">${w.done}/${w.total}</div></div>`).join("") + '</div>'
+    : '<p class="sub">Builds up week by week — check back after a couple of Mondays.</p>';
+  const hist = C.history||[];
+  document.getElementById("ovHistory").innerHTML = hist.length
+    ? hist.slice().reverse().map(h=>`<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} filmed · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span><button class="mact" onclick="ownerShareRecap(${q(h.month)})">Share ↗</button></div></div>`).join("")
+    : '<p class="sub">First month still in progress.</p>';
+  const docs = C.docs||[];
+  document.getElementById("ovDocs").innerHTML = docs.length
+    ? docs.map(d=>{ const m = docMeta(d); return `<a class="mrow" style="text-decoration:none;color:inherit" href="${esc(d.url)}" target="_blank" rel="noreferrer"><div class="r"><span class="nm">${esc(d.label)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${m.tag}</span></span><span class="who"${m.gold?' style="color:var(--gold);font-weight:700"':''}>${m.act}</span></div></a>`; }).join("")
+    : '<p class="sub">Nothing here yet — proposals and invoices will appear as XC adds them.</p>';
+}
+/* doc rows present by type — a Stripe/PayPal link automatically becomes a gold "Pay online" action */
+function docMeta(d){
+  const l = (d.label||"").toLowerCase(), u = (d.url||"").toLowerCase();
+  const pay = /stripe\.com|buy\.stripe|paypal\.|checkout\.|pay\./.test(u);
+  const sign = /docusign|pandadoc|hellosign|sign\.dropbox|adobesign|signrequest|esign/.test(u);
+  if(/invoice|bill|payment/.test(l) || pay) return {tag:"Invoice", act: pay ? "Pay online ↗" : "View ↗", gold: pay};
+  if(/contract|agreement|terms/.test(l) || sign) return {tag:"Agreement", act: sign ? "Read &amp; sign ↗" : "Read ↗", gold: sign};
+  if(/proposal|quote/.test(l)) return {tag:"Proposal", act:"Read ↗", gold:false};
+  if(/report|recap|result/.test(l)) return {tag:"Report", act:"Read ↗", gold:false};
+  return {tag:"Document", act:"Open ↗", gold:false};
+}
+async function ownerPost(body){
+  const d = await apiPost(Object.assign({code, owner: LS.get("ownerpin")}, body));
+  if(d.ok){ C = d; renderClient(); renderOwner(); } else toast("Couldn't save: " + esc(d.error));
+  return d;
+}
+async function ownerAddTeam(){ const v = document.getElementById("ovNewName").value.trim(); if(!v) return; document.getElementById("ovNewName").value=""; const d = await ownerPost({action:"teamAdd", name:v}); if(d.ok) toast(`<b>${esc(v)}</b> added — they'll see their name on the picker.`); }
+async function ownerRemoveTeam(n){ if(!confirm("Remove " + n + " from the name picker?")) return; await ownerPost({action:"teamRemove", name:n}); }
+function renderResults(){
+  if(!C) return;
+  const rs = [...(C.results||[])].sort((a,b)=>b.v-a.v), total = rs.reduce((a,r)=>a+(r.v||0),0), topV = rs.length ? rs[0].v : 0;
+  document.getElementById("rTotal").textContent = fmtV(total);
+  document.getElementById("rLine").textContent = rs.length ? `${rs.length} reel${rs.length===1?"":"s"} measured — the top clip came off a phone in your shop.` : "Numbers come from XC each month.";
+  document.getElementById("reelList").innerHTML = rs.map((r,k)=>`<div class="reel${r.v===topV&&r.v>0?" top":""}"><div class="l"><h3>${esc(r.n)}${r.v===topV&&r.v>0?'<span class="star">★ Top clip</span>':""}</h3><p class="by">Filmed by <b>${esc(r.by)}</b> · week ${r.wk}</p><button class="sharebtn" onclick="openShare(${k})">Share card ↗</button></div><div class="v"><div class="n">${fmtV(r.v)}</div><div class="u">views</div></div></div>`).join("");
+  const ap = C.approved || [];
+  document.getElementById("approvedHead").classList.toggle("hide", !ap.length);
+  document.getElementById("approvedList").innerHTML = ap.map(f=>{
+    const fb = (C.feedback||{})[f.id];
+    const chip = fb ? (fb.v==="love" ? '<span class="byme rcv">♥ loved' + (fb.by?` by ${esc(fb.by)}`:"") + '</span>' : '<span class="byme" style="color:var(--warn)">refinement requested</span>') : "";
+    return `<div class="reel"><div class="l"><h3 style="cursor:pointer" onclick="openPreview(${q(f.id)},${q(f.name)},'')">${esc(f.name.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,""))}</h3><p class="by">Tap title to watch</p>
+      <div style="display:flex;gap:6px;margin-top:8px;align-items:center">${chip || `<button class="sharebtn" onclick="reelFeedback(${q(f.id)},'love')">♥ Love it</button><button class="sharebtn" style="border-color:rgba(197,123,82,.4);color:var(--warn)" onclick="reelFeedback(${q(f.id)},'change')">Request a refinement</button>`}</div></div>
+      <div class="v" style="cursor:pointer" onclick="openPreview(${q(f.id)},${q(f.name)},'')"><div class="u">▶</div></div></div>`;
+  }).join("");
+}
+async function reelFeedback(fileId, verdict){
+  let note = "";
+  if(verdict === "change"){ note = prompt("What should we refine?") || ""; if(!note.trim()) return; }
+  const d = await apiPost({action:"feedback", code, fileId, verdict, note, by: me || "Someone"});
+  if(d.ok){ C = d; renderClient(); toast(verdict==="love" ? "<b>Nice.</b> XC sees the love." : "<b>Sent.</b> XC gets your note."); }
+  else toast("Couldn't send: "+esc(d.error));
+}
+function openPreview(id, title, note){
+  document.getElementById("pTitle").textContent = title; document.getElementById("pNote").textContent = note || "";
+  document.getElementById("pFrame").src = "https://drive.google.com/file/d/" + id + "/preview";
+  document.getElementById("pveil").classList.add("show"); document.getElementById("psheet").classList.add("show");
+}
+function closePreview(){ document.getElementById("pveil").classList.remove("show"); document.getElementById("psheet").classList.remove("show"); document.getElementById("pFrame").src = "about:blank"; }
 
-/* ── share card ── */
+/* share card */
 const MARK_PATH = "M4 3l9 8 9-8v5l-7 6.2c3.5 1 6 3.6 6 7.3 0 .5 0 1-.1 1.5h-4.2c.2-.5.3-1 .3-1.5 0-2.5-1.8-4.3-4-4.3s-4 1.8-4 4.3c0 .5.1 1 .3 1.5H5.1C5 22 5 21.5 5 21c0-3.7 2.5-6.3 6-7.3L4 8V3z";
-function wrapText(ctx, text, x, y, maxW, lh){
-  const words = text.split(" "); let line = "", yy = y;
-  for(const w of words){
-    const t = line ? line + " " + w : w;
-    if(ctx.measureText(t).width > maxW && line){ ctx.fillText(line, x, yy); line = w; yy += lh; }
-    else line = t;
-  }
-  ctx.fillText(line, x, yy); return yy + lh;
+const LOGO_IMG = new Image(); LOGO_IMG.src = "/logo.png";
+async function drawMark(ctx){
+  try { await LOGO_IMG.decode(); const h = 170, w = h * LOGO_IMG.width / LOGO_IMG.height; ctx.drawImage(LOGO_IMG, 96, 90, w, h); }
+  catch(e){ ctx.save(); ctx.translate(96,110); ctx.scale(5.2,5.2); ctx.fillStyle="#CDA85F"; ctx.fill(new Path2D(MARK_PATH)); ctx.restore(); }
 }
+function wrapText(ctx, text, x, y, maxW, lh){ const words = text.split(" "); let line = "", yy = y; for(const w of words){ const t = line ? line+" "+w : w; if(ctx.measureText(t).width > maxW && line){ ctx.fillText(line, x, yy); line = w; yy += lh; } else line = t; } ctx.fillText(line, x, yy); return yy + lh; }
 async function drawShareCard(r){
   try { await document.fonts.load('900 120px "Schibsted Grotesk"'); await document.fonts.load('700 200px "Space Mono"'); await document.fonts.load('400 40px "Space Mono"'); } catch(e){}
-  const c = document.getElementById("shareCanvas"), ctx = c.getContext("2d");
-  const W = 1080, H = 1920;
-  ctx.fillStyle = "#0A0A0A"; ctx.fillRect(0,0,W,H);
-  const g = ctx.createRadialGradient(W*0.85, H*0.12, 0, W*0.85, H*0.12, 700);
-  g.addColorStop(0, "rgba(205,168,95,.22)"); g.addColorStop(1, "rgba(205,168,95,0)");
-  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-  // mark
-  ctx.save(); ctx.translate(96, 110); ctx.scale(5.2, 5.2); ctx.fillStyle = "#CDA85F"; ctx.fill(new Path2D(MARK_PATH)); ctx.restore();
-  // eyebrow
-  ctx.fillStyle = "#CDA85F"; ctx.font = '400 30px "Space Mono", monospace';
-  ctx.fillText("MARRA & CO. CAFÉ  ·  JULY", 96, 340);
-  const hl = ctx.createLinearGradient(96, 0, 700, 0); hl.addColorStop(0, "#CDA85F"); hl.addColorStop(1, "rgba(205,168,95,0)");
-  ctx.fillStyle = hl; ctx.fillRect(96, 372, 600, 2);
-  // big number
-  ctx.fillStyle = "#E9D3A0"; ctx.font = '700 250px "Space Mono", monospace';
-  ctx.fillText(fmtV(r.v), 84, 740);
-  ctx.fillStyle = "#6E6B66"; ctx.font = '400 34px "Space Mono", monospace';
-  ctx.fillText("VIEWS", 96, 810);
-  // title
-  ctx.fillStyle = "#FFFFFF"; ctx.font = '900 104px "Schibsted Grotesk", Arial, sans-serif';
-  const endY = wrapText(ctx, r.n, 96, 1000, 900, 112);
-  // credit
-  ctx.fillStyle = "#A3A09B"; ctx.font = '500 44px "Schibsted Grotesk", Arial, sans-serif';
-  wrapText(ctx, `Filmed by ${r.by} — on a phone, behind the counter.`, 96, endY + 40, 900, 56);
-  // footer
-  ctx.fillStyle = "#2A2A2A"; ctx.fillRect(96, H-250, W-192, 1);
-  ctx.fillStyle = "#CDA85F"; ctx.font = '400 30px "Space Mono", monospace';
-  ctx.fillText("MARRA & CO.  ×  XC MEDIA", 96, H-170);
-  ctx.fillStyle = "#6E6B66"; ctx.font = '400 28px "Space Mono", monospace';
-  ctx.fillText("BECOME THE STANDARD.   xcmedia.co", 96, H-118);
+  const c = document.getElementById("shareCanvas"), ctx = c.getContext("2d"), W=1080, H=1920;
+  ctx.fillStyle="#0A0A0A"; ctx.fillRect(0,0,W,H);
+  const g = ctx.createRadialGradient(W*.85,H*.12,0,W*.85,H*.12,700); g.addColorStop(0,"rgba(205,168,95,.22)"); g.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  await drawMark(ctx);
+  ctx.fillStyle="#CDA85F"; ctx.font='400 30px "Space Mono", monospace'; ctx.fillText((C.name+"  ·  "+monthName(C.month)).toUpperCase(), 96, 340);
+  const hl = ctx.createLinearGradient(96,0,700,0); hl.addColorStop(0,"#CDA85F"); hl.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=hl; ctx.fillRect(96,372,600,2);
+  ctx.fillStyle="#E9D3A0"; ctx.font='700 250px "Space Mono", monospace'; ctx.fillText(fmtV(r.v), 84, 740);
+  ctx.fillStyle="#6E6B66"; ctx.font='400 34px "Space Mono", monospace'; ctx.fillText("VIEWS", 96, 810);
+  ctx.fillStyle="#FFFFFF"; ctx.font='900 104px "Schibsted Grotesk", Arial, sans-serif'; const endY = wrapText(ctx, r.n, 96, 1000, 900, 112);
+  ctx.fillStyle="#A3A09B"; ctx.font='500 44px "Schibsted Grotesk", Arial, sans-serif'; wrapText(ctx, `Filmed by ${r.by} — on a phone, in the shop.`, 96, endY+40, 900, 56);
+  ctx.fillStyle="#2A2A2A"; ctx.fillRect(96,H-250,W-192,1);
+  ctx.fillStyle="#CDA85F"; ctx.font='400 30px "Space Mono", monospace'; ctx.fillText((C.name+"  ×  XC MEDIA").toUpperCase(), 96, H-170);
+  ctx.fillStyle="#6E6B66"; ctx.font='400 28px "Space Mono", monospace'; ctx.fillText("BECOME THE STANDARD.   xcmedia.co", 96, H-118);
   return c.toDataURL("image/png");
 }
 async function openShare(k){
-  const r = S.results[k];
+  const rs = [...(C.results||[])].sort((a,b)=>b.v-a.v); const r = rs[k]; if(!r) return;
   document.getElementById("sTitle").textContent = r.v >= 20000 ? "Brag about it." : "Show it off.";
   const url = await drawShareCard(r);
-  const img = document.getElementById("shareImg"); img.src = url;
-  document.getElementById("shareDl").setAttribute("href", url);
-  document.getElementById("sveil").classList.add("show");
-  document.getElementById("ssheet").classList.add("show");
+  document.getElementById("shareImg").src = url;
+  const dl = document.getElementById("shareDl"); dl.setAttribute("href", url); dl.setAttribute("download", "xc-shots-card.png");
+  document.getElementById("sveil").classList.add("show"); document.getElementById("ssheet").classList.add("show");
 }
-function closeShare(){
-  document.getElementById("sveil").classList.remove("show");
-  document.getElementById("ssheet").classList.remove("show");
+function closeShare(){ document.getElementById("sveil").classList.remove("show"); document.getElementById("ssheet").classList.remove("show"); }
+
+/* month-wrap share card (owner history + XC tools) */
+function fitLine(ctx, text, x, y, maxW, px, family){
+  let s = px; ctx.font = `400 ${s}px ${family}`;
+  while(s > 18 && ctx.measureText(text).width > maxW){ s -= 1; ctx.font = `400 ${s}px ${family}`; }
+  let t = text; while(t.length > 4 && ctx.measureText(t).width > maxW){ t = t.slice(0, -2).trimEnd() + "…"; }
+  ctx.fillText(t, x, y);
+}
+function wrapClamp(ctx, text, x, y, maxW, lh, maxLines){
+  const words = text.split(" "); const lines = []; let line = "";
+  for(const w of words){ const t = line ? line+" "+w : w; if(ctx.measureText(t).width > maxW && line){ lines.push(line); line = w; } else line = t; }
+  if(line) lines.push(line);
+  if(lines.length > maxLines){ lines.length = maxLines; let last = lines[maxLines-1] + "…"; while(last.length > 4 && ctx.measureText(last).width > maxW){ last = last.slice(0, -2).trimEnd() + "…"; } lines[maxLines-1] = last; }
+  let yy = y; for(const l of lines){ ctx.fillText(l, x, yy); yy += lh; }
+  return yy;
+}
+async function drawRecapCard(name, r){
+  try { await document.fonts.load('900 120px "Schibsted Grotesk"'); await document.fonts.load('700 200px "Space Mono"'); await document.fonts.load('400 40px "Space Mono"'); } catch(e){}
+  const c = document.getElementById("shareCanvas"), ctx = c.getContext("2d"), W=1080, H=1920;
+  ctx.fillStyle="#0A0A0A"; ctx.fillRect(0,0,W,H);
+  const g = ctx.createRadialGradient(W*.85,H*.12,0,W*.85,H*.12,700); g.addColorStop(0,"rgba(205,168,95,.22)"); g.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  await drawMark(ctx);
+  ctx.fillStyle="#CDA85F"; fitLine(ctx, (name+"  ·  "+monthName(r.month)+"  —  THE WRAP").toUpperCase(), 96, 340, W-192, 30, '"Space Mono", monospace');
+  const hl = ctx.createLinearGradient(96,0,700,0); hl.addColorStop(0,"#CDA85F"); hl.addColorStop(1,"rgba(205,168,95,0)"); ctx.fillStyle=hl; ctx.fillRect(96,372,600,2);
+  ctx.fillStyle="#E9D3A0"; ctx.font='700 230px "Space Mono", monospace'; ctx.fillText(r.done+"/"+r.total, 84, 700);
+  ctx.fillStyle="#6E6B66"; ctx.font='400 34px "Space Mono", monospace'; ctx.fillText("SHOTS FILMED", 96, 770);
+  ctx.fillStyle="#FFFFFF"; ctx.font='900 150px "Schibsted Grotesk", Arial, sans-serif'; ctx.fillText(fmtV(r.views||0), 92, 990);
+  ctx.fillStyle="#6E6B66"; ctx.font='400 34px "Space Mono", monospace'; ctx.fillText("VIEWS THIS MONTH", 96, 1050);
+  if(r.top && r.top.n){
+    ctx.fillStyle="#CDA85F"; ctx.font='400 30px "Space Mono", monospace'; ctx.fillText("TOP CLIP", 96, 1230);
+    ctx.fillStyle="#FFFFFF"; ctx.font='900 84px "Schibsted Grotesk", Arial, sans-serif'; const endY = wrapClamp(ctx, r.top.n, 96, 1330, 900, 94, 2);
+    const byLine = (r.top.v ? fmtV(r.top.v)+" views" : "") + (r.top.by ? (r.top.v ? " — " : "") + "filmed by "+r.top.by+", on a phone, in the shop." : "");
+    if(byLine){ ctx.fillStyle="#A3A09B"; ctx.font='500 44px "Schibsted Grotesk", Arial, sans-serif'; wrapClamp(ctx, byLine, 96, endY+30, 900, 56, 2); }
+  }
+  ctx.fillStyle="#2A2A2A"; ctx.fillRect(96,H-250,W-192,1);
+  ctx.fillStyle="#CDA85F"; fitLine(ctx, (name+"  ×  XC MEDIA").toUpperCase(), 96, H-170, W-192, 30, '"Space Mono", monospace');
+  ctx.fillStyle="#6E6B66"; ctx.font='400 28px "Space Mono", monospace'; ctx.fillText("BECOME THE STANDARD.   xcmedia.co", 96, H-118);
+  return c.toDataURL("image/png");
+}
+async function openRecapShare(name, r){
+  if(!r) return;
+  document.getElementById("sTitle").textContent = "The month, wrapped.";
+  const url = await drawRecapCard(name, r);
+  document.getElementById("shareImg").src = url;
+  const dl = document.getElementById("shareDl"); dl.setAttribute("href", url); dl.setAttribute("download", "xc-month-wrap.png");
+  document.getElementById("sveil").classList.add("show"); document.getElementById("ssheet").classList.add("show");
+}
+function ownerShareRecap(m){ openRecapShare(C.name, (C.history||[]).find(x=>x.month===m)); }
+function mgShareRecap(m){ openRecapShare(mgState.name, (mgState.history||[]).find(x=>x.month===m)); }
+
+/* ═══════════════ XC side ═══════════════ */
+async function tryPin(){
+  const v = document.getElementById("pinInput").value.trim(); const err = document.getElementById("pinErr");
+  if(!v){ err.textContent = "Type your PIN."; return; }
+  err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
+  const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
+  const d = await apiGet({action:"roster", pin:v});
+  clearTimeout(t1); err.className = "err";
+  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Not it — server rejected that PIN (check line 16 + new version)."; return; }
+  err.textContent = "";
+  pin = v; LS.set("pin", v); roster = d; await enterXC();
+}
+function xcSignOut(){ pin = null; LS.set("pin", null); roster = null; dropCache("roster"); dropCache("today"); stopPoll(); document.body.classList.remove("xc"); try { history.replaceState(null, "", location.pathname); } catch(e){} gate("gateCode"); }
+async function enterXC(){
+  gate("app"); document.body.classList.add("xc"); try { history.replaceState(null, "", location.pathname + "?xc"); } catch(e){}
+  show("today");
+  const ct = readCache("today"), cr = readCache("roster");
+  if(cr){ roster = cr; renderRoster(); }
+  if(ct){ todayData = ct; renderToday(); loadToday(); }   // instant from cache, refresh behind it
+  else await loadToday();
+  startPoll(loadToday);
+  loadRoster();
+}
+async function loadRoster(){
+  const d = await apiGet({action:"roster", pin});
+  if(d.ok){ roster = d; writeCache("roster", d); renderRoster(); }
+  else if(d.error === "pin"){ pin = null; LS.set("pin", null); roster = null; dropCache("roster"); dropCache("today"); stopPoll(); gate("gatePin"); document.getElementById("pinErr").textContent = "Your saved PIN was rejected — enter it again."; }
+  else if(!roster){
+    document.getElementById("dashHead").textContent = "Can't reach the server — retrying…";
+    setTimeout(()=>{ if(!roster && pin) loadRoster(); }, 5000);
+  }
+}
+function renderRoster(){
+  if(!roster) return;
+  document.getElementById("dashEyebrow").textContent = `${monthName(roster.month)} · Week ${roster.week} · Your roster`;
+  const quiet = roster.clients.filter(c=>c.quietDays!==null && c.quietDays>=3).length;
+  document.getElementById("dashHead").textContent = roster.clients.length ? `${roster.clients.length} client${roster.clients.length===1?"":"s"} filming.${quiet?` ${quiet} gone quiet.`:""}` : "No clients yet.";
+  document.getElementById("roster").innerHTML = roster.clients.map(c=>{
+    const pct = c.total ? Math.round(c.done/c.total*100) : 0;
+    const st = c.quietDays!==null && c.quietDays>=3 ? `<span class="st behind">${c.quietDays} days quiet</span>` : (c.wkDone>=c.wkTotal && c.wkTotal ? '<span class="st ok">Week done</span>' : '<span class="st ok">On track</span>');
+    const nudge = c.quietDays!==null && c.quietDays>=3 ? `<button class="nudgebtn" onclick="event.stopPropagation();nudge()">Nudge ↗</button>` : "";
+    return `<button class="cl" onclick="openManage(${q(c.code)})"><div class="r1"><h3>${esc(c.name)}</h3><span style="display:flex;gap:8px;align-items:center">${nudge}${st}</span></div>
+      <div class="r2"><span>${c.done} of ${c.total} this month</span>${c.redos?`<span style="color:var(--warn)">${c.redos} redo out</span>`:""}${c.deliveriesPending?`<span style="color:var(--goldB)">${c.deliveriesPending} to review</span>`:""}<span>week: ${c.wkDone} of ${c.wkTotal}</span></div>
+      ${spark(c.weeks)}
+      <div class="bar"><i style="width:${pct}%"></i></div></button>`;
+  }).join("");
+}
+function nudge(){ toast("SMS drafted to the owner: <b>“Hey mate — week's shots are still open, three quick ones whenever suits. All good if it's a mad week, they'll roll.”</b> You hit send, not the robot."); }
+async function addClient(){
+  const n = document.getElementById("newClient").value.trim(); if(!n) return;
+  toast("Creating folders… <b>~20 seconds</b>.");
+  const d = await apiPost({action:"addClient", pin, name:n});
+  if(!d.ok){ toast("Couldn't add: " + esc(d.error)); return; }
+  document.getElementById("newClient").value = "";
+  toast(`<b>${esc(d.name)}</b> is live — code <b>${esc(d.code)}</b>.`);
+  await loadRoster();
 }
 
-function resetDemo(){
-  store.removeItem(KEY);
-  S = JSON.parse(JSON.stringify(DEFAULTS));
-  done = new Set(Object.keys(S.by).map(Number));
-  redo = new Set(S.redo);
-  document.getElementById("codeInput").value = "";
-  boot();
+/* manage */
+async function openManage(c){
+  mgCode = c; stopPoll(); editDocs = null;
+  document.getElementById("dash").classList.add("hide"); document.getElementById("manage").classList.remove("hide");
+  document.getElementById("mgName").textContent = "Loading…"; window.scrollTo({top:0});
+  await loadManage(); startPoll(loadManage);
 }
+function closeManage(){ document.getElementById("manage").classList.add("hide"); document.getElementById("dash").classList.remove("hide"); mgCode = null; startPoll(loadRoster); loadRoster(); }
+async function loadManage(){
+  if(!mgCode) return;
+  const [s, d] = await Promise.all([apiGet({action:"state", code:mgCode, pin}), apiGet({action:"deliveries", code:mgCode, pin})]);
+  if(s.ok) mgState = s; if(d.ok) mgDeliv = d;
+  renderManage();
+}
+function mtab(which){
+  const map = {shots:["mvShots","mtShots"], deliv:["mvDeliv","mtDeliv"], team:["mvTeam","mtTeam"], results:["mvResults","mtResults"], edit:["mvEdit","mtEdit"], tools:["mvTools","mtTools"]};
+  if(which==="tools") renderTools();
+  for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); document.getElementById(map[k][1]).classList.toggle("on", which===k); }
+  if(which==="edit" && !editShots) { editShots = JSON.parse(JSON.stringify(mgState.shots)); renderEdit(); }
+  if(which==="results" && !editResults) { editResults = JSON.parse(JSON.stringify(mgState.results||[])); renderResultsEdit(); }
+}
+function renderManage(){
+  const S = mgState; if(!S) return;
+  document.getElementById("mgEyebrow").textContent = `${monthName(S.month)} · code ${S.code}`;
+  document.getElementById("mgName").textContent = S.name;
+  document.getElementById("mgCode").textContent = S.code;
+  document.getElementById("driveUrl").value = S.drive || "";
+  const by = S.by||{}, redo = S.redo||{}, files = S.files||{};
+  const wkIdx = S.shots.map((s,i)=>[s,i]).filter(([s])=>s.w===S.week).map(([,i])=>i);
+  document.getElementById("mgMonth").textContent = `${Object.keys(by).length}/${S.shots.length}`;
+  document.getElementById("mgWeek").textContent = `${wkIdx.filter(i=>by[i]).length}/${wkIdx.length}`;
+  document.getElementById("mgRedo").textContent = String(Object.keys(redo).length);
+  document.getElementById("mgShots").innerHTML = S.shots.map((s,i)=>{
+    const isDone = !!by[i], isRedo = !!redo[i], fl = files[i]||[];
+    const who = isRedo ? '<span class="who out">redo out</span>' : isDone ? `<span class="who${fl.length?"":" todo"}">✓ ${esc(by[i])}${fl.length?"":" · no file yet"}</span>` : (fl.length ? '<span class="who">file in · not ticked</span>' : `<span class="who todo">wk ${s.w} · to-do</span>`);
+    const act = isDone ? `<button class="mact" onclick="openFlag(${i})">Flag redo</button>` : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : (fl.length ? `<button class="mact ok" onclick="xcTick(${i})">Mark filmed</button>` : "");
+    const fh = fl.length ? `<div class="files">${fl.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${esc(f.name.replace(/ — /," "))}</span></a>`).join("")}</div>` : "";
+    return `<div class="mrow${isRedo?" redo":""}"><div class="r"><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${act}</div>${fh}</div>`;
+  }).join("");
+  const un = files.unsorted||[];
+  document.getElementById("mgUnsorted").innerHTML = un.length ? `<p class="msect">Unsorted — dropped without picking a shot</p><div class="mrow"><div class="files">${un.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="">`:'<span class="th"></span>'}<span class="fn">${esc(f.name)}</span></a>`).join("")}</div></div>` : "";
+  document.getElementById("mgTeam").innerHTML = (S.team||[]).map(n=>`<span class="tchip">${esc(n)}<button aria-label="Remove ${esc(n)}" onclick="removeTeam(${q(n).replace(/"/g,'&quot;')})">✕</button></span>`).join("");
+  // deliveries
+  const D = mgDeliv || {pending:[], approved:[]};
+  document.getElementById("delivCount").textContent = D.pending.length ? `(${D.pending.length})` : "";
+  const fileRow = (f, btns) => `<div class="mrow"><div class="r"><a class="file" style="width:64px" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" style="width:64px;height:86px" src="${esc(f.thumb)}" alt="">`:'<span class="th" style="width:64px;height:86px"></span>'}</a><span class="nm">${esc(f.name)}<br><span class="by2 mono" style="font-size:9px;color:var(--dim)">${new Date(f.created).toLocaleDateString("en-AU")}</span></span>${btns}</div></div>`;
+  document.getElementById("mgPending").innerHTML = D.pending.length ? D.pending.map(f=>fileRow(f, `<button class="mact ok" onclick="approve(${q(f.id)})">Approve</button><button class="mact" onclick="openBack(${q(f.id)},${q(f.name)})">Send back</button>`)).join("") : '<p class="sub">Nothing waiting.</p>';
+  document.getElementById("mgApproved").innerHTML = D.approved.length ? D.approved.map(f=>fileRow(f, "")).join("") : '<p class="sub">None yet.</p>';
+  if(editShots) renderEdit(); if(editResults) renderResultsEdit();
+  renderTools();
+}
+async function act(body, okMsg){
+  const d = await apiPost(Object.assign({pin, code:mgCode}, body));
+  if(d.ok){ if(d.shots) mgState = d; else if(d.pending) mgDeliv = d; renderManage(); if(okMsg) toast(okMsg); }
+  else toast("Couldn't save: " + esc(d.error));
+  return d;
+}
+function openFlag(i){ flagIdx = i; flagSel = null; document.getElementById("fTitle").textContent = `Redo: ${mgState.shots[i].n}`; document.getElementById("fCustom").value = ""; document.getElementById("fChips").innerHTML = CANNED.map((c,k)=>`<button id="fc${k}" onclick="pickReason(${k})">${esc(c)}</button>`).join(""); document.getElementById("fveil").classList.add("show"); document.getElementById("fsheet").classList.add("show"); }
+function pickReason(k){ flagSel = k; CANNED.forEach((_,j)=>document.getElementById("fc"+j).classList.toggle("sel", j===k)); document.getElementById("fCustom").value = ""; }
+async function confirmFlag(){
+  const custom = document.getElementById("fCustom").value.trim();
+  const reason = custom || (flagSel!==null ? CANNED[flagSel] : null);
+  if(!reason){ toast("Pick a reason or write one — it's what their team sees."); return; }
+  closeFlag();
+  if(flagFromToday){
+    flagFromToday = false;
+    const inPlayer = document.getElementById("player").classList.contains("show");
+    if(inPlayer){ pi++; pShow(); }   // advance instantly, same feel as G — the save runs behind
+    const body = flagIdx===null || flagIdx===undefined
+      ? {action:"reviewGood", pin, code:mgCode, fileId:flagFile}   // unsorted clip: no shot to flag — just clear it from the queue
+      : {action:"reviewRedo", pin, code:mgCode, idx:flagIdx, reason, fileId:flagFile};
+    const d = await apiPost(body);
+    if(d.ok){ if(!inPlayer){ toast("<b>Redo requested.</b>"); loadToday(); } }
+    else toast("Redo didn't save — "+esc(d.error));
+    return;
+  }
+  await act({action:"redo", idx:flagIdx, reason}, "<b>Redo requested.</b> The orange card is on their phones now.");
+}
+function closeFlag(){ document.getElementById("fveil").classList.remove("show"); document.getElementById("fsheet").classList.remove("show"); }
+async function cancelRedo(i){ await act({action:"cancelRedo", idx:i}, "Redo cancelled."); }
+async function xcTick(i){ await act({action:"tick", idx:i, by:"Team"}, "Marked filmed — counts toward their month."); }
+function openDelete(){
+  const S = mgState; if(!S) return;
+  document.getElementById("dWhat").innerHTML = `You're about to delete <b style="color:var(--ink)">${esc(S.name)}</b> (code ${esc(S.code)}).`;
+  document.getElementById("dCode").value = ""; document.getElementById("dPin").value = ""; document.getElementById("dErr").textContent = "";
+  document.getElementById("dveil").classList.add("show"); document.getElementById("dsheet").classList.add("show");
+}
+function closeDelete(){ document.getElementById("dveil").classList.remove("show"); document.getElementById("dsheet").classList.remove("show"); }
+async function confirmDelete(){
+  const S = mgState; if(!S) return;
+  const err = document.getElementById("dErr");
+  const typedCode = document.getElementById("dCode").value.trim().toUpperCase();
+  const typedPin = document.getElementById("dPin").value.trim();
+  if(typedCode !== S.code){ err.textContent = "Code doesn't match — type " + S.code + " exactly."; return; }
+  if(!typedPin){ err.textContent = "Enter your PIN."; return; }
+  err.textContent = "Deleting…";
+  const d = await apiPost({action:"removeClient", pin: typedPin, code: S.code});
+  if(!d.ok){ err.textContent = d.error === "pin" ? "Wrong PIN — nothing deleted." : "Couldn't delete: " + d.error; return; }
+  closeDelete(); roster = d;
+  toast(`<b>${esc(S.name)}</b> deleted. Their footage vault is untouched.`);
+  closeManage();
+}
+async function addTeam(){ const v = document.getElementById("newName").value.trim(); if(!v) return; document.getElementById("newName").value=""; await act({action:"teamAdd", name:v}, `<b>${esc(v)}</b> added — on the picker next open.`); }
+async function removeTeam(n){ await act({action:"teamRemove", name:n}); }
+async function approve(id){ await act({action:"approve", fileId:id}, "<b>Approved.</b> It's on their Results tab now."); }
+function openBack(id, name){ backFile = id; document.getElementById("bTitle").textContent = `Send back: ${name}`; document.getElementById("bNote").value = ""; document.getElementById("bveil").classList.add("show"); document.getElementById("bsheet").classList.add("show"); }
+function closeBack(){ document.getElementById("bveil").classList.remove("show"); document.getElementById("bsheet").classList.remove("show"); }
+async function confirmBack(){ const note = document.getElementById("bNote").value.trim(); if(!note){ toast("Say what to change."); return; } closeBack(); await act({action:"sendBack", fileId:backFile, note}, "Sent back with your note."); }
+/* results editor */
+function renderResultsEdit(){
+  document.getElementById("mgResults").innerHTML = editResults.map((r,k)=>`<div class="rrow"><span class="nm"><input style="background:transparent;border:0;border-bottom:1px solid var(--hair);color:var(--ink);font:inherit;width:100%;outline:none" value="${esc(r.n)}" oninput="editResults[${k}].n=this.value"><br><span class="by2">by <input style="background:transparent;border:0;color:var(--goldB);font:inherit;width:70px;outline:none" value="${esc(r.by)}" oninput="editResults[${k}].by=this.value"> · wk <input style="background:transparent;border:0;color:var(--goldB);font:inherit;width:24px;outline:none" value="${r.wk}" oninput="editResults[${k}].wk=Number(this.value)||0"></span></span><input type="number" inputmode="numeric" value="${r.v}" oninput="editResults[${k}].v=Number(this.value)||0"><button class="mact" onclick="editResults.splice(${k},1);renderResultsEdit()">✕</button></div>`).join("") || '<p class="sub">No reels measured yet — add one.</p>';
+}
+function addReel(){ const v = document.getElementById("newReel").value.trim(); if(!v) return; editResults.push({n:v, by:"", wk:mgState.week, v:0}); document.getElementById("newReel").value=""; renderResultsEdit(); }
+async function saveResults(){ await act({action:"results", results:editResults}, "<b>Results saved.</b> Their tab updated."); }
+/* shot list editor */
+function renderEdit(){
+  document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>`<div class="shotedit"><span class="i">${k+1}</span><input value="${esc(s.n)}" oninput="editShots[${k}].n=this.value" placeholder="Shot name"><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select></div>`).join("");
+}
+async function saveShots(){ const d = await act({action:"shots", shots:editShots}, "<b>Shot list saved.</b> Drop folders renamed to match."); if(d.ok) editShots = null; }
+async function newMonth(){ if(!confirm("Start a new month? Ticks and redos clear (results stay). Do this after the month's reels are delivered.")) return; await act({action:"month"}, "<b>New month started.</b>"); }
+
+/* ═══════════════ shared ═══════════════ */
+function show(view){
+  document.getElementById("manage").classList.add("hide");
+  ["today","dash","client"].forEach(id => document.getElementById(id).classList.toggle("hide", view!==id));
+  document.getElementById("nvToday").classList.toggle("on", view==="today");
+  document.getElementById("nvClients").classList.toggle("on", view==="dash" );
+  window.scrollTo({top:0});
+}
+function xcnav(view){ show(view); if(view==="today"){ loadToday(); startPoll(loadToday); } else { loadRoster(); startPoll(loadRoster); } }
+function monthName(m){ const mm = String(m||"").match(/^(\d{4})-(\d{2})/); if(!mm) return String(m||""); return new Date(Number(mm[1]), Number(mm[2])-1, 1).toLocaleDateString("en-AU", {month:"long", year:"numeric"}); }
+let toastT; function toast(msg){ const t = document.getElementById("toast"); t.innerHTML = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3800); }
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeFlag(); closeBack(); closePreview(); closeShare(); } });
+/* ── sparkline ── */
+function spark(weeks){
+  if(!weeks || !weeks.length) return "";
+  return '<span class="spark">' + weeks.slice(-4).map(w=>{
+    const r = w.total ? w.done/w.total : 0;
+    return `<i style="height:${Math.max(2, Math.round(r*16))}px" class="${r>=0.75?"hi":""}"></i>`;
+  }).join("") + '</span>';
+}
+
+/* ── TODAY queue ── */
+let todayData = null;
+async function loadToday(){
+  const d = await apiGet({action:"today", pin});
+  if(d.ok){ todayData = d; writeCache("today", d); renderToday(); }
+  else if(d.error === "pin"){ pin=null; LS.set("pin",null); dropCache("roster"); dropCache("today"); gate("gatePin"); }
+  else if(d.error === "unknown action"){
+    document.getElementById("todayHead").textContent = "Backend update needed.";
+    document.getElementById("todayBody").innerHTML = '<p class="sub" style="max-width:360px">The Today queue needs backend v2.0 — paste the new script, set your PIN, deploy a New version. Clients still works meanwhile.</p>';
+    xcnav("dash");
+  }
+  else if(!todayData){
+    document.getElementById("todayHead").textContent = "Can't reach the server — retrying…";
+    setTimeout(()=>{ if(!todayData && pin) loadToday(); }, 5000);
+  }
+}
+function renderToday(){
+  const T = todayData; if(!T) return;
+  document.getElementById("todayEyebrow").textContent = `${monthName(T.month)} · Week ${T.week} · Today`;
+  const total = T.counts.deliveries + T.counts.fresh + T.counts.quiet + T.counts.redos + (T.counts.feedback || 0);
+  const badge = document.getElementById("todayN");
+  badge.classList.toggle("hide", !total); badge.textContent = total;
+  const head = document.getElementById("todayHead");
+  const body = document.getElementById("todayBody");
+  if(!total){
+    head.textContent = "Nothing needs you.";
+    body.innerHTML = '<div class="zero"><div class="big">All clear.</div><div class="sml">Go film something — or go home.</div></div>';
+    return;
+  }
+  head.textContent = `${total} thing${total===1?"":"s"} need${total===1?"s":""} you.`;
+  let h = "";
+  const reviewables = T.deliveries.length + T.fresh.length;
+  if(reviewables) h += `<div class="sheetbtns" style="max-width:420px;margin-top:16px"><button class="bigbtn" onclick="openPlayer()">▶ Review all ${reviewables} clip${reviewables===1?"":"s"}</button></div>`;
+  if(T.deliveries.length){
+    h += stackHead("To review — from the editor", T.deliveries.length) + '<div class="tq">' + T.deliveries.map((x,k)=>
+      `<div class="tcard">${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th" onclick="openPreview('+q(x.file.id)+','+q(x.file.name)+',\'\')"></span>'}
+       <div class="b"><h4>${esc(x.client)}</h4><p class="m">${esc(x.file.name)}</p>
+       <div class="acts"><button class="mact ok" onclick="tqApprove(${q(x.code)},${q(x.file.id)})">Approve</button><button class="mact" onclick="mgCode=${q(x.code)};openBack(${q(x.file.id)},${q(x.file.name)})">Send back</button></div></div></div>`).join("") + "</div>";
+  }
+  if(T.fresh.length){
+    h += stackHead("Fresh footage in", T.fresh.length) + '<div class="tq">' + T.fresh.map(x=>
+      `<div class="tcard">${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th"></span>'}
+       <div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${esc(x.file.name)}</p>
+       <div class="acts"><button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)},${x.idx===null?"null":x.idx})">Good ✓</button><button class="mact" onclick="tqRedo(${q(x.code)},${x.idx===null?"null":x.idx},${q(x.file.id)},${q(x.shot)})">Flag redo</button></div></div></div>`).join("") + "</div>";
+  }
+  if(T.quiet.length){
+    h += stackHead("Going quiet", T.quiet.length) + '<div class="tq">' + T.quiet.map(x=>
+      `<div class="tcard warn"><div class="b"><h4>${esc(x.client)}</h4><p class="m">${x.quietDays===null?"no ticks yet":"quiet "+x.quietDays+" days"} · week ${x.wkDone} of ${x.wkTotal}</p>
+       <div class="acts"><button class="nudgebtn" onclick="nudge()">Nudge ↗</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
+  }
+  if(T.feedback && T.feedback.length){
+    h += stackHead("Client refinements", T.feedback.length) + '<div class="tq">' + T.feedback.map(x=>
+      `<div class="tcard${x.v==="change"?" warn":""}"><div class="b"><h4>${esc(x.client)} — ${x.v==="love"?"♥ loved":"refinement requested"}</h4><p class="m">${esc(x.by)}${x.note?": "+esc(x.note):""}</p>
+       <div class="acts"><button class="mact ok" onclick="ackFb(${q(x.code)},${q(x.fileId)})">Got it</button><button class="mact cancel" onclick="openPreview(${q(x.fileId)},'Reel','')">Watch</button></div></div></div>`).join("") + "</div>";
+  }
+  if(T.redosAging.length){
+    h += stackHead("Redos aging", T.redosAging.length) + '<div class="tq">' + T.redosAging.map(x=>
+      `<div class="tcard warn"><div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${x.days===null?"":"out "+x.days+" days · "}${esc(x.reason)}</p>
+       <div class="acts"><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
+  }
+  body.innerHTML = h;
+}
+function stackHead(t, n){ return `<div class="stack"><div class="stackhead"><span class="t">${t}</span><span class="line"></span><span class="ct">${n}</span></div></div>`; }
+async function ackFb(code, fileId){ const d = await apiPost({action:"ackFeedback", pin, code, fileId}); if(d.ok){ toast("Acknowledged."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
+async function tqApprove(code, fileId){ const d = await apiPost({action:"approve", pin, code, fileId}); if(d.ok){ toast("<b>Approved.</b>"); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
+async function tqGood(code, fileId, idx){ const d = await apiPost({action:"reviewGood", pin, code, fileId, idx}); if(d.ok){ toast("Marked good — shot counted as done."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
+function tqRedo(code, idx, fileId, shot){ mgCode = code; flagIdx = idx; flagFile = fileId; flagShot = shot; openFlagToday(shot); }
+let flagFile = null, flagShot = null, flagFromToday = false;
+function openFlagToday(shot){ flagFromToday = true; flagSel = null; document.getElementById("fTitle").textContent = `Redo: ${shot}`; document.getElementById("fCustom").value = ""; document.getElementById("fChips").innerHTML = CANNED.map((c,k)=>`<button id="fc${k}" onclick="pickReason(${k})"><b style="color:var(--gold);font-family:'Space Mono',monospace;margin-right:7px">${k+1}</b>${esc(c)}</button>`).join(""); document.getElementById("fveil").classList.add("show"); document.getElementById("fsheet").classList.add("show"); }
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("fsheet").classList.contains("show") || !flagFromToday) return;
+  if(document.activeElement === document.getElementById("fCustom")) return;   // typing a custom reason
+  const k = e.key;
+  if(k==="1"||k==="2"||k==="3"){ e.preventDefault(); pickReason(Number(k)-1); confirmFlag(); }
+});
+
+/* ── REVIEW PLAYER ── */
+let pq = [], pi = 0;
+function openPlayer(){
+  const T = todayData; if(!T) return;
+  pq = T.deliveries.map(x=>({kind:"delivery", code:x.code, client:x.client, shot:"Delivered", file:x.file}))
+     .concat(T.fresh.map(x=>({kind:"fresh", code:x.code, client:x.client, shot:x.shot, idx:x.idx, file:x.file})));
+  if(!pq.length) return;
+  pi = 0; document.getElementById("player").classList.add("show"); pShow();
+}
+function pShow(){
+  if(pi >= pq.length){ closePlayer(); toast("<b>Queue clear.</b>"); loadToday(); return; }
+  const it = pq[pi];
+  document.getElementById("pInfo").innerHTML = `<b>${esc(it.client)}</b> — ${esc(it.shot)}`;
+  document.getElementById("pCount").textContent = (pi+1) + " / " + pq.length;
+  document.getElementById("pApprove").classList.toggle("hide", it.kind !== "delivery");
+  document.getElementById("pVid").src = it.file.preview;
+}
+function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; if(pin) loadToday(); }
+async function pGood(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"reviewGood", pin, code:it.code, fileId:it.file.id, idx: it.idx===undefined?null:it.idx}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
+async function pApprove(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"approve", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
+function pRedo(){ const it = pq[pi]; mgCode = it.code; flagIdx = it.idx===undefined?null:it.idx; flagFile = it.file.id; openFlagToday(it.shot); }
+function pSkip(){ pi++; pShow(); }
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("player").classList.contains("show")) return;
+  if(document.getElementById("fsheet").classList.contains("show")) return;
+  const k = e.key.toLowerCase();
+  if(k==="g") pGood(); else if(k==="r") pRedo(); else if(k==="a" && pq[pi] && pq[pi].kind==="delivery") pApprove(); else if(k==="s") pSkip(); else if(k==="escape") closePlayer();
+});
+
+/* ── owner mode ── */
+function ownerStart(){
+  gate("gateOwner");
+  const oc = LS.get("ownercode"); if(oc) document.getElementById("ownCode").value = oc;
+  setTimeout(()=>document.getElementById(oc ? "ownPin" : "ownCode").focus(), 60);
+}
+async function tryOwner(){
+  const oc = document.getElementById("ownCode").value.trim().toUpperCase();
+  const op = document.getElementById("ownPin").value.trim();
+  const err = document.getElementById("ownErr"); const btn = document.getElementById("ownBtn");
+  if(!oc || !op){ err.textContent = "Both boxes — code and PIN."; return; }
+  btn.disabled = true; err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
+  const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
+  const d = await apiGet({action:"state", code:oc, owner:op});
+  clearTimeout(t1); btn.disabled = false; err.className = "err";
+  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Code didn't match a client."; return; }
+  if(d.role < 1){ err.textContent = "PIN didn't match — check with XC."; return; }
+  err.textContent = "";
+  LS.set("ownercode", oc); LS.set("ownerpin", op);
+  ownerEnter(d);
+}
+function ownerEnter(d, quiet){
+  code = d.code; LS.set("code", d.code); C = d; me = LS.get("me") || "Owner";
+  writeCache("owner", d);
+  gate("app"); show("client"); document.getElementById("meName").textContent = me;
+  renderClient(); startPoll(async()=>{ const r = await apiGet({action:"state", code, owner: LS.get("ownerpin")}); if(r.ok){ C = r; writeCache("owner", r); renderClient(); } });
+  if(!quiet) toast("<b>Owner view</b> — progress, results, history and your documents.");
+}
+async function ownerLoad(){
+  const oc = LS.get("ownercode"), op = LS.get("ownerpin");
+  if(!oc || !op) return;
+  const d = await apiGet({action:"state", code:oc, owner:op});
+  if(d.ok && d.role >= 1){
+    writeCache("owner", d);
+    if(C && !document.getElementById("app").classList.contains("hide")){ C = d; renderClient(); }   // already in from cache — just refresh
+    else ownerEnter(d, true);
+  }
+  else if(d.error !== "network"){ LS.set("ownerpin", null); dropCache("owner"); stopPoll(); ownerStart(); }
+}
+
+/* ── tools tab ── */
+function printCard(){ window.open("/card/?name=" + encodeURIComponent(mgState.name) + "&code=" + encodeURIComponent(mgState.code), "_blank", "noopener"); }
+async function saveOwnerEmail(){ const v = document.getElementById("ownerEmailInput").value.trim(); const d = await apiPost({action:"setOwnerEmail", pin, code:mgCode, ownerEmail:v}); if(d.ok){ toast(v ? "<b>Owner email saved</b> — they get the month-wrap email at close." : "Owner email cleared."); mgState = d; } else toast("Couldn't: "+esc(d.error)); }
+function addDoc(){ const l = document.getElementById("docLabel").value.trim(), u = document.getElementById("docUrl").value.trim(); if(!l || !/^https:\/\//.test(u)){ toast("Need a label and a full https:// link."); return; } editDocs.push({label:l, url:u}); document.getElementById("docLabel").value=""; document.getElementById("docUrl").value=""; renderTools(); }
+async function saveDocs(){ const d = await apiPost({action:"setDocs", pin, code:mgCode, docs:editDocs}); if(d.ok){ toast("<b>Documents saved.</b> The owner sees them now."); mgState = d; editDocs = null; renderTools(); } else toast("Couldn't: "+esc(d.error)); }
+async function saveOwnerPin(){ const v = document.getElementById("ownerPinInput").value.trim(); const d = await apiPost({action:"setOwnerPin", pin, code:mgCode, ownerPin:v}); if(d.ok){ toast(v ? "<b>Owner PIN set.</b> Give it to the owner with their code." : "Owner PIN cleared."); mgState = d; renderManage(); } else toast("Couldn't: "+esc(d.error)); }
+async function closeMonth(){
+  if(!confirm("Close the month for " + mgState.name + "? Recap is archived, ticks and redos clear.")) return;
+  const d = await apiPost({action:"monthClose", pin, code:mgCode, results: mgState.results || []});
+  if(!d.ok){ toast("Couldn't: "+esc(d.error)); return; }
+  mgState = d.state; renderManage();
+  const r = d.recap;
+  document.getElementById("recapBox").innerHTML = `<div class="recap"><div class="rn">${r.done}/${r.total} filmed · ${fmtV(r.views)} views</div><p>${esc(monthName(r.month))} wrapped.${r.top?` Top clip: <b style="color:var(--goldB)">${esc(r.top.n)}</b> (${fmtV(r.top.v)})${r.top.by?", filmed by "+esc(r.top.by):""}.`:""} Fresh month is live for the team.</p><button class="sharebtn" style="margin-top:10px" onclick="mgShareRecap(${q(r.month)})">Share image ↗</button></div>`;
+  toast("<b>Month closed.</b> Recap archived.");
+}
+let editDocs = null;
+function renderTools(){
+  if(!mgState) return;
+  document.getElementById("ownerPinState").textContent = mgState.hasOwnerPin ? "OWNER PIN IS SET" : "NO OWNER PIN YET";
+  const em = document.getElementById("ownerEmailInput"); if(document.activeElement !== em) em.value = mgState.ownerEmail || "";
+  if(!editDocs) editDocs = JSON.parse(JSON.stringify(mgState.docs || []));
+  document.getElementById("docsEdit").innerHTML = editDocs.length
+    ? editDocs.map((d,k)=>`<div class="mrow"><div class="r"><span class="nm">${esc(d.label)}</span><span class="who" style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(d.url)}</span><button class="mact" onclick="editDocs.splice(${k},1);renderTools()">✕</button></div></div>`).join("")
+    : '<p class="sub">No documents yet.</p>';
+  const hist = mgState.history || [];
+  document.getElementById("mgHistory").innerHTML = hist.length ? hist.slice().reverse().map(h=>
+    `<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span><button class="mact" onclick="mgShareRecap(${q(h.month)})">Share ↗</button></div></div>`).join("")
+    : '<p class="sub">No closed months yet.</p>';
+}
+
+/* ── editor workspace ── */
+function enterEditorGate(){
+  document.body.classList.add("xc");
+  gate("gatePin");
+  document.querySelector("#gatePin h1").textContent = "Editor PIN.";
+  document.querySelector("#gatePin .eyebrow").textContent = "Editor workspace";
+  window.tryPin = async function(){
+    const v = document.getElementById("pinInput").value.trim(); const err = document.getElementById("pinErr");
+    if(!v){ err.textContent = "Type your PIN."; return; }
+    err.textContent = "Checking…";
+    const d = await apiGet({action:"editor", pin:v});
+    if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server." : "Not it."; return; }
+    LS.set("editorpin", v); renderEditorQueue(d);
+  };
+  const saved = LS.get("editorpin");
+  if(saved) apiGet({action:"editor", pin:saved}).then(d=>{ if(d.ok) renderEditorQueue(d); });
+}
+function renderEditorQueue(d){
+  gate("app"); show("dash");
+  document.getElementById("dashEyebrow").textContent = "Editor workspace";
+  document.getElementById("dashHead").textContent = d.clients.length + " client" + (d.clients.length===1?"":"s") + ".";
+  document.querySelector("#dash .sub").textContent = "Footage in → cut → drop finished reels in Delivered. Sent-back notes appear here.";
+  document.querySelector("#dash .addteam").classList.add("hide");
+  document.querySelector("#dash .demonote").innerHTML = '<b>DELIVERY —</b> upload finished reels into each client\'s Delivered folder. XC reviews in the app.';
+  document.getElementById("roster").innerHTML = d.clients.map(c=>`
+    <div class="cl" style="cursor:default"><div class="r1"><h3>${esc(c.client)}</h3><span class="st ok">${c.clipsIn} clips in</span></div>
+    <div class="r2"><a class="lnk" href="${esc(c.footageUrl)}" target="_blank" rel="noreferrer">Footage folder ↗</a><a class="lnk" href="${esc(c.deliveredUrl)}" target="_blank" rel="noreferrer">Delivered folder ↗</a></div>
+    ${c.sentBack.length?`<div class="mlist" style="margin-top:10px">${c.sentBack.map(f=>`<div class="mrow"><div class="r"><span class="nm">${esc(f.name)}</span><span class="who out">sent back</span></div>${f.note?`<p class="m" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--warn)">${esc(f.note)}</p>`:""}</div>`).join("")}</div>`:""}
+    </div>`).join("");
+}
+
+document.getElementById("buildA").textContent = "v" + BUILD; document.getElementById("buildB").textContent = "v" + BUILD;
+if("serviceWorker" in navigator){ try { navigator.serviceWorker.register("/sw.js"); } catch(e){} }
+
+/* ═══════════════ DEMO MODE (injected by make-demo.js — do not edit demo/index.html by hand) ═══════════════ */
+(function(){
+  // sandbox localStorage so the demo NEVER touches a real client's saved code/state on this device
+  const demoLS = { "xcs.code":"DEMO", "xcs.me":"Jess", "xcs.guided":"1" };
+  LS.get = k => (("xcs."+k) in demoLS) ? demoLS["xcs."+k] : null;
+  LS.set = (k,v) => { if(v===null) delete demoLS["xcs."+k]; else demoLS["xcs."+k] = String(v); };
+  code = "DEMO"; me = "Jess"; pin = null;
+
+  const SEED = {
+    code:"DEMO", name:"Forge Performance", month:"2026-08", week:4, role:1,
+    team:["Jess","Marco","Tay"],
+    drive:"https://drive.google.com",
+    shots:[
+      {w:1,t:"wide", n:"The 6am class arriving",      h:"Doors open, people walking in, lights coming on.", d:"Class time", steps:["Stand at the back corner, phone level.","Start filming 30 seconds before the doors open.","Let people walk through frame — don't follow them."], dont:"Don't ask anyone to wave. Natural beats staged every time."},
+      {w:1,t:"mid",  n:"Coach fixing a squat",        h:"Hands-on coaching moment, one member, real cue.",  d:"Any session", steps:["Film from the side so the squat depth is visible.","Get the coach's hands and the member in one frame.","Hold for a slow count of 20 — the fix is the story."], dont:"Don't interrupt the set to re-shoot. Catch the next one."},
+      {w:1,t:"close",n:"Chalk hands close-up",        h:"Hands clapping chalk before a big lift.",          d:"PB attempts", steps:["Get within a metre — fill the screen with hands.","Film a 3-count before the clap so we have lead-in.","Keep the bar in the background if you can."], dont:"Don't use slow-mo — we do that in the edit."},
+      {w:2,t:"mid",  n:"PB celebration",              h:"The moment after a personal best lands.",          d:"PB attempts", steps:["When someone's going for a PB, quietly start filming early.","Keep both the lifter and whoever's cheering in frame.","Let it run — the 10 seconds after the lift is the gold."], dont:"Don't cut the clip the second the bar drops."},
+      {w:2,t:"close",n:"The whiteboard WOD",          h:"Today's workout on the board, marker in hand.",    d:"Before class", steps:["Film the coach writing the last two lines.","Get the marker squeak — sound matters here.","Finish on the full board, hold 5 seconds."], dont:"Don't film an empty board — we need the writing."},
+      {w:2,t:"wide", n:"Banter between sets",         h:"Two or three members talking, laughing, resting.", d:"Any session", steps:["Film from across the room — long and unnoticed.","30 seconds minimum so we can cut around it.","Faces and laughter beat perfect framing."], dont:"Don't get close enough to change the vibe."},
+      {w:3,t:"wide", n:"New member first session",    h:"A first-timer being shown around, first warm-up.", d:"Intro sessions", steps:["Ask them once at the start: 'ok if we film a bit?'","Catch the handshake / walk-around moment.","Then the first exercise attempt — nerves and all."], dont:"Don't film anyone who hasn't said yes."},
+      {w:3,t:"mid",  n:"Sled push burnout",           h:"End-of-class finisher, effort on faces.",          d:"Class time", steps:["Kneel at the end of the sled lane, phone low.","Let them push TOWARD you — stop before they reach you.","Two or three pushes from the same spot is plenty."], dont:"Don't stand where they'll have to swerve."},
+      {w:3,t:"close",n:"Protein shake ritual",        h:"Post-session shaker, gym logo visible.",           d:"After class", steps:["Counter-height, logo on the shaker facing the phone.","Film the scoop, the shake, the first sip.","Keep it under 30 seconds total."], dont:"Don't stage it with someone who doesn't drink them."},
+      {w:4,t:"mid",  n:"Coach demo: deadlift setup",  h:"The coach teaching setup from the floor up.",      d:"Any session", steps:["Side-on, whole body in frame, bar visible.","Film the full demo — feet, grip, brace, pull.","Get the one-line cue they say every time."], dont:"Don't zoom mid-clip — pick a frame and hold it."},
+      {w:4,t:"wide", n:"Member testimonial ask",      h:"One member, one question: 'why do you keep coming back?'", d:"After class", steps:["Quiet corner, gym visible behind them.","Ask the question OFF camera, let them answer to you.","One take is enough — real beats polished."], dont:"Don't hand them a script. Ever."},
+      {w:4,t:"wide", n:"Empty gym, lights on",        h:"The room at rest — racks, chalk dust, quiet.",     d:"Open or close", steps:["Film a slow 10-second walk down the middle.","Keep the phone chest-height and steady.","One take at open, one at close — send both."], dont:"Don't tidy up first. The mess is the story."}
+    ],
+    by:{0:"Marco",1:"Jess",2:"Tay",3:"Marco",4:"Jess",5:"Jess",6:"Tay",7:"Marco",8:"Jess",9:"Jess"},
+    received:{0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1,8:1},
+    redo:{10:1},
+    reasons:{10:"Bit dark — try again nearer the window. The question and the answer were perfect."},
+    files:{},
+    results:[
+      {n:"PB celebration reel", v:18400, by:"Marco", wk:2},
+      {n:"6am — doors open",    v:9600,  by:"Jess",  wk:1},
+      {n:"Fix your squat in 20 seconds", v:6100, by:"Jess", wk:3}
+    ],
+    approved:[
+      {id:"demo1", name:"2026-08-24 0930 — Sled finisher reel"},
+      {id:"demo2", name:"2026-08-26 1600 — Coach cue: brace"}
+    ],
+    feedback:{ demo2:{v:"love", by:"Dana", at:1} },
+    docs:[
+      {label:"August invoice",     url:"https://buy.stripe.com/demo"},
+      {label:"Service agreement",  url:"https://example.com/agreement"},
+      {label:"July results report",url:"https://example.com/report"}
+    ],
+    weeks:[{done:3,total:3},{done:3,total:3},{done:3,total:3},{done:1,total:3}],
+    history:[{month:"2026-07", done:11, total:12, views:41300, top:{n:"Member transformation — 12 weeks", v:15200}}]
+  };
+  let demoState = JSON.parse(JSON.stringify(SEED));
+  const snap = () => Object.assign({ok:true}, JSON.parse(JSON.stringify(demoState)));
+  const delay = () => new Promise(r => setTimeout(r, 200 + Math.random()*300));
+  function route(p){
+    const a = p.action;
+    if(a === "ping") return {ok:true, v:"demo"};
+    if(a === "hello") return {ok:true, code:demoState.code, name:demoState.name, team:demoState.team};
+    if(a === "tick"){ demoState.by[p.idx] = p.by || "Someone"; delete demoState.redo[p.idx]; delete demoState.reasons[p.idx]; return snap(); }
+    if(a === "untick"){ delete demoState.by[p.idx]; return snap(); }
+    if(a === "feedback"){ demoState.feedback[p.fileId] = {v:p.verdict, note:p.note||"", by:p.by||"You", at:Date.now()}; return snap(); }
+    if(a === "teamAdd"){ if(p.name && demoState.team.indexOf(p.name) === -1) demoState.team.push(p.name); return snap(); }
+    if(a === "teamRemove"){ demoState.team = demoState.team.filter(n => n !== p.name); return snap(); }
+    return snap();   // state + anything else → current state
+  }
+  apiGet  = async p => { inflight++; syncUI("busy"); await delay(); inflight--; syncUI("live"); return route(p); };
+  apiPost = async b => { inflight++; syncUI("busy"); await delay(); inflight--; syncUI("live"); return route(b); };
+  warm = () => {};   // no real server to wake
+
+  // demo-safe intercepts
+  upload = () => toast("In the real app this opens your studio's <b>Drive drop folder</b> — film, upload, done.");
+  openPreview = () => toast("In the real app the reel <b>plays right here</b>.");
+  document.addEventListener("click", e => {
+    const a = e.target.closest("#ovDocs a");
+    if(a){ e.preventDefault(); toast("In the real app this opens the actual document — invoices are <b>pay-online</b>, one tap."); }
+  }, true);
+
+  // ribbon
+  const bar = document.createElement("div");
+  bar.innerHTML = 'SAMPLE STUDIO — every number in here is demo data · <a href="https://xcmedia.co" style="color:var(--gold);text-decoration:none;font-weight:700">get this for your business ↗</a>';
+  bar.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(10,10,10,.92);backdrop-filter:blur(6px);border-top:1px solid var(--hair);color:var(--dim);font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:9px 14px;";
+  document.body.appendChild(bar);
+})();
+
 boot();
 </script>
+</html>
