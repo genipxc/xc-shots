@@ -85,7 +85,7 @@
   .mstat{display:flex;gap:10px;margin-top:16px}.mstat .box{flex:1;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px}.mstat .n{font-family:'Space Mono',monospace;font-weight:700;font-size:19px;color:var(--goldB);font-variant-numeric:tabular-nums}.mstat .l{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:3px}
   .mrow{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:11px 13px}.mrow.redo{border-color:var(--warn)}
   .mrow .r{display:flex;align-items:center;gap:10px}.mrow .nm{flex:1;min-width:0;font-weight:700;font-size:13.5px}
-  .mrow .who{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;flex:none}.mrow .who.todo{color:var(--dim)}.mrow .who.out{color:var(--warn)}
+  .mrow .who{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;flex:none;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mrow .who.todo{color:var(--dim)}.mrow .who.out{color:var(--warn)}
   .mact{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:5px 10px;border:1px solid var(--hair);background:transparent;color:var(--grey);flex:none}.mact:hover{border-color:var(--warn);color:var(--warn)}.mact.cancel:hover,.mact.ok:hover{border-color:var(--gold);color:var(--gold)}
   .files{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}.file{flex:none;width:88px;text-decoration:none;color:var(--grey)}.file .th{width:88px;height:118px;border-radius:8px;background:var(--panel2);border:1px solid var(--hair);object-fit:cover;display:block}.file .fn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.04em;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
   .mlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}.msect{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin:22px 2px 0}
@@ -322,6 +322,9 @@
       <div class="addteam" style="max-width:420px"><input id="ownerPinInput" placeholder="Set owner PIN…"><button onclick="saveOwnerPin()">Save</button></div>
       <p class="mono" id="ownerPinState" style="margin-top:8px;font-size:10px;color:var(--dim)"></p>
       <div class="addteam" style="max-width:420px;margin-top:10px"><input id="ownerEmailInput" placeholder="Owner's email (gets the month-wrap email)…"><button onclick="saveOwnerEmail()">Save</button></div>
+      <div id="mgIntakeWrap" class="hide"><p class="msect">Onboarding — what they told us</p>
+      <p class="sub" style="margin-top:8px">Their onboarding form link: <span class="mono" id="mgIntakeLink" style="color:var(--goldB);font-size:11px"></span></p>
+      <div class="mlist" id="mgIntake"></div></div>
       <p class="msect">Documents — what the owner sees under "Your documents"</p>
       <div class="mlist" id="docsEdit"></div>
       <div class="addteam" style="max-width:640px"><input id="docLabel" placeholder="Label (e.g. August invoice)…" style="flex:1"><input id="docUrl" placeholder="https:// link (Drive PDF etc.)…" style="flex:2"><button onclick="addDoc()">Add</button></div>
@@ -360,6 +363,8 @@
       <div class="mlist" id="ovHistory"></div>
       <p class="msect">Your documents</p>
       <div class="mlist" id="ovDocs"></div>
+      <div id="ovActWrap" class="hide"><p class="msect">What's happened</p>
+      <div class="mlist" id="ovActivity"></div></div>
     </div>
 
     <div id="basicsView" class="hide">
@@ -493,7 +498,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "3.5";
+const BUILD = "3.6";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -765,6 +770,16 @@ function renderOwner(){
   document.getElementById("ovDocs").innerHTML = docs.length
     ? docs.map(d=>{ const m = docMeta(d); return `<a class="mrow" style="text-decoration:none;color:inherit" href="${esc(d.url)}" target="_blank" rel="noreferrer"><div class="r"><span class="nm">${esc(d.label)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${m.tag}</span></span><span class="who"${m.gold?' style="color:var(--gold);font-weight:700"':''}>${m.act}</span></div></a>`; }).join("")
     : '<p class="sub">Nothing here yet — proposals and invoices will appear as XC adds them.</p>';
+  const act = (C.activity||[]).slice().reverse().slice(0,12);   // backend v2.3+; hidden until it exists
+  document.getElementById("ovActWrap").classList.toggle("hide", !act.length);
+  document.getElementById("ovActivity").innerHTML = act.map(a=>
+    `<div class="mrow"><div class="r"><span class="nm" style="font-weight:500">${esc(a.who)} <span style="color:var(--grey)">${esc(a.what)}</span></span><span class="who">${ago(a.at)}</span></div></div>`).join("");
+}
+function ago(iso){
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if(s < 3600) return Math.max(1, Math.round(s/60)) + "m ago";
+  if(s < 86400) return Math.round(s/3600) + "h ago";
+  const d = Math.round(s/86400); return d === 1 ? "yesterday" : d + "d ago";
 }
 /* doc rows present by type — a Stripe/PayPal link automatically becomes a gold "Pay online" action */
 function docMeta(d){
@@ -1259,8 +1274,15 @@ async function closeMonth(){
   toast("<b>Month closed.</b> Recap archived.");
 }
 let editDocs = null;
+const INTAKE_LABELS = {biz:"Business + suburb", ig:"Socials", offer:"Money-maker", customer:"Ideal customer", voice:"Voice", times:"Filming times", approver:"Approver + contact", nogo:"Never show", ads:"Meta ad account", goal:"90-day win"};
 function renderTools(){
   if(!mgState) return;
+  document.getElementById("mgIntakeWrap").classList.remove("hide");
+  document.getElementById("mgIntakeLink").textContent = "app.xcmedia.co/onboard/?code=" + mgState.code;
+  const iv = mgState.intake;
+  document.getElementById("mgIntake").innerHTML = (iv && iv.answers)
+    ? Object.keys(INTAKE_LABELS).map(k=>`<div class="mrow"><div class="r"><span class="nm" style="flex:none;width:150px;color:var(--gold);font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase">${INTAKE_LABELS[k]}</span><span class="who" style="color:var(--ink);text-align:left;max-width:none;flex:1">${esc(iv.answers[k]||"—")}</span></div></div>`).join("")
+    : '<p class="sub">Not filled in yet — text them the link above (needs backend v2.3).</p>';
   document.getElementById("ownerPinState").textContent = mgState.hasOwnerPin ? "OWNER PIN IS SET" : "NO OWNER PIN YET";
   const em = document.getElementById("ownerEmailInput"); if(document.activeElement !== em) em.value = mgState.ownerEmail || "";
   if(!editDocs) editDocs = JSON.parse(JSON.stringify(mgState.docs || []));

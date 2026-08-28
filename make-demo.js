@@ -66,7 +66,15 @@ const DEMO = `
       {label:"July results report",url:"https://example.com/report"}
     ],
     weeks:[{done:3,total:3},{done:3,total:3},{done:3,total:3},{done:1,total:3}],
-    history:[{month:"2026-07", done:11, total:12, views:41300, top:{n:"Member transformation — 12 weeks", v:15200}}]
+    history:[{month:"2026-07", done:11, total:12, views:41300, top:{n:"Member transformation — 12 weeks", v:15200}}],
+    activity:[
+      {at:new Date(Date.now()-6*86400000).toISOString(),  who:"Marco", what:"filmed “Sled push burnout”"},
+      {at:new Date(Date.now()-5*86400000).toISOString(),  who:"XC",    what:"approved “Sled finisher reel”"},
+      {at:new Date(Date.now()-4*86400000).toISOString(),  who:"Dana",  what:"loved a reel"},
+      {at:new Date(Date.now()-3*86400000).toISOString(),  who:"Jess",  what:"filmed “Coach demo: deadlift setup”"},
+      {at:new Date(Date.now()-2*86400000).toISOString(),  who:"XC",    what:"asked for a redo on “Member testimonial ask”"},
+      {at:new Date(Date.now()-3600000*5).toISOString(),   who:"XC",    what:"updated the documents"}
+    ]
   };
   let demoState = JSON.parse(JSON.stringify(SEED));
   const snap = () => Object.assign({ok:true}, JSON.parse(JSON.stringify(demoState)));

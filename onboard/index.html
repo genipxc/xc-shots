@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="robots" content="noindex">
+<title>XC Shots — Onboarding</title>
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800;900&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root{--bg:#0A0A0A;--panel:#141414;--panel2:#1B1B1B;--hair:#232323;--ink:#FFF;--grey:#A3A09B;--dim:#6E6B66;--gold:#CDA85F;--goldB:#E9D3A0;--warn:#C57B52}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Schibsted Grotesk',-apple-system,'Helvetica Neue',Arial,sans-serif;min-height:100vh}
+  .wrap{max-width:440px;margin:0 auto;padding:26px 18px 90px}
+  .mono{font-family:'Space Mono',ui-monospace,Menlo,monospace}
+  .glogo{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .glogo .t{font-weight:900;font-size:19px}.glogo .t span{color:var(--gold)}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase}
+  h1{font-weight:900;font-size:30px;letter-spacing:-.02em;line-height:1.02;margin-top:6px;text-wrap:balance}
+  .sub{color:var(--grey);font-size:13.5px;line-height:1.5;margin-top:8px}
+  .q{margin-top:22px}
+  .q label{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+  .q textarea, .q input{width:100%;background:var(--panel);border:1px solid var(--hair);border-radius:12px;color:var(--ink);font-family:inherit;font-size:15px;padding:13px 14px;resize:vertical;min-height:52px}
+  .q textarea:focus, .q input:focus{outline:none;border-color:var(--gold)}
+  .q textarea::placeholder, .q input::placeholder{color:var(--dim)}
+  .bigbtn{width:100%;margin-top:26px;appearance:none;border:0;border-radius:12px;background:var(--gold);color:#0A0A0A;font-family:inherit;font-weight:800;font-size:16px;padding:16px;cursor:pointer}
+  .bigbtn:disabled{opacity:.5}
+  .err{color:var(--warn);font-size:13px;margin-top:12px;min-height:18px}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--dim);border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite;margin-right:8px;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .done{background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:22px;margin-top:26px}
+  .done h2{font-weight:900;font-size:22px}
+  .hide{display:none}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+
+<div class="wrap">
+  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span class="t">XC <span>Shots</span></span></div>
+
+  <div id="loading"><p class="sub"><span class="spin"></span>One sec — pulling up your studio…</p></div>
+
+  <div id="form" class="hide">
+    <div class="eyebrow" id="bizName">Onboarding</div>
+    <h1>Ten quick answers.<br>Then we build.</h1>
+    <p class="sub">This is how XC learns your business before the first shot list. Short answers are fine — say it like you'd say it out loud.</p>
+    <div class="q"><label>Your name</label><input id="byName" placeholder="Who's filling this in?"></div>
+    <div id="qs"></div>
+    <button class="bigbtn" id="sendBtn" onclick="submitIntake()">Send it to XC →</button>
+    <p class="err" id="err"></p>
+  </div>
+
+  <div id="thanks" class="hide">
+    <div class="eyebrow">Onboarding</div>
+    <h1>Done. XC has it.</h1>
+    <div class="done">
+      <h2>What happens next</h2>
+      <p class="sub">XC reads every answer, builds your first month's shot list around them, and you'll see it in the app within a couple of days. Filming stays stupid-simple — that's the whole point.</p>
+    </div>
+  </div>
+
+  <div id="broken" class="hide">
+    <div class="eyebrow">Onboarding</div>
+    <h1 id="brokenHead">Hmm — that link isn't right.</h1>
+    <p class="sub" id="brokenSub">Check the link XC sent you has your studio code on the end, or just text XC — it gets sorted quick.</p>
+  </div>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
+const CODE = (new URLSearchParams(location.search).get("code") || "").trim().toUpperCase();
+let QUESTIONS = [];
+function show(id){ ["loading","form","thanks","broken"].forEach(x=>document.getElementById(x).classList.toggle("hide", x!==id)); }
+async function boot(){
+  if(!CODE){ show("broken"); return; }
+  try {
+    const r = await fetch(API + "?action=intake&code=" + encodeURIComponent(CODE), {redirect:"follow"});
+    const d = await r.json();
+    if(!d.ok){
+      if(d.error === "unknown action"){ document.getElementById("brokenHead").textContent = "Almost ready."; document.getElementById("brokenSub").textContent = "This form goes live with XC's next app update — text your answers to XC in the meantime."; }
+      show("broken"); return;
+    }
+    if(d.submitted){ show("thanks"); return; }
+    QUESTIONS = d.questions || [];
+    document.getElementById("bizName").textContent = d.name + " · Onboarding";
+    document.getElementById("qs").innerHTML = QUESTIONS.map(q =>
+      `<div class="q"><label>${q.q}</label><textarea id="q_${q.k}" placeholder="${q.ph||""}" rows="2">${(d.answers||{})[q.k]||""}</textarea></div>`).join("");
+    show("form");
+  } catch(e){ show("broken"); }
+}
+async function submitIntake(){
+  const btn = document.getElementById("sendBtn"), err = document.getElementById("err");
+  const answers = {}; let filled = 0;
+  QUESTIONS.forEach(q => { const v = (document.getElementById("q_"+q.k).value||"").trim(); answers[q.k] = v; if(v) filled++; });
+  if(filled < 3){ err.textContent = "Give us at least a few answers — the more you tell XC, the better your content gets."; return; }
+  btn.disabled = true; err.innerHTML = '<span class="spin"></span>Sending…';
+  try {
+    const r = await fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({action:"intakeSubmit", code:CODE, by:(document.getElementById("byName").value||"").trim(), answers})});
+    const d = await r.json();
+    if(d.ok){ show("thanks"); window.scrollTo({top:0}); }
+    else { err.textContent = "Couldn't send — " + (d.error||"try again"); btn.disabled = false; }
+  } catch(e){ err.textContent = "No connection — check your signal and hit send again."; btn.disabled = false; }
+}
+boot();
+</script>
+</html>
