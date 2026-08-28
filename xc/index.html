@@ -201,6 +201,12 @@
   .recap{background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-top:14px}
   .recap .rn{font-family:'Space Mono',monospace;font-weight:700;font-size:24px;color:var(--goldB)}
   .recap p{color:var(--grey);font-size:12.5px;margin-top:6px}
+  /* reference photos on shots */
+  .cardimg{flex:none;width:44px;height:34px;border-radius:6px;object-fit:cover;margin-top:2px;border:1px solid var(--hair)}
+  .sheetimg{width:100%;max-height:280px;object-fit:cover;border-radius:12px;border:1px solid var(--hair);display:block}
+  .plimg{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:8px;border:1px solid var(--hair);display:block}
+  .shotedit.imgrow{margin-top:-4px}
+  .shotedit.imgrow input{font-size:11px;color:var(--grey)}
   /* owner row on the name picker — solo operators shouldn't hunt for a grey footer link */
   .ownerrow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin-top:14px;background:var(--panel);border:1px solid var(--goldDim);border-radius:14px;padding:14px 16px;color:var(--ink);font-family:inherit;cursor:pointer;text-align:left;appearance:none;transition:border-color .2s}
   .ownerrow:hover{border-color:var(--gold)}
@@ -528,7 +534,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "3.7";
+const BUILD = "3.8";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -552,6 +558,12 @@ const q = v => JSON.stringify(v).replace(/"/g,"&quot;");   // safe inside double
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtV = v => v >= 1000 ? (v/1000).toFixed(1).replace(/\.0$/,"") + "k" : String(v||0);
 function frame(t, s){ return (FRAMES[t]||FRAMES.mid).replace("{S}", s).replace('<svg', s>50 ? '<svg class="bigframe"' : '<svg class="frame"'); }
+/* reference photos on shots — accepts any https image URL; Drive share links auto-convert to a direct image */
+function imgSrc(u){
+  if(!u) return "";
+  const m = String(u).match(/drive\.google\.com\/(?:file\/d\/|open\?id=|thumbnail\?id=)([\w-]{20,})/) || String(u).match(/drive\.google\.com\/.*[?&]id=([\w-]{20,})/);
+  return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1200" : String(u);
+}
 
 /* ═══════════════ api ═══════════════ */
 let pollT = null, inflight = 0;
@@ -728,7 +740,7 @@ function renderClient(){
             <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>
             ${isDone ? (rcv ? `<span class="byme rcv">✓ ${esc(C.by[i])} · received</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for upload</span>`) : (rcv ? `<span class="byme rcv">clip received — tick it!</span>` : "")}
           </span></span>
-        ${frame(s.t, 44)}`;
+        ${s.img ? `<img class="cardimg" src="${esc(imgSrc(s.img))}" alt="" loading="lazy" onerror="this.style.display='none'">` : frame(s.t, 44)}`;
       box.appendChild(el);
     });
   }
@@ -763,7 +775,9 @@ function openSheet(i){
   sheetIdx = i; const s = C.shots[i];
   document.getElementById("shTitle").textContent = s.n;
   document.getElementById("shChips").innerHTML = `<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip">Week ${s.w}</span>`;
-  document.getElementById("shFrame").innerHTML = frame(s.t, 120);
+  document.getElementById("shFrame").innerHTML = s.img
+    ? `<img class="sheetimg" src="${esc(imgSrc(s.img))}" alt="Reference — this is the framing" onerror="this.outerHTML=${q(frame(s.t,120))}">`
+    : frame(s.t, 120);
   document.getElementById("shCap").textContent = CAP[s.t] || "";
   const redoNote = C.redo[i] ? `<div class="reason" style="margin-bottom:4px"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</div>` : "";
   document.getElementById("shSteps").innerHTML = redoNote + (s.steps||[]).map((st,k)=>`<div class="step"><span class="num">${k+1}</span><p>${esc(st)}</p></div>`).join("");
@@ -1117,7 +1131,8 @@ function addReel(){ const v = document.getElementById("newReel").value.trim(); i
 async function saveResults(){ await act({action:"results", results:editResults}, "<b>Results saved.</b> Their tab updated."); }
 /* shot list editor */
 function renderEdit(){
-  document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>`<div class="shotedit"><span class="i">${k+1}</span><input value="${esc(s.n)}" oninput="editShots[${k}].n=this.value" placeholder="Shot name"><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select></div>`).join("");
+  document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>`<div class="shotedit"><span class="i">${k+1}</span><input value="${esc(s.n)}" oninput="editShots[${k}].n=this.value" placeholder="Shot name"><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select></div>
+  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photo link (optional — paste a Drive share link, it just works)"></div>`).join("");
 }
 async function saveShots(){ const d = await act({action:"shots", shots:editShots}, "<b>Shot list saved.</b> Drop folders renamed to match."); if(d.ok) editShots = null; }
 async function newMonth(){ if(!confirm("Start a new month? Ticks and redos clear (results stay). Do this after the month's reels are delivered.")) return; await act({action:"month"}, "<b>New month started.</b>"); }
@@ -1260,7 +1275,7 @@ function renderPList(it){
   document.getElementById("pList").innerHTML = head + S.shots.map((s,i)=>{
     const st = by[i] ? `<span class="st done">✓ ${esc(by[i])}</span>` : (redo[i] ? '<span class="st redo">redo out</span>' : '<span class="st">open</span>');
     const ex = plSel === i;
-    const steps = (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${esc(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
+    const steps = (s.img?`<img class="plimg" src="${esc(imgSrc(s.img))}" alt="" loading="lazy" onerror="this.style.display='none'">`:"") + (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${esc(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
     return `<div class="plrow${ex?" cur ex":""}" id="plr${i}" onclick="plToggle(${i})"><div class="r1"><span class="wk">W${s.w} · ${TLAB[s.t]||"Mid"}</span>${st}</div><h4>${esc(s.n)}</h4><p class="how">${esc(s.h)}</p><div class="plsteps">${steps}</div></div>`;
   }).join("");
   if(plSel !== null){ const el = document.getElementById("plr"+plSel); if(el) el.scrollIntoView({block:"nearest"}); }
