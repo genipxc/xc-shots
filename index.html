@@ -188,6 +188,7 @@
   #splash .sbar i{display:block;height:100%;width:40%;background:linear-gradient(90deg,var(--gold),var(--goldB));border-radius:99px;animation:sslide 1.1s ease-in-out infinite}
   @keyframes sslide{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
   #splash .msg{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);min-height:14px}
+  .subtabs button.dot::after{content:"";display:inline-block;width:6px;height:6px;border-radius:99px;background:var(--gold);margin-left:6px;vertical-align:middle}
   @media (prefers-reduced-motion:reduce){*{transition:none !important}#splash .sbar i{animation:none}}
 </style>
 
@@ -492,7 +493,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "3.4";
+const BUILD = "3.5";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -662,6 +663,7 @@ document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState=
 function renderClient(){
   if(!C || !C.shots) return;
   document.getElementById("stOwner").classList.toggle("hide", !(C.role >= 1));
+  document.getElementById("stResults").classList.toggle("dot", (C.approved||[]).some(f=>!(C.feedback||{})[f.id]));   // reels awaiting a verdict
   const WK = C.week, shots = C.shots;
   document.getElementById("clientEyebrow").textContent = `${C.name} · ${monthName(C.month)}`;
   document.getElementById("wkLabel").textContent = `Week ${WK} of 4 · This week`;
@@ -761,8 +763,19 @@ function renderOwner(){
     : '<p class="sub">First month still in progress.</p>';
   const docs = C.docs||[];
   document.getElementById("ovDocs").innerHTML = docs.length
-    ? docs.map(d=>`<a class="mrow" style="text-decoration:none;color:inherit" href="${esc(d.url)}" target="_blank" rel="noreferrer"><div class="r"><span class="nm">${esc(d.label)}</span><span class="who">open ↗</span></div></a>`).join("")
+    ? docs.map(d=>{ const m = docMeta(d); return `<a class="mrow" style="text-decoration:none;color:inherit" href="${esc(d.url)}" target="_blank" rel="noreferrer"><div class="r"><span class="nm">${esc(d.label)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${m.tag}</span></span><span class="who"${m.gold?' style="color:var(--gold);font-weight:700"':''}>${m.act}</span></div></a>`; }).join("")
     : '<p class="sub">Nothing here yet — proposals and invoices will appear as XC adds them.</p>';
+}
+/* doc rows present by type — a Stripe/PayPal link automatically becomes a gold "Pay online" action */
+function docMeta(d){
+  const l = (d.label||"").toLowerCase(), u = (d.url||"").toLowerCase();
+  const pay = /stripe\.com|buy\.stripe|paypal\.|checkout\.|pay\./.test(u);
+  const sign = /docusign|pandadoc|hellosign|sign\.dropbox|adobesign|signrequest|esign/.test(u);
+  if(/invoice|bill|payment/.test(l) || pay) return {tag:"Invoice", act: pay ? "Pay online ↗" : "View ↗", gold: pay};
+  if(/contract|agreement|terms/.test(l) || sign) return {tag:"Agreement", act: sign ? "Read &amp; sign ↗" : "Read ↗", gold: sign};
+  if(/proposal|quote/.test(l)) return {tag:"Proposal", act:"Read ↗", gold:false};
+  if(/report|recap|result/.test(l)) return {tag:"Report", act:"Read ↗", gold:false};
+  return {tag:"Document", act:"Open ↗", gold:false};
 }
 async function ownerPost(body){
   const d = await apiPost(Object.assign({code, owner: LS.get("ownerpin")}, body));
@@ -775,21 +788,21 @@ function renderResults(){
   if(!C) return;
   const rs = [...(C.results||[])].sort((a,b)=>b.v-a.v), total = rs.reduce((a,r)=>a+(r.v||0),0), topV = rs.length ? rs[0].v : 0;
   document.getElementById("rTotal").textContent = fmtV(total);
-  document.getElementById("rLine").textContent = rs.length ? `${rs.length} reels measured — the top clip came off a phone in your shop.` : "Numbers come from XC each month.";
+  document.getElementById("rLine").textContent = rs.length ? `${rs.length} reel${rs.length===1?"":"s"} measured — the top clip came off a phone in your shop.` : "Numbers come from XC each month.";
   document.getElementById("reelList").innerHTML = rs.map((r,k)=>`<div class="reel${r.v===topV&&r.v>0?" top":""}"><div class="l"><h3>${esc(r.n)}${r.v===topV&&r.v>0?'<span class="star">★ Top clip</span>':""}</h3><p class="by">Filmed by <b>${esc(r.by)}</b> · week ${r.wk}</p><button class="sharebtn" onclick="openShare(${k})">Share card ↗</button></div><div class="v"><div class="n">${fmtV(r.v)}</div><div class="u">views</div></div></div>`).join("");
   const ap = C.approved || [];
   document.getElementById("approvedHead").classList.toggle("hide", !ap.length);
   document.getElementById("approvedList").innerHTML = ap.map(f=>{
     const fb = (C.feedback||{})[f.id];
-    const chip = fb ? (fb.v==="love" ? '<span class="byme rcv">♥ loved' + (fb.by?` by ${esc(fb.by)}`:"") + '</span>' : '<span class="byme" style="color:var(--warn)">change requested</span>') : "";
+    const chip = fb ? (fb.v==="love" ? '<span class="byme rcv">♥ loved' + (fb.by?` by ${esc(fb.by)}`:"") + '</span>' : '<span class="byme" style="color:var(--warn)">refinement requested</span>') : "";
     return `<div class="reel"><div class="l"><h3 style="cursor:pointer" onclick="openPreview(${q(f.id)},${q(f.name)},'')">${esc(f.name.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,""))}</h3><p class="by">Tap title to watch</p>
-      <div style="display:flex;gap:6px;margin-top:8px;align-items:center">${chip || `<button class="sharebtn" onclick="reelFeedback(${q(f.id)},'love')">♥ Love it</button><button class="sharebtn" style="border-color:rgba(197,123,82,.4);color:var(--warn)" onclick="reelFeedback(${q(f.id)},'change')">Request a change</button>`}</div></div>
+      <div style="display:flex;gap:6px;margin-top:8px;align-items:center">${chip || `<button class="sharebtn" onclick="reelFeedback(${q(f.id)},'love')">♥ Love it</button><button class="sharebtn" style="border-color:rgba(197,123,82,.4);color:var(--warn)" onclick="reelFeedback(${q(f.id)},'change')">Request a refinement</button>`}</div></div>
       <div class="v" style="cursor:pointer" onclick="openPreview(${q(f.id)},${q(f.name)},'')"><div class="u">▶</div></div></div>`;
   }).join("");
 }
 async function reelFeedback(fileId, verdict){
   let note = "";
-  if(verdict === "change"){ note = prompt("What should change?") || ""; if(!note.trim()) return; }
+  if(verdict === "change"){ note = prompt("What should we refine?") || ""; if(!note.trim()) return; }
   const d = await apiPost({action:"feedback", code, fileId, verdict, note, by: me || "Someone"});
   if(d.ok){ C = d; renderClient(); toast(verdict==="love" ? "<b>Nice.</b> XC sees the love." : "<b>Sent.</b> XC gets your note."); }
   else toast("Couldn't send: "+esc(d.error));
@@ -1136,8 +1149,8 @@ function renderToday(){
        <div class="acts"><button class="nudgebtn" onclick="nudge()">Nudge ↗</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
   }
   if(T.feedback && T.feedback.length){
-    h += stackHead("Client feedback", T.feedback.length) + '<div class="tq">' + T.feedback.map(x=>
-      `<div class="tcard${x.v==="change"?" warn":""}"><div class="b"><h4>${esc(x.client)} — ${x.v==="love"?"♥ loved":"change requested"}</h4><p class="m">${esc(x.by)}${x.note?": "+esc(x.note):""}</p>
+    h += stackHead("Client refinements", T.feedback.length) + '<div class="tq">' + T.feedback.map(x=>
+      `<div class="tcard${x.v==="change"?" warn":""}"><div class="b"><h4>${esc(x.client)} — ${x.v==="love"?"♥ loved":"refinement requested"}</h4><p class="m">${esc(x.by)}${x.note?": "+esc(x.note):""}</p>
        <div class="acts"><button class="mact ok" onclick="ackFb(${q(x.code)},${q(x.fileId)})">Got it</button><button class="mact cancel" onclick="openPreview(${q(x.fileId)},'Reel','')">Watch</button></div></div></div>`).join("") + "</div>";
   }
   if(T.redosAging.length){
