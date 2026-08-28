@@ -170,6 +170,28 @@
   .player .pmid{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
   .player iframe{width:min(56vh,92vw);aspect-ratio:9/16;border:0;background:#111;border-radius:12px}
   .player .pbar{display:flex;gap:10px;justify-content:center;padding:16px;flex-wrap:wrap}
+  /* review player: shot-list panel */
+  .plist{display:none;width:340px;height:100%;overflow-y:auto;padding:10px 18px 24px;border-left:1px solid var(--hair);flex:none}
+  .plist .plhead{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin:8px 0 2px}
+  .plist .plsub{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.08em;margin-bottom:12px}
+  .plrow{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer}
+  .plrow.cur{border-color:var(--gold);background:var(--panel2)}
+  .plrow .r1{display:flex;justify-content:space-between;gap:8px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .plrow.cur .r1 .wk{color:var(--gold)}
+  .plrow .st.done{color:var(--goldB)}.plrow .st.redo{color:var(--warn)}
+  .plrow h4{font-size:13.5px;font-weight:800;letter-spacing:-.01em;margin-top:5px}
+  .plrow .how{color:var(--grey);font-size:11.5px;line-height:1.45;margin-top:3px}
+  .plrow .plsteps{display:none;margin-top:9px;border-top:1px solid var(--hair);padding-top:9px}
+  .plrow.ex .plsteps{display:block}
+  .plrow .plsteps p{color:var(--grey);font-size:11.5px;line-height:1.5;margin:0 0 6px;padding-left:16px;position:relative}
+  .plrow .plsteps p b{position:absolute;left:0;color:var(--gold);font-family:'Space Mono',monospace;font-size:9.5px;font-weight:700}
+  .plrow .pldont{color:var(--warn);font-size:11px;line-height:1.45;margin-top:4px}
+  .plistBtn{display:none}
+  @media (min-width:880px){ .player .pmid{gap:22px;padding:0 8px} .plist{display:block} }
+  @media (max-width:879.98px){
+    .plistBtn{display:flex}
+    .plist.open{display:block;position:fixed;right:0;top:0;bottom:0;width:min(340px,86vw);background:#0D0D0D;z-index:65;box-shadow:-20px 0 60px rgba(0,0,0,.55)}
+  }
   .pkey{appearance:none;cursor:pointer;border:1px solid var(--hair);background:var(--panel);color:var(--ink);font-family:inherit;font-weight:800;font-size:14px;padding:12px 18px;border-radius:12px}
   .pkey b{font-family:'Space Mono',monospace;color:var(--gold);margin-right:7px}
   .pkey.good{border-color:var(--gold)}
@@ -466,12 +488,13 @@
 <!-- REVIEW PLAYER -->
 <div class="player" id="player">
   <div class="ptop"><span id="pInfo"><b>—</b></span><span class="pcount" id="pCount"></span><button class="x" onclick="closePlayer()" aria-label="Close">✕</button></div>
-  <div class="pmid"><iframe id="pVid" allow="autoplay; fullscreen" title="Clip"></iframe></div>
+  <div class="pmid"><iframe id="pVid" allow="autoplay; fullscreen" title="Clip"></iframe><div class="plist" id="pList" aria-label="Shot list"></div></div>
   <div class="pbar">
     <button class="pkey good" onclick="pGood()"><b>G</b>Good</button>
     <button class="pkey redo" onclick="pRedo()"><b>R</b>Redo</button>
     <button class="pkey good hide" id="pApprove" onclick="pApprove()"><b>A</b>Approve</button>
     <button class="pkey" onclick="pSkip()"><b>S</b>Skip</button>
+    <button class="pkey plistBtn" onclick="togglePList()"><b>L</b>Shot list</button>
   </div>
 </div>
 
@@ -1205,8 +1228,44 @@ function pShow(){
   document.getElementById("pCount").textContent = (pi+1) + " / " + pq.length;
   document.getElementById("pApprove").classList.toggle("hide", it.kind !== "delivery");
   document.getElementById("pVid").src = it.file.preview;
+  loadPList(it);
 }
-function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; if(pin) loadToday(); }
+/* the shot list beside the video — so a clip can be checked against what was actually briefed */
+let plCache = {}, plSel = null, plToken = 0;
+async function loadPList(it){
+  const host = document.getElementById("pList");
+  plSel = (it.idx === undefined || it.idx === null) ? null : Number(it.idx);
+  const token = ++plToken;
+  if(!plCache[it.code]){
+    host.innerHTML = '<p class="plhead">' + esc(it.client) + '</p><p class="plsub"><span class="spin"></span>Loading the shot list…</p>';
+    const d = await apiGet({action:"state", code: it.code, pin});
+    if(token !== plToken) return;   // player moved on while this was in flight
+    if(!d.ok || !d.shots){ host.innerHTML = '<p class="plhead">' + esc(it.client) + '</p><p class="plsub">Couldn\'t load the shot list.</p>'; return; }
+    plCache[it.code] = d;
+  }
+  renderPList(it);
+}
+function renderPList(it){
+  const S = plCache[it.code]; if(!S) return;
+  const by = S.by||{}, redo = S.redo||{};
+  const done = Object.keys(by).length;
+  const head = `<p class="plhead">${esc(S.name)} — the brief</p><p class="plsub">${done} of ${S.shots.length} filmed · tap a shot for its how-to</p>`;
+  document.getElementById("pList").innerHTML = head + S.shots.map((s,i)=>{
+    const st = by[i] ? `<span class="st done">✓ ${esc(by[i])}</span>` : (redo[i] ? '<span class="st redo">redo out</span>' : '<span class="st">open</span>');
+    const ex = plSel === i;
+    const steps = (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${esc(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
+    return `<div class="plrow${ex?" cur ex":""}" id="plr${i}" onclick="plToggle(${i})"><div class="r1"><span class="wk">W${s.w} · ${TLAB[s.t]||"Mid"}</span>${st}</div><h4>${esc(s.n)}</h4><p class="how">${esc(s.h)}</p><div class="plsteps">${steps}</div></div>`;
+  }).join("");
+  if(plSel !== null){ const el = document.getElementById("plr"+plSel); if(el) el.scrollIntoView({block:"nearest"}); }
+}
+function plToggle(i){
+  const el = document.getElementById("plr"+i); if(!el) return;
+  const was = el.classList.contains("ex");
+  document.querySelectorAll("#pList .plrow.ex").forEach(r=>r.classList.remove("ex"));
+  if(!was) el.classList.add("ex");
+}
+function togglePList(){ document.getElementById("pList").classList.toggle("open"); }
+function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; document.getElementById("pList").classList.remove("open"); plCache = {}; if(pin) loadToday(); }
 async function pGood(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"reviewGood", pin, code:it.code, fileId:it.file.id, idx: it.idx===undefined?null:it.idx}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 async function pApprove(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"approve", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 function pRedo(){ const it = pq[pi]; mgCode = it.code; flagIdx = it.idx===undefined?null:it.idx; flagFile = it.file.id; openFlagToday(it.shot); }
@@ -1215,7 +1274,7 @@ document.addEventListener("keydown", e=>{
   if(!document.getElementById("player").classList.contains("show")) return;
   if(document.getElementById("fsheet").classList.contains("show")) return;
   const k = e.key.toLowerCase();
-  if(k==="g") pGood(); else if(k==="r") pRedo(); else if(k==="a" && pq[pi] && pq[pi].kind==="delivery") pApprove(); else if(k==="s") pSkip(); else if(k==="escape") closePlayer();
+  if(k==="g") pGood(); else if(k==="r") pRedo(); else if(k==="a" && pq[pi] && pq[pi].kind==="delivery") pApprove(); else if(k==="s") pSkip(); else if(k==="l") togglePList(); else if(k==="escape") closePlayer();
 });
 
 /* ── owner mode ── */
