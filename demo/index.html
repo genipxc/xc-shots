@@ -201,6 +201,12 @@
   .recap{background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-top:14px}
   .recap .rn{font-family:'Space Mono',monospace;font-weight:700;font-size:24px;color:var(--goldB)}
   .recap p{color:var(--grey);font-size:12.5px;margin-top:6px}
+  /* owner row on the name picker — solo operators shouldn't hunt for a grey footer link */
+  .ownerrow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin-top:14px;background:var(--panel);border:1px solid var(--goldDim);border-radius:14px;padding:14px 16px;color:var(--ink);font-family:inherit;cursor:pointer;text-align:left;appearance:none;transition:border-color .2s}
+  .ownerrow:hover{border-color:var(--gold)}
+  .ownerrow b{font-size:14px;font-weight:800}
+  .ownerrow .or2{color:var(--grey);font-size:11.5px}
+  .ownerrow .arr{color:var(--gold);font-weight:700;font-size:16px}
   /* splash — instant branded paint while boot() works */
   #splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:100}
   #splash.hide{display:none}
@@ -240,6 +246,7 @@
   <h1>Who are you?</h1>
   <p class="sub">One tap — this phone remembers you. Every shot you film gets your name on it.</p>
   <div class="names" id="nameGrid"></div>
+  <button class="ownerrow" onclick="ownerFromName()"><span><b>Run the place?</b><br><span class="or2">Owner sign-in — progress, results and your documents</span></span><span class="arr">→</span></button>
   <p class="gatefoot">Not on the list? Ask your manager to text XC — takes two minutes to add you.</p>
 </div>
 
@@ -521,7 +528,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "3.6";
+const BUILD = "3.7";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1280,7 +1287,14 @@ document.addEventListener("keydown", e=>{
 /* ── owner mode ── */
 function ownerStart(){
   gate("gateOwner");
-  const oc = LS.get("ownercode"); if(oc) document.getElementById("ownCode").value = oc;
+  const oc = LS.get("ownercode") || (document.getElementById("codeInput").value || "").trim().toUpperCase();
+  if(oc) document.getElementById("ownCode").value = oc;
+  setTimeout(()=>document.getElementById(oc ? "ownPin" : "ownCode").focus(), 60);
+}
+function ownerFromName(){   // from the name picker — the studio code is already known, only the PIN is left
+  gate("gateOwner");
+  const oc = code || LS.get("ownercode") || "";
+  if(oc) document.getElementById("ownCode").value = oc;
   setTimeout(()=>document.getElementById(oc ? "ownPin" : "ownCode").focus(), 60);
 }
 async function tryOwner(){
