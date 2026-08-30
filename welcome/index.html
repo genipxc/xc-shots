@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="robots" content="noindex">
+<title>Welcome — XC Media</title>
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800;900&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root{--bg:#0A0A0A;--panel:#141414;--panel2:#1B1B1B;--hair:#232323;--ink:#FFF;--grey:#A3A09B;--dim:#6E6B66;--gold:#CDA85F;--goldB:#E9D3A0;--warn:#C57B52;--ok:#8FBF8F}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Schibsted Grotesk',-apple-system,'Helvetica Neue',Arial,sans-serif;min-height:100vh}
+  .wrap{max-width:440px;margin:0 auto;padding:30px 18px 90px}
+  .mono{font-family:'Space Mono',ui-monospace,Menlo,monospace}
+  .glogo{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+  .glogo .t{font-weight:900;font-size:19px}.glogo .t span{color:var(--gold)}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase}
+  h1{font-weight:900;font-size:32px;letter-spacing:-.02em;line-height:1.04;margin-top:8px;text-wrap:balance}
+  .sub{color:var(--grey);font-size:14px;line-height:1.55;margin-top:10px}
+  .step{margin-top:30px;background:var(--panel);border:1px solid var(--hair);border-radius:16px;padding:20px}
+  .step.gold{border-color:var(--gold)}
+  .snum{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;font-weight:700}
+  .step h2{font-weight:800;font-size:19px;letter-spacing:-.01em;margin-top:8px}
+  .step p{color:var(--grey);font-size:13.5px;line-height:1.55;margin-top:8px}
+  .terms{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+  .trow{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:var(--grey)}
+  .trow b{color:var(--ink)}
+  .trow .d{color:var(--gold);font-family:'Space Mono',monospace;font-size:10px;margin-top:3px;flex:none}
+  .bigbtn{display:block;width:100%;margin-top:16px;appearance:none;border:0;border-radius:12px;background:var(--gold);color:#0A0A0A;font-family:inherit;font-weight:800;font-size:15.5px;padding:15px;cursor:pointer;text-align:center;text-decoration:none}
+  .bigbtn.ghost{background:transparent;border:1px solid var(--hair);color:var(--ink)}
+  .bigbtn:disabled{opacity:.55}
+  .code{margin-top:12px;background:var(--panel2);border:1px dashed var(--gold);border-radius:12px;padding:16px;text-align:center}
+  .code .c{font-family:'Space Mono',monospace;font-weight:700;font-size:26px;letter-spacing:.18em;color:var(--goldB)}
+  .code .l{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;margin-bottom:6px}
+  .ok{color:var(--ok);font-size:13px;margin-top:10px;display:none}
+  .err{color:var(--warn);font-size:13px;margin-top:10px;min-height:0}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--dim);border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite;margin-right:7px;vertical-align:-1px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .foot{margin-top:34px;text-align:center;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+  .hide{display:none}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+
+<div class="wrap">
+  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span class="t">XC <span>Media</span></span></div>
+
+  <div id="loading"><p class="sub"><span class="spin"></span>One sec…</p></div>
+
+  <div id="flow" class="hide">
+    <div class="eyebrow" id="welEyebrow">Welcome aboard</div>
+    <h1 id="welHead">Let's get you set up.</h1>
+    <p class="sub">Five steps, five minutes, all right here. By the end you're fully onboarded and the first shot list is in motion.</p>
+
+    <!-- STEP 1 · TERMS -->
+    <div class="step gold" id="stepTerms">
+      <span class="snum">Step 1 · The deal, in writing</span>
+      <h2>No surprises, ever.</h2>
+      <div class="terms">
+        <div class="trow"><span class="d">01</span><span><b>The service — Minimum.</b> A weekly shot list in your app, built for your brand, with a how-to on every shot. You film; XC edits <b>12 reels a month</b> — hooks, subtitles, sound, grade — delivered weekly, ready to post. One refinement round per reel.</span></div>
+        <div class="trow"><span class="d">02</span><span><b>The price.</b> $1,150/month. Invoiced monthly, payable within 7 days. Posting stays yours at this tier — posting and ads live in the Amplify upgrade, whenever you want it.</span></div>
+        <div class="trow"><span class="d">03</span><span><b>The term.</b> Month to month, no lock-in fee. Either of us can end it with <b>30 days' written notice</b>; work and billing run as normal through the notice period.</span></div>
+        <div class="trow"><span class="d">04</span><span><b>The rhythm.</b> Film and upload across each week. If a week's footage doesn't arrive, that delivery slot rolls. Deliverables are finished reels — raw footage isn't included. No guarantees of views, followers or revenue — anyone who promises that is lying to you.</span></div>
+        <div class="trow"><span class="d">05</span><span><b>The case study.</b> XC can use your name, the content made here, and its performance in XC Media's marketing — plus one short testimonial after a couple of months. Your revenue and financials stay private, always.</span></div>
+        <div class="trow"><span class="d">06</span><span><b>Ownership.</b> The finished reels are yours.</span></div>
+      </div>
+      <button class="bigbtn" id="agreeBtn" onclick="agree()">I agree — let's go</button>
+      <p class="ok" id="agreeOk">✓ Locked in — your acceptance is on record.</p>
+      <p class="err" id="agreeErr"></p>
+    </div>
+
+    <!-- STEP 2 · APP -->
+    <div class="step">
+      <span class="snum">Step 2 · Your app</span>
+      <h2>Your studio code and owner PIN.</h2>
+      <div class="code"><div class="l">Studio code</div><div class="c" id="codeShow">—</div></div>
+      <div class="code" style="border-style:solid;border-color:var(--hair)"><div class="l">Owner PIN — for "Run the place?"</div><div class="c">3008</div></div>
+      <p>Open the app, enter the studio code, tap your name. Add it to your home screen when it asks — one tap from then on. The owner PIN unlocks your business side: progress, reels, documents.</p>
+      <a class="bigbtn" href="https://app.xcmedia.co" target="_blank" rel="noopener">Open XC Shots ↗</a>
+    </div>
+
+    <!-- STEP 3 · PAYMENT -->
+    <div class="step">
+      <span class="snum">Step 3 · Payment</span>
+      <h2>Set and forget.</h2>
+      <p>$1,150/month, card, cancel-able any time per the terms above. Your invoice lands in your app under Documents each month.</p>
+      <a class="bigbtn" href="https://buy.stripe.com/eVq9ATeCfeCo5YB1FX0sU03" target="_blank" rel="noopener">Set up payment ↗</a>
+    </div>
+
+    <!-- STEP 4 · QUESTIONS -->
+    <div class="step">
+      <span class="snum">Step 4 · Ten questions</span>
+      <h2>Your first shot list gets built from this.</h2>
+      <p>Your voice, your clients, what never gets shown. Don't rush it — every answer shapes what you'll be filming. Your app says "Incoming!" right now; this is what turns it into your actual month.</p>
+      <a class="bigbtn" id="intakeBtn" href="#" >Answer the questions ↗</a>
+    </div>
+
+    <!-- STEP 5 · WHATSAPP -->
+    <div class="step">
+      <span class="snum">Step 5 · The direct line</span>
+      <h2>Day-to-day lives on WhatsApp.</h2>
+      <p>Anything content — a question mid-filming, a reel idea at 11pm — that's the line. Add XC:</p>
+      <div id="waWrap">
+        <div class="code" style="border-style:solid;border-color:var(--hair)"><div class="l">XC · WhatsApp</div><div class="c" style="font-size:20px;letter-spacing:.08em" id="waShow">Coming in your DMs 👀</div></div>
+        <a class="bigbtn ghost hide" id="waBtn" href="#" target="_blank" rel="noopener">Open in WhatsApp ↗</a>
+      </div>
+    </div>
+
+    <div class="step" style="background:transparent;border-style:dashed">
+      <span class="snum">What happens next</span>
+      <p style="margin-top:10px">Your answers land with XC tonight → your real shot list goes live in the app (you'll get a message) → you film this week, between sessions → first reels back the week after. <b style="color:var(--goldB)">This time next week, reels are moving.</b></p>
+    </div>
+
+    <div class="foot">XC Media · Shot. Cut. Shipped.</div>
+  </div>
+
+  <div id="broken" class="hide">
+    <div class="eyebrow">Welcome</div>
+    <h1>Hmm — that link isn't right.</h1>
+    <p class="sub">Check the link has your code on the end, or message XC — sorted in a minute.</p>
+  </div>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
+const CODE = (new URLSearchParams(location.search).get("code") || "").trim().toUpperCase();
+function show(id){ ["loading","flow","broken"].forEach(x=>document.getElementById(x).classList.toggle("hide", x!==id)); }
+async function boot(){
+  if(!CODE){ show("broken"); return; }
+  try {
+    const r = await fetch(API + "?action=hello&code=" + encodeURIComponent(CODE), {redirect:"follow"});
+    const d = await r.json();
+    if(!d.ok){ show("broken"); return; }
+    const first = (d.name||"").split(" ")[0];
+    document.getElementById("welEyebrow").textContent = "Welcome aboard, " + (first || "mate");
+    document.getElementById("welHead").textContent = first ? (first + ", let's get you set up.") : "Let's get you set up.";
+    document.getElementById("codeShow").textContent = CODE;
+    document.getElementById("intakeBtn").href = "/onboard/?code=" + encodeURIComponent(CODE);
+    try { if(localStorage.getItem("xcw."+CODE)==="1"){ const b=document.getElementById("agreeBtn"); b.disabled=true; b.textContent="Agreed ✓"; document.getElementById("agreeOk").style.display="block"; } } catch(e){}
+    show("flow");
+  } catch(e){ show("broken"); }
+}
+async function agree(){
+  const btn = document.getElementById("agreeBtn"), err = document.getElementById("agreeErr");
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Locking it in…';
+  try {
+    const r = await fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({action:"feedback", code:CODE, fileId:"TERMS-ACCEPTED-" + CODE, verdict:"love",
+        note:"AGREED TO TERMS (welcome page): Minimum $1,150/mo, 30-day notice, case-study permission, 1 refinement round, weekly delivery.", by:"Client via welcome page"})});
+    const d = await r.json();
+    if(d.ok){ btn.textContent = "Agreed ✓"; document.getElementById("agreeOk").style.display = "block"; try{ localStorage.setItem("xcw."+CODE,"1"); }catch(e){} }
+    else { err.textContent = "Didn't save — try once more."; btn.disabled = false; btn.textContent = "I agree — let's go"; }
+  } catch(e){ err.textContent = "No connection — try again."; btn.disabled = false; btn.textContent = "I agree — let's go"; }
+}
+boot();
+</script>
+</html>
