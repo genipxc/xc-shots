@@ -640,7 +640,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.1";
+const BUILD = "4.1.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1567,6 +1567,14 @@ function renderEditorQueue(d){
 
 document.getElementById("buildA").textContent = "v" + BUILD; document.getElementById("buildB").textContent = "v" + BUILD; document.getElementById("buildC").textContent = BUILD;
 if("serviceWorker" in navigator){ try { navigator.serviceWorker.register("/sw.js"); } catch(e){} }
+/* auto-update: the SW serves the cached shell instantly, so a deploy normally lands on the SECOND open.
+   Check the network copy's BUILD — if it's newer, reload once (the fresh shell is already in the SW cache by then). */
+setTimeout(async ()=>{ try {
+  // unique ?nosw= query so the probe misses the SW cache (old SWs) / skips the SW entirely (v2+ SWs)
+  const t = await (await fetch("/index.html?nosw=" + Date.now(), {cache:"no-store"})).text();
+  const m = t.match(/const BUILD = "([^"]+)"/);
+  if(m && m[1] !== BUILD && sessionStorage.getItem("xcsUpd") !== m[1]){ sessionStorage.setItem("xcsUpd", m[1]); location.reload(); }
+} catch(e){} }, 1200);
 /* ── UI dev harness: ?uidev=1 renders the XC workspace with sample data (stubbed API, no gates, no writes).
      &view=dash|manage picks the screen. Shows only fake data — safe if hit in production. ── */
 (function(){

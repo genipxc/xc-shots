@@ -4,7 +4,7 @@
    so a deploy lands on the SECOND open after it ships.
    The Apps Script API (script.google.com) and Drive thumbnails are never
    intercepted — they always go straight to the network. */
-const V = "xcs-shell-v1";
+const V = "xcs-shell-v2";
 const SHELL = ["/", "/index.html", "/logo.png", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", e => {
@@ -23,6 +23,7 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+  if (url.searchParams.has("nosw")) return;   // version probe from the app — always straight to the network
   const sameOrigin = url.origin === self.location.origin;
   const fonts = url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
   if (!sameOrigin && !fonts) return;
