@@ -70,7 +70,8 @@
   .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--panel2);color:var(--ink);border:1px solid var(--gold);border-radius:12px;padding:12px 18px;font-size:13px;line-height:1.45;max-width:340px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.5)}.toast.show{opacity:1;transform:translate(-50%,0)}.toast b{color:var(--goldB)}
   .demonote{margin-top:26px;border-top:1px solid var(--hair);padding-top:14px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--dim);line-height:1.7}.demonote b{color:var(--gold);font-weight:400}.demonote a{color:var(--gold);cursor:pointer;text-decoration:underline}
   .hide{display:none !important}
-  .subtabs{display:none}   /* retired — mobile uses the bottom bar, desktop the sidebar (v4.3) */
+  .subtabs{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.subtabs button{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;border-radius:99px;border:1px solid var(--hair);background:transparent;color:var(--dim)}.subtabs button.on{border-color:var(--gold);color:var(--goldB);font-weight:700}
+  #client .subtabs{display:none}   /* client pills retired — bottom bar / sidebar took over (v4.3). Manage's tabs stay. */
   .clnav{display:none}
   .rsum{margin-top:16px;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px}.rsum .big{font-family:'Space Mono',monospace;font-weight:700;font-size:26px;color:var(--goldB);font-variant-numeric:tabular-nums}.rsum .lab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;margin-top:2px}.rsum .line{color:var(--grey);font-size:12.5px;line-height:1.5;margin-top:10px}
   .reels{display:flex;flex-direction:column;gap:10px;margin-top:14px}.reel{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}.reel.top{border-color:var(--gold)}.reel .l h3{font-size:14.5px;font-weight:800;letter-spacing:-.01em}.reel .by{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-top:4px}.reel .by b{color:var(--goldB);font-weight:400}.reel .v{text-align:right;flex:none}.reel .v .n{font-family:'Space Mono',monospace;font-weight:700;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}.reel.top .v .n{color:var(--goldB)}.reel .v .u{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:2px}
@@ -663,7 +664,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.3";
+const BUILD = "4.3.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
