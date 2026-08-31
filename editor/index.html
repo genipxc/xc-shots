@@ -664,7 +664,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.3.1";
+const BUILD = "4.3.2";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1193,11 +1193,14 @@ function mtab(which){
   const map = {shots:["mvShots","mtShots"], deliv:["mvDeliv","mtDeliv"], team:["mvTeam","mtTeam"], results:["mvResults","mtResults"], edit:["mvEdit","mtEdit"], tools:["mvTools","mtTools"]};
   if(which==="tools") renderTools();
   for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); document.getElementById(map[k][1]).classList.toggle("on", which===k); }
-  if(which==="edit" && !editShots) { editShots = JSON.parse(JSON.stringify(mgState.shots)); renderEdit(); }
-  if(which==="results" && !editResults) { editResults = JSON.parse(JSON.stringify(mgState.results||[])); renderResultsEdit(); }
+  if(which==="edit" && !editShots && mgState) { editShots = JSON.parse(JSON.stringify(mgState.shots)); renderEdit(); }
+  if(which==="results" && !editResults && mgState) { editResults = JSON.parse(JSON.stringify(mgState.results||[])); renderResultsEdit(); }
 }
 function renderManage(){
   const S = mgState; if(!S) return;
+  // late-init: state arrived after the user already opened Shot list / Results mid-load
+  if(!editShots && !document.getElementById("mvEdit").classList.contains("hide")) { editShots = JSON.parse(JSON.stringify(S.shots)); renderEdit(); }
+  if(!editResults && !document.getElementById("mvResults").classList.contains("hide")) { editResults = JSON.parse(JSON.stringify(S.results||[])); renderResultsEdit(); }
   document.getElementById("mgEyebrow").textContent = `${monthName(S.month)} · code ${S.code}`;
   document.getElementById("mgName").textContent = S.name;
   document.getElementById("mgCode").textContent = S.code;
