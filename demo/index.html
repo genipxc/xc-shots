@@ -223,6 +223,25 @@
   @keyframes sslide{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
   #splash .msg{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);min-height:14px}
   .subtabs button.dot::after{content:"";display:inline-block;width:6px;height:6px;border-radius:99px;background:var(--gold);margin-left:6px;vertical-align:middle}
+  /* ═══════════════ mobile tab bars (<1080px) — IG-style bottom nav ═══════════════ */
+  .tabbar{display:none}
+  @media (max-width:1079.5px){
+    body.inapp .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:35;display:flex;align-items:stretch;background:rgba(13,13,13,.97);border-top:1px solid var(--hair);padding:6px 4px calc(6px + env(safe-area-inset-bottom));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+    body.inapp.ed .tabbar{display:none}
+    body.inapp.xc #clbar{display:none}
+    body.inapp:not(.xc) #xcbar{display:none}
+    body.inapp .wrap{padding-bottom:120px}
+    body.inapp.xc .xcnav{display:none}
+    body.inapp:not(.xc):not(.ed) .subtabs{display:none}
+    .tbtab{flex:1;appearance:none;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 2px;color:#8A8A8A;position:relative;cursor:pointer;font-family:'Space Mono',monospace}
+    .tbtab svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .tbtab span{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase}
+    .tbtab.on{color:var(--goldB)}.tbtab.on svg{stroke:var(--gold)}
+    .tbn{position:absolute;top:0;right:calc(50% - 21px);background:var(--gold);color:#0A0A0A;font-size:8.5px;font-weight:700;font-style:normal;min-width:15px;height:15px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 3px;font-family:'Space Mono',monospace}
+    .tbmid{flex:0 0 64px;appearance:none;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+    .tbmid .c{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--goldB),var(--gold));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(205,168,95,.35)}
+    .tbmid svg{width:22px;height:22px;stroke:#0A0A0A;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+  }
   /* ═══════════════ desktop (≥1080px) — the XC workspace ═══════════════ */
   @media (min-width:1080px){
     /* everyone: a little more room, two-up shot grid */
@@ -325,7 +344,7 @@
 <div class="wrap hide" id="app">
   <div class="top">
     <div class="brand"><img src="/logo.png" alt="" style="height:24px;width:auto"><div class="t">XC <span>Shots</span></div></div>
-    <div class="xcnav" role="tablist"><button id="nvToday" class="on" onclick="xcnav('today')">Today<span class="n hide" id="todayN"></span></button><button id="nvClients" onclick="xcnav('dash')">Clients</button></div>
+    <div class="xcnav" role="tablist"><button id="nvToday" class="on" onclick="xcnav('today')">Today<span class="n hide" id="todayN"></span></button><button id="nvClients" onclick="xcnav('dash')">Clients</button><button id="nvAct" onclick="xcnav('activity')">Activity</button><button id="nvStudio" onclick="xcnav('studio')">Studio</button></div>
     <span class="sync live" id="sync">synced</span>
   </div>
 
@@ -344,6 +363,28 @@
     <div class="clients" id="roster"></div>
     <div class="addteam" style="margin-top:18px"><input id="newClient" placeholder="New client name…" onkeydown="if(event.key==='Enter')addClient()"><button onclick="addClient()">Add client</button></div>
     <p class="demonote"><b>ADD CLIENT —</b> creates their drop folder + 12 shot folders + a studio code in one go. <br><a onclick="xcSignOut()" role="button" tabindex="0">Sign out of the studio side</a></p>
+  </section>
+
+  <!-- XC: activity feed -->
+  <section id="activity" class="hide">
+    <div class="eyebrow" id="actEyebrow">Activity</div>
+    <h1 id="actHead">Loading…</h1>
+    <div id="actBody"></div>
+  </section>
+
+  <!-- XC: studio tools -->
+  <section id="studio" class="hide">
+    <div class="eyebrow">Studio</div>
+    <h1>Your studio.</h1>
+    <p class="msect" style="margin-top:22px">Add a client</p>
+    <div class="addteam" style="max-width:460px"><input id="newClientS" placeholder="New client name…" onkeydown="if(event.key==='Enter')addClient('newClientS')"><button onclick="addClient('newClientS')">Add client</button></div>
+    <p class="demonote" style="border:0;padding:0"><b>ADD CLIENT —</b> creates their drop folder + 12 shot folders + a studio code in one go.</p>
+    <p class="msect">Session</p>
+    <div class="mlist" style="max-width:460px">
+      <div class="mrow"><div class="r"><span class="nm">Refresh everything</span><button class="mact" onclick="loadToday();loadRoster();toast('Refreshing…')">Refresh</button></div></div>
+      <div class="mrow"><div class="r"><span class="nm">Sign out of the studio side</span><button class="mact cancel" onclick="xcSignOut()">Sign out</button></div></div>
+    </div>
+    <p class="demonote" style="border:0;padding:0">App v<span id="buildC"></span></p>
   </section>
 
   <!-- XC: manage one client -->
@@ -465,6 +506,21 @@
       <div class="reels" id="approvedList"></div>
     </div>
 
+    <div id="docsView" class="hide">
+      <p class="msect" style="margin-top:18px">Your documents</p>
+      <div class="mlist" id="dvDocs"></div>
+    </div>
+
+    <div id="youView" class="hide">
+      <p class="msect" style="margin-top:18px">You</p>
+      <div class="mlist">
+        <div class="mrow"><div class="r"><span class="nm">Filming basics<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">The five rules · framings · phone setup</span></span><button class="mact" onclick="subtab('basics')">Open</button></div></div>
+        <div class="mrow"><div class="r"><span class="nm">Owner area<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Team · history · trend</span></span><button class="mact" onclick="youOwner()">Open</button></div></div>
+        <div class="mrow"><div class="r"><span class="nm">Use a different studio code</span><button class="mact cancel" onclick="resetDevice()">Switch</button></div></div>
+        <div class="mrow"><div class="r"><span class="nm">Studio side<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">XC only</span></span><button class="mact cancel" onclick="gate('gatePin')">Enter</button></div></div>
+      </div>
+    </div>
+
     <div id="shotsView">
       <div class="prog">
         <span class="wk" id="wkLabel">This week</span>
@@ -478,6 +534,22 @@
     </div>
   </section>
 </div>
+
+<!-- MOBILE TAB BARS -->
+<nav class="tabbar" id="xcbar" aria-label="Studio menu">
+  <button id="xbToday" class="tbtab on" onclick="xcnav('today')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h14V9.5"/></svg><span>Today</span><i class="tbn hide" id="xbTodayN"></i></button>
+  <button id="xbClients" class="tbtab" onclick="xcnav('dash')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.4 2.8-5 5.5-5s4.9 1.6 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 15.2c2.3.2 4 1.6 4.5 4.3"/></svg><span>Clients</span></button>
+  <button class="tbmid" onclick="barReview()" aria-label="Review clips"><span class="c"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span></button>
+  <button id="xbAct" class="tbtab" onclick="xcnav('activity')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9C1.3 8.6 3.5 5.5 6.8 5.5c2 0 3.6 1.1 5.2 3 1.6-1.9 3.2-3 5.2-3 3.3 0 5.5 3.1 4.1 6.5-1.8 4.3-9.3 9-9.3 9z"/></svg><span>Activity</span><i class="tbn hide" id="xbActN"></i></button>
+  <button id="xbStudio" class="tbtab" onclick="xcnav('studio')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.6"/><path d="M19 12c0-.5 0-1-.1-1.4l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.4-1.4L13.7 2h-3.4l-.4 2.6c-.9.3-1.7.8-2.4 1.4l-2.4-1-2 3.4 2 1.6a7.8 7.8 0 0 0 0 2.8l-2 1.6 2 3.4 2.4-1c.7.6 1.5 1.1 2.4 1.4l.4 2.6h3.4l.4-2.6c.9-.3 1.7-.8 2.4-1.4l2.4 1 2-3.4-2-1.6c.1-.4.1-.9.1-1.4z"/></svg><span>Studio</span></button>
+</nav>
+<nav class="tabbar" id="clbar" aria-label="Menu">
+  <button id="cbShots" class="tbtab on" onclick="subtab('shots')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M8 3v3M16 3v3M7.5 12l3 3 6-6"/></svg><span>Shots</span></button>
+  <button id="cbResults" class="tbtab" onclick="subtab('results')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg><span>Results</span><i class="tbn hide" id="cbResultsN"></i></button>
+  <button class="tbmid" onclick="upload()" aria-label="Upload footage"><span class="c"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5"/><path d="M4.5 16.5V19h15v-2.5"/></svg></span></button>
+  <button id="cbDocs" class="tbtab" onclick="subtab('docs')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l4.5 4.5v12.5h-11.5z"/><path d="M14 3.5V8h4.5M9.5 13h5.5M9.5 16.5h5.5"/></svg><span>Docs</span></button>
+  <button id="cbYou" class="tbtab" onclick="subtab('you')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/></svg><span>You</span></button>
+</nav>
 
 <!-- GUIDE SHEET -->
 <div class="veil" id="veil" onclick="closeSheet()"></div>
@@ -568,7 +640,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.0";
+const BUILD = "4.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -650,6 +722,7 @@ function gate(which){
   splashDone();
   if(which==="gateCode" || which==="gatePin" || which==="gateOwner") warm();
   ["gateCode","gateName","gateGuide","gatePin","gateOwner","app"].forEach(id => document.getElementById(id).classList.toggle("hide", id!==which));
+  document.body.classList.toggle("inapp", which==="app");
   window.scrollTo({top:0});
   if(which==="gateCode") setTimeout(()=>document.getElementById("codeInput").focus(), 60);
   if(which==="gatePin") setTimeout(()=>document.getElementById("pinInput").focus(), 60);
@@ -745,6 +818,9 @@ function renderClient(){
   if(!C || !C.shots) return;
   document.getElementById("stOwner").classList.toggle("hide", !(C.role >= 1));
   document.getElementById("stResults").classList.toggle("dot", (C.approved||[]).some(f=>!(C.feedback||{})[f.id]));   // reels awaiting a verdict
+  const unrev = (C.approved||[]).filter(f=>!(C.feedback||{})[f.id]).length;
+  const rn = document.getElementById("cbResultsN"); if(rn){ rn.classList.toggle("hide", !unrev); rn.textContent = unrev; }
+  if(!document.getElementById("docsView").classList.contains("hide")) renderDocsList();
   const WK = C.week, shots = C.shots;
   document.getElementById("clientEyebrow").textContent = `${C.name} · ${monthName(C.month)}`;
   document.getElementById("wkLabel").textContent = `Week ${WK} of 4 · This week`;
@@ -829,10 +905,21 @@ function upload(i){
   toast("In Drive: <b>+ → Upload → pick your video</b>. Use the Drive app so it finishes in the background. The clip vanishes from the folder within a minute — that's XC receiving it. Then tick the shot.");
 }
 function subtab(which){
-  const map = {shots:["shotsView","stShots"], results:["resultsView","stResults"], basics:["basicsView","stBasics"], owner:["ownerView","stOwner"]};
-  for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); document.getElementById(map[k][1]).classList.toggle("on", which===k); }
+  const map = {shots:["shotsView","stShots"], results:["resultsView","stResults"], basics:["basicsView","stBasics"], owner:["ownerView","stOwner"], docs:["docsView",null], you:["youView",null]};
+  for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); if(map[k][1]) document.getElementById(map[k][1]).classList.toggle("on", which===k); }
   if(which==="owner") renderOwner();
+  if(which==="docs") renderDocsList();
+  const bm = {shots:"cbShots", results:"cbResults", docs:"cbDocs", you:"cbYou", basics:"cbYou", owner:"cbYou"};
+  ["cbShots","cbResults","cbDocs","cbYou"].forEach(id=>{ const el = document.getElementById(id); if(el) el.classList.toggle("on", id===bm[which]); });
+  window.scrollTo({top:0});
 }
+function youOwner(){ if(C && C.role >= 1) subtab("owner"); else gate("gateOwner"); }
+function docRows(docs){
+  return docs.length
+    ? docs.map(d=>{ const m = docMeta(d); return `<a class="mrow" style="text-decoration:none;color:inherit" href="${esc(d.url)}" target="_blank" rel="noreferrer"><div class="r"><span class="nm">${esc(d.label)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${m.tag}</span></span><span class="who"${m.gold?' style="color:var(--gold);font-weight:700"':''}>${m.act}</span></div></a>`; }).join("")
+    : '<p class="sub">Nothing here yet — agreements and invoices appear as XC adds them.</p>';
+}
+function renderDocsList(){ document.getElementById("dvDocs").innerHTML = docRows((C && C.docs) || []); }
 function renderOwner(){
   if(!C || C.role < 1) return;
   document.getElementById("ovTeam").innerHTML = (C.team||[]).map(n=>`<span class="tchip">${esc(n)}<button aria-label="Remove ${esc(n)}" onclick="ownerRemoveTeam(${q(n)})">✕</button></span>`).join("") || '<p class="sub">No names yet.</p>';
@@ -844,10 +931,7 @@ function renderOwner(){
   document.getElementById("ovHistory").innerHTML = hist.length
     ? hist.slice().reverse().map(h=>`<div class="mrow"><div class="r"><span class="nm">${esc(monthName(h.month))}</span><span class="who">${h.done}/${h.total} filmed · ${fmtV(h.views)} views${h.top?` · top: ${esc(h.top.n)}`:""}</span><button class="mact" onclick="ownerShareRecap(${q(h.month)})">Share ↗</button></div></div>`).join("")
     : '<p class="sub">First month still in progress.</p>';
-  const docs = C.docs||[];
-  document.getElementById("ovDocs").innerHTML = docs.length
-    ? docs.map(d=>{ const m = docMeta(d); return `<a class="mrow" style="text-decoration:none;color:inherit" href="${esc(d.url)}" target="_blank" rel="noreferrer"><div class="r"><span class="nm">${esc(d.label)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${m.tag}</span></span><span class="who"${m.gold?' style="color:var(--gold);font-weight:700"':''}>${m.act}</span></div></a>`; }).join("")
-    : '<p class="sub">Nothing here yet — proposals and invoices will appear as XC adds them.</p>';
+  document.getElementById("ovDocs").innerHTML = docRows(C.docs||[]);
   const act = (C.activity||[]).slice().reverse().slice(0,12);   // backend v2.3+; hidden until it exists
   document.getElementById("ovActWrap").classList.toggle("hide", !act.length);
   document.getElementById("ovActivity").innerHTML = act.map(a=>
@@ -1039,12 +1123,13 @@ function renderRoster(){
   }).join("");
 }
 function nudge(){ toast("SMS drafted to the owner: <b>“Hey mate — week's shots are still open, three quick ones whenever suits. All good if it's a mad week, they'll roll.”</b> You hit send, not the robot."); }
-async function addClient(){
-  const n = document.getElementById("newClient").value.trim(); if(!n) return;
+async function addClient(inputId){
+  const inp = document.getElementById(inputId || "newClient");
+  const n = inp.value.trim(); if(!n) return;
   toast("Creating folders… <b>~20 seconds</b>.");
   const d = await apiPost({action:"addClient", pin, name:n});
   if(!d.ok){ toast("Couldn't add: " + esc(d.error)); return; }
-  document.getElementById("newClient").value = "";
+  inp.value = "";
   toast(`<b>${esc(d.name)}</b> is live — code <b>${esc(d.code)}</b>.`);
   await loadRoster();
 }
@@ -1053,7 +1138,8 @@ async function addClient(){
 async function openManage(c){
   mgCode = c; stopPoll(); editDocs = null;
   document.getElementById("dash").classList.add("hide"); document.getElementById("today").classList.add("hide"); document.getElementById("manage").classList.remove("hide");
-  document.getElementById("nvToday").classList.remove("on"); document.getElementById("nvClients").classList.add("on");
+  ["nvToday","nvAct","nvStudio","xbToday","xbAct","xbStudio"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove("on"); });
+  ["nvClients","xbClients"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add("on"); });
   document.getElementById("mgName").textContent = "Loading…"; window.scrollTo({top:0});
   await loadManage(); startPoll(loadManage);
 }
@@ -1175,12 +1261,22 @@ async function newMonth(){ if(!confirm("Start a new month? Ticks and redos clear
 /* ═══════════════ shared ═══════════════ */
 function show(view){
   document.getElementById("manage").classList.add("hide");
-  ["today","dash","client"].forEach(id => document.getElementById(id).classList.toggle("hide", view!==id));
-  document.getElementById("nvToday").classList.toggle("on", view==="today");
-  document.getElementById("nvClients").classList.toggle("on", view==="dash" );
+  ["today","dash","client","activity","studio"].forEach(id => document.getElementById(id).classList.toggle("hide", view!==id));
+  const navmap = {nvToday:"today", nvClients:"dash", nvAct:"activity", nvStudio:"studio", xbToday:"today", xbClients:"dash", xbAct:"activity", xbStudio:"studio"};
+  for(const id in navmap){ const el = document.getElementById(id); if(el) el.classList.toggle("on", view===navmap[id]); }
   window.scrollTo({top:0});
 }
-function xcnav(view){ show(view); if(view==="today"){ loadToday(); startPoll(loadToday); } else { loadRoster(); startPoll(loadRoster); } }
+function xcnav(view){
+  show(view);
+  if(view==="today" || view==="activity"){ if(view==="activity") renderActivity(); loadToday(); startPoll(loadToday); }
+  else if(view==="dash"){ loadRoster(); startPoll(loadRoster); }
+  else stopPoll();
+}
+function barReview(){
+  const T = todayData, n = T ? (T.deliveries.length + T.fresh.length) : 0;
+  if(!n){ toast("Nothing to review right now — new clips light this up the moment they land."); if(pin) loadToday(); return; }
+  openPlayer();
+}
 function monthName(m){ const mm = String(m||"").match(/^(\d{4})-(\d{2})/); if(!mm) return String(m||""); return new Date(Number(mm[1]), Number(mm[2])-1, 1).toLocaleDateString("en-AU", {month:"long", year:"numeric"}); }
 let toastT; function toast(msg){ const t = document.getElementById("toast"); t.innerHTML = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3800); }
 document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeFlag(); closeBack(); closePreview(); closeShare(); } });
@@ -1215,6 +1311,10 @@ function renderToday(){
   const total = T.counts.deliveries + T.counts.fresh + T.counts.quiet + T.counts.redos + (T.counts.feedback || 0);
   const badge = document.getElementById("todayN");
   badge.classList.toggle("hide", !total); badge.textContent = total;
+  const xb = document.getElementById("xbTodayN"); xb.classList.toggle("hide", !total); xb.textContent = total;
+  const fb = T.counts.feedback || 0;
+  const ab = document.getElementById("xbActN"); ab.classList.toggle("hide", !fb); ab.textContent = fb;
+  if(!document.getElementById("activity").classList.contains("hide")) renderActivity();
   const head = document.getElementById("todayHead");
   const body = document.getElementById("todayBody");
   if(!total){
@@ -1256,6 +1356,22 @@ function renderToday(){
   body.innerHTML = h;
 }
 function stackHead(t, n){ return `<div class="stack"><div class="stackhead"><span class="t">${t}</span><span class="line"></span><span class="ct">${n}</span></div></div>`; }
+/* ── ACTIVITY feed — everything that happened, one stream ── */
+function renderActivity(){
+  const T = todayData, head = document.getElementById("actHead"), body = document.getElementById("actBody");
+  if(!T){ head.innerHTML = '<span class="spin"></span>Loading…'; return; }
+  document.getElementById("actEyebrow").textContent = `${monthName(T.month)} · Week ${T.week} · Activity`;
+  const rows = [];
+  (T.feedback||[]).forEach(x=>rows.push({ic:x.v==="love"?"♥":"✎", t:`<b>${esc(x.client)}</b> ${x.v==="love"?"loved a reel":"asked for a refinement"}`, m:`${esc(x.by||"")}${x.note?" — "+esc(x.note):""}`, act:`<button class="mact ok" onclick="ackFb(${q(x.code)},${q(x.fileId)})">Got it</button><button class="mact cancel" onclick="openPreview(${q(x.fileId)},'Reel','')">Watch</button>`}));
+  (T.deliveries||[]).forEach(x=>rows.push({ic:"▶", t:`Editor delivered — <b>${esc(x.client)}</b>`, m:esc(x.file.name), act:`<button class="mact ok" onclick="tqApprove(${q(x.code)},${q(x.file.id)})">Approve</button><button class="mact" onclick="mgCode=${q(x.code)};openBack(${q(x.file.id)},${q(x.file.name)})">Send back</button>`}));
+  (T.fresh||[]).forEach(x=>rows.push({ic:"●", t:`<b>${esc(x.client)}</b> filmed “${esc(x.shot)}”`, m:esc(x.file.name), act:`<button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)},${x.idx===null?"null":x.idx})">Good ✓</button>`}));
+  (T.quiet||[]).forEach(x=>rows.push({ic:"…", t:`<b>${esc(x.client)}</b> has gone quiet`, m:`${x.quietDays===null?"no ticks yet":x.quietDays+" days"} · week ${x.wkDone} of ${x.wkTotal}`, act:`<button class="nudgebtn" onclick="nudge()">Nudge ↗</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button>`}));
+  (T.redosAging||[]).forEach(x=>rows.push({ic:"↺", t:`Redo out — <b>${esc(x.client)}</b>: ${esc(x.shot)}`, m:`${x.days===null?"":"out "+x.days+" days · "}${esc(x.reason)}`, act:`<button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button>`}));
+  head.textContent = rows.length ? `${rows.length} thing${rows.length===1?"":"s"} happening.` : "All quiet.";
+  body.innerHTML = rows.length
+    ? '<div class="mlist" style="margin-top:18px">' + rows.map(r=>`<div class="mrow"><div class="r"><span class="nm"><span style="color:var(--gold);font-family:'Space Mono',monospace;margin-right:9px">${r.ic}</span>${r.t}<br><span class="mono" style="font-size:10px;color:var(--dim)">${r.m}</span></span></div><div class="acts" style="margin-top:9px;display:flex;gap:8px">${r.act}</div></div>`).join("") + '</div>'
+    : '<div class="zero"><div class="big">Nothing yet.</div><div class="sml">Client ticks, uploads, reviews and refinements land here.</div></div>';
+}
 async function ackFb(code, fileId){ const d = await apiPost({action:"ackFeedback", pin, code, fileId}); if(d.ok){ toast("Acknowledged."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
 async function tqApprove(code, fileId){ const d = await apiPost({action:"approve", pin, code, fileId}); if(d.ok){ toast("<b>Approved.</b>"); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
 async function tqGood(code, fileId, idx){ const d = await apiPost({action:"reviewGood", pin, code, fileId, idx}); if(d.ok){ toast("Marked good — shot counted as done."); loadToday(); } else toast("Couldn't: "+esc(d.error)); }
@@ -1420,7 +1536,7 @@ function renderTools(){
 
 /* ── editor workspace ── */
 function enterEditorGate(){
-  document.body.classList.add("xc");
+  document.body.classList.add("xc"); document.body.classList.add("ed");
   gate("gatePin");
   document.querySelector("#gatePin h1").textContent = "Editor PIN.";
   document.querySelector("#gatePin .eyebrow").textContent = "Editor workspace";
@@ -1449,7 +1565,7 @@ function renderEditorQueue(d){
     </div>`).join("");
 }
 
-document.getElementById("buildA").textContent = "v" + BUILD; document.getElementById("buildB").textContent = "v" + BUILD;
+document.getElementById("buildA").textContent = "v" + BUILD; document.getElementById("buildB").textContent = "v" + BUILD; document.getElementById("buildC").textContent = BUILD;
 if("serviceWorker" in navigator){ try { navigator.serviceWorker.register("/sw.js"); } catch(e){} }
 /* ── UI dev harness: ?uidev=1 renders the XC workspace with sample data (stubbed API, no gates, no writes).
      &view=dash|manage picks the screen. Shows only fake data — safe if hit in production. ── */
@@ -1478,7 +1594,7 @@ if("serviceWorker" in navigator){ try { navigator.serviceWorker.register("/sw.js
   warm = ()=>{};
   pin = "DEV"; code = null;
   const v = q.get("view");
-  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="manage") openManage("RILEYN83"); if(v==="client"){ document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); } }catch(e){} }, 600);
+  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage") openManage("RILEYN83"); if(v==="client"){ document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); } }catch(e){} }, 600);
 })();
 
 /* ═══════════════ DEMO MODE (injected by make-demo.js — do not edit demo/index.html by hand) ═══════════════ */
