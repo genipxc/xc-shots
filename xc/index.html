@@ -72,6 +72,11 @@
   .hide{display:none !important}
   .subtabs{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.subtabs button{appearance:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;border-radius:99px;border:1px solid var(--hair);background:transparent;color:var(--dim)}.subtabs button.on{border-color:var(--gold);color:var(--goldB);font-weight:700}
   #client .subtabs{display:none}   /* client pills retired — bottom bar / sidebar took over (v4.3). Manage's tabs stay. */
+  .subtabs.seg{display:inline-flex;background:#141414;border:1px solid var(--hair);border-radius:12px;padding:4px;gap:2px;flex-wrap:nowrap;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .subtabs.seg::-webkit-scrollbar{display:none}
+  .subtabs.seg button{border:0;border-radius:9px;padding:9px 15px;white-space:nowrap;flex:1 0 auto;text-align:center}
+  .subtabs.seg button.on{background:var(--gold);color:#0A0A0A;font-weight:700}
+  @media (max-width:480px){ .subtabs.seg{width:100%}.subtabs.seg button{padding:9px 6px;font-size:9px;letter-spacing:.07em} }
   .clnav{display:none}
   .rsum{margin-top:16px;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px}.rsum .big{font-family:'Space Mono',monospace;font-weight:700;font-size:26px;color:var(--goldB);font-variant-numeric:tabular-nums}.rsum .lab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;margin-top:2px}.rsum .line{color:var(--grey);font-size:12.5px;line-height:1.5;margin-top:10px}
   .reels{display:flex;flex-direction:column;gap:10px;margin-top:14px}.reel{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}.reel.top{border-color:var(--gold)}.reel .l h3{font-size:14.5px;font-weight:800;letter-spacing:-.01em}.reel .by{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-top:4px}.reel .by b{color:var(--goldB);font-weight:400}.reel .v{text-align:right;flex:none}.reel .v .n{font-family:'Space Mono',monospace;font-weight:700;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}.reel.top .v .n{color:var(--goldB)}.reel .v .u{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:2px}
@@ -408,7 +413,7 @@
     <div class="eyebrow" id="mgEyebrow"></div>
     <h1 id="mgName"></h1>
     <div class="mstat"><div class="box"><div class="n" id="mgMonth">—</div><div class="l">Month</div></div><div class="box"><div class="n" id="mgWeek">—</div><div class="l">This week</div></div><div class="box"><div class="n" id="mgRedo">—</div><div class="l">Redos out</div></div></div>
-    <div class="subtabs"><button id="mtShots" class="on" onclick="mtab('shots')">Shots</button><button id="mtDeliv" onclick="mtab('deliv')">Deliveries <span id="delivCount"></span></button><button id="mtTeam" onclick="mtab('team')">Team</button><button id="mtResults" onclick="mtab('results')">Results</button><button id="mtEdit" onclick="mtab('edit')">Shot list</button><button id="mtTools" onclick="mtab('tools')">Tools</button></div>
+    <div class="subtabs seg"><button id="mtShots" class="on" onclick="mtab('shots')">Shots</button><button id="mtReview" onclick="mtab('review')">Review <span id="delivCount"></span></button><button id="mtEdit" onclick="mtab('edit')">Shot list</button><button id="mtTools" onclick="mtab('tools')">Settings</button></div>
 
     <div id="mvShots">
       <p class="msect">Shots — clips land here automatically</p>
@@ -664,7 +669,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.3.2";
+const BUILD = "4.4";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1190,11 +1195,15 @@ async function loadManage(){
   renderManage();
 }
 function mtab(which){
-  const map = {shots:["mvShots","mtShots"], deliv:["mvDeliv","mtDeliv"], team:["mvTeam","mtTeam"], results:["mvResults","mtResults"], edit:["mvEdit","mtEdit"], tools:["mvTools","mtTools"]};
+  // 4 segments over 6 views: Review = deliveries + results, Settings = team + tools
+  const views = {shots:["mvShots"], review:["mvDeliv","mvResults"], edit:["mvEdit"], tools:["mvTeam","mvTools"]};
+  const tabs = {shots:"mtShots", review:"mtReview", edit:"mtEdit", tools:"mtTools"};
+  const showIds = views[which] || views.shots;
+  ["mvShots","mvDeliv","mvTeam","mvResults","mvEdit","mvTools"].forEach(id => document.getElementById(id).classList.toggle("hide", !showIds.includes(id)));
+  for(const k in tabs) document.getElementById(tabs[k]).classList.toggle("on", k===which);
   if(which==="tools") renderTools();
-  for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); document.getElementById(map[k][1]).classList.toggle("on", which===k); }
   if(which==="edit" && !editShots && mgState) { editShots = JSON.parse(JSON.stringify(mgState.shots)); renderEdit(); }
-  if(which==="results" && !editResults && mgState) { editResults = JSON.parse(JSON.stringify(mgState.results||[])); renderResultsEdit(); }
+  if(which==="review" && !editResults && mgState) { editResults = JSON.parse(JSON.stringify(mgState.results||[])); renderResultsEdit(); }
 }
 function renderManage(){
   const S = mgState; if(!S) return;
