@@ -546,7 +546,7 @@
 <nav class="tabbar" id="clbar" aria-label="Menu">
   <button id="cbShots" class="tbtab on" onclick="subtab('shots')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M8 3v3M16 3v3M7.5 12l3 3 6-6"/></svg><span>Shots</span></button>
   <button id="cbResults" class="tbtab" onclick="subtab('results')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg><span>Results</span><i class="tbn hide" id="cbResultsN"></i></button>
-  <button class="tbmid" onclick="upload()" aria-label="Upload footage"><span class="c"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5"/><path d="M4.5 16.5V19h15v-2.5"/></svg></span></button>
+  <button class="tbmid" onclick="openUpPick()" aria-label="Upload footage"><span class="c"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5"/><path d="M4.5 16.5V19h15v-2.5"/></svg></span></button>
   <button id="cbDocs" class="tbtab" onclick="subtab('docs')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l4.5 4.5v12.5h-11.5z"/><path d="M14 3.5V8h4.5M9.5 13h5.5M9.5 16.5h5.5"/></svg><span>Docs</span></button>
   <button id="cbYou" class="tbtab" onclick="subtab('you')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/></svg><span>You</span></button>
 </nav>
@@ -561,6 +561,15 @@
   <div class="steps" id="shSteps"></div>
   <div class="dont"><span class="ic">DON'T</span><p id="shDont"></p></div>
   <div class="sheetbtns"><button class="bigbtn" id="shTick" onclick="tick(sheetIdx)">Mark as filmed ✓</button><button class="up" onclick="upload(sheetIdx)">Upload ↗</button></div>
+</div>
+
+<!-- UPLOAD PICKER SHEET (mobile bar ↑) -->
+<div class="veil" id="upveil" onclick="closeUpPick()"></div>
+<div class="sheet" id="upsheet" role="dialog" aria-modal="true" aria-labelledby="upTitle">
+  <div class="grab"></div>
+  <div class="shead"><h2 id="upTitle">Which shot is this for?</h2><button class="x" onclick="closeUpPick()" aria-label="Close">✕</button></div>
+  <p class="sub" style="margin-top:6px">Tap the shot and its Drive folder opens — drop the clip straight in.</p>
+  <div class="mlist" id="upList" style="margin-top:14px"></div>
 </div>
 
 <!-- FLAG REDO SHEET -->
@@ -640,7 +649,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.1.1";
+const BUILD = "4.2";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -914,6 +923,21 @@ function subtab(which){
   window.scrollTo({top:0});
 }
 function youOwner(){ if(C && C.role >= 1) subtab("owner"); else gate("gateOwner"); }
+/* upload picker — the bar's ↑ asks which shot the clip belongs to, then opens THAT shot's folder */
+function openUpPick(){
+  if(!C || !C.shots || !C.shots.length){ upload(); return; }
+  const WK = C.week;
+  const cand = C.shots.map((s,i)=>({s,i}))
+    .filter(x => !C.received[x.i] || C.redo[x.i])
+    .sort((a,b) => (b.s.w<=WK && C.redo[b.i] ? 2 : b.s.w<=WK ? 1 : 0) - (a.s.w<=WK && C.redo[a.i] ? 2 : a.s.w<=WK ? 1 : 0) || a.s.w - b.s.w);
+  const rows = cand.map(x =>
+    `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload(${x.i})" onkeydown="if(event.key==='Enter'){closeUpPick();upload(${x.i})}"><div class="r"><span class="nm">${esc(x.s.n)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:${C.redo[x.i]?"var(--warn)":"var(--dim)"};text-transform:uppercase">${C.redo[x.i] ? "Redo — needs a fresh clip" : "Week " + x.s.w + (x.s.w===WK ? " · this week" : "")}</span></span><span class="who" style="color:var(--gold);font-weight:700">Open folder ↗</span></div></div>`
+  ).join("");
+  document.getElementById("upList").innerHTML = rows +
+    `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload()" onkeydown="if(event.key==='Enter'){closeUpPick();upload()}"><div class="r"><span class="nm">Something else<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">General drop folder</span></span><span class="who">Open ↗</span></div></div>`;
+  document.getElementById("upveil").classList.add("show"); document.getElementById("upsheet").classList.add("show");
+}
+function closeUpPick(){ document.getElementById("upveil").classList.remove("show"); document.getElementById("upsheet").classList.remove("show"); }
 function docRows(docs){
   return docs.length
     ? docs.map(d=>{ const m = docMeta(d); return `<a class="mrow" style="text-decoration:none;color:inherit" href="${esc(d.url)}" target="_blank" rel="noreferrer"><div class="r"><span class="nm">${esc(d.label)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${m.tag}</span></span><span class="who"${m.gold?' style="color:var(--gold);font-weight:700"':''}>${m.act}</span></div></a>`; }).join("")
@@ -1279,7 +1303,7 @@ function barReview(){
 }
 function monthName(m){ const mm = String(m||"").match(/^(\d{4})-(\d{2})/); if(!mm) return String(m||""); return new Date(Number(mm[1]), Number(mm[2])-1, 1).toLocaleDateString("en-AU", {month:"long", year:"numeric"}); }
 let toastT; function toast(msg){ const t = document.getElementById("toast"); t.innerHTML = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3800); }
-document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeFlag(); closeBack(); closePreview(); closeShare(); } });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeFlag(); closeBack(); closePreview(); closeShare(); closeUpPick(); } });
 /* ── sparkline ── */
 function spark(weeks){
   if(!weeks || !weeks.length) return "";
