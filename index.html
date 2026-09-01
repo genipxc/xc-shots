@@ -701,6 +701,8 @@ function imgSrc(u){
   const m = String(u).match(/drive\.google\.com\/(?:file\/d\/|open\?id=|thumbnail\?id=)([\w-]{20,})/) || String(u).match(/drive\.google\.com\/.*[?&]id=([\w-]{20,})/);
   return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1200" : String(u);
 }
+/* several links can share the field — split on spaces/commas/newlines. Card shows the first, the sheet shows all. */
+function imgList(v){ return String(v||"").trim().split(/[\s,]+/).filter(u=>/^https?:\/\//.test(u)); }
 
 /* ═══════════════ api ═══════════════ */
 let pollT = null, inflight = 0;
@@ -881,7 +883,7 @@ function renderClient(){
             <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>
             ${isDone ? (rcv ? `<span class="byme rcv">✓ ${esc(C.by[i])} · received</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for upload</span>`) : (rcv ? `<span class="byme rcv">clip received — tick it!</span>` : "")}
           </span></span>
-        ${s.img ? `<img class="cardimg" src="${esc(imgSrc(s.img))}" alt="" loading="lazy" onerror="this.style.display='none'">` : frame(s.t, 44)}`;
+        ${imgList(s.img).length ? `<img class="cardimg" src="${esc(imgSrc(imgList(s.img)[0]))}" alt="" loading="lazy" onerror="this.style.display='none'">` : frame(s.t, 44)}`;
       box.appendChild(el);
     });
   }
@@ -917,7 +919,7 @@ function openSheet(i){
   document.getElementById("shTitle").textContent = s.n;
   document.getElementById("shChips").innerHTML = `<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip">Week ${s.w}</span>`;
   document.getElementById("shFrame").innerHTML = s.img
-    ? `<img class="sheetimg" src="${esc(imgSrc(s.img))}" alt="Reference — this is the framing" onerror="this.outerHTML=${q(frame(s.t,120))}">`
+    ? imgList(s.img).map(u=>`<img class="sheetimg" src="${esc(imgSrc(u))}" alt="Reference — this is the framing" onerror="this.style.display='none'">`).join("")
     : frame(s.t, 120);
   document.getElementById("shCap").textContent = CAP[s.t] || "";
   const redoNote = C.redo[i] ? `<div class="reason" style="margin-bottom:4px"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</div>` : "";
@@ -1307,7 +1309,7 @@ async function saveResults(){ await act({action:"results", results:editResults},
 function autogrow(el){ el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
 function renderEdit(){
   document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>`<div class="shotedit"><span class="i">${k+1}</span><textarea rows="1" oninput="editShots[${k}].n=this.value;autogrow(this)" placeholder="Shot name">${esc(s.n)}</textarea><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="if(confirm('Remove shot ${k+1}?')){editShots.splice(${k},1);renderEdit()}" aria-label="Remove shot">✕</button></div>
-  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photo link (optional — paste a Drive share link, it just works)"></div>`).join("")
+  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photos (optional — paste one or more Drive share links, spaces between)"></div>`).join("")
   + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],dont:'',img:''});renderEdit()">+ Add shot</button>`;
   document.querySelectorAll("#mgEdit textarea").forEach(autogrow);
 }
@@ -1500,7 +1502,7 @@ function renderPList(it){
   document.getElementById("pList").innerHTML = head + S.shots.map((s,i)=>{
     const st = by[i] ? `<span class="st done">✓ ${esc(by[i])}</span>` : (redo[i] ? '<span class="st redo">redo out</span>' : '<span class="st">open</span>');
     const ex = plSel === i;
-    const steps = (s.img?`<img class="plimg" src="${esc(imgSrc(s.img))}" alt="" loading="lazy" onerror="this.style.display='none'">`:"") + (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${esc(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
+    const steps = imgList(s.img).map(u=>`<img class="plimg" src="${esc(imgSrc(u))}" alt="" loading="lazy" onerror="this.style.display='none'">`).join("") + (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${esc(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
     return `<div class="plrow${ex?" cur ex":""}" id="plr${i}" onclick="plToggle(${i})"><div class="r1"><span class="wk">W${s.w} · ${TLAB[s.t]||"Mid"}</span>${st}</div><h4>${esc(s.n)}</h4><p class="how">${esc(s.h)}</p><div class="plsteps">${steps}</div></div>`;
   }).join("");
   if(plSel !== null){ const el = document.getElementById("plr"+plSel); if(el) el.scrollIntoView({block:"nearest"}); }
