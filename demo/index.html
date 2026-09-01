@@ -212,6 +212,7 @@
   .cardimg{flex:none;width:44px;height:34px;border-radius:6px;object-fit:cover;margin-top:2px;border:1px solid var(--hair)}
   .sheetimg{width:100%;max-height:280px;object-fit:cover;border-radius:12px;border:1px solid var(--hair);display:block}
   .plimg{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:8px;border:1px solid var(--hair);display:block}
+  .shotedit textarea{flex:1;min-width:0;appearance:none;background:transparent;border:0;border-bottom:1px solid var(--hair);color:var(--ink);font-family:inherit;font-size:13px;line-height:1.45;padding:4px 2px;outline:none;resize:none;overflow:hidden}.shotedit textarea:focus{border-color:var(--gold)}
   .shotedit.imgrow{margin-top:-4px}
   .shotedit.imgrow input{font-size:11px;color:var(--grey)}
   /* owner row on the name picker — solo operators shouldn't hunt for a grey footer link */
@@ -669,7 +670,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.4.1";
+const BUILD = "4.4.2";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1302,10 +1303,12 @@ function renderResultsEdit(){
 function addReel(){ const v = document.getElementById("newReel").value.trim(); if(!v) return; editResults.push({n:v, by:"", wk:mgState.week, v:0}); document.getElementById("newReel").value=""; renderResultsEdit(); }
 async function saveResults(){ await act({action:"results", results:editResults}, "<b>Results saved.</b> Their tab updated."); }
 /* shot list editor */
+function autogrow(el){ el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
 function renderEdit(){
-  document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>`<div class="shotedit"><span class="i">${k+1}</span><input value="${esc(s.n)}" oninput="editShots[${k}].n=this.value" placeholder="Shot name"><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="if(confirm('Remove shot ${k+1}?')){editShots.splice(${k},1);renderEdit()}" aria-label="Remove shot">✕</button></div>
+  document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>`<div class="shotedit"><span class="i">${k+1}</span><textarea rows="1" oninput="editShots[${k}].n=this.value;autogrow(this)" placeholder="Shot name">${esc(s.n)}</textarea><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="if(confirm('Remove shot ${k+1}?')){editShots.splice(${k},1);renderEdit()}" aria-label="Remove shot">✕</button></div>
   <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photo link (optional — paste a Drive share link, it just works)"></div>`).join("")
   + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],dont:'',img:''});renderEdit()">+ Add shot</button>`;
+  document.querySelectorAll("#mgEdit textarea").forEach(autogrow);
 }
 async function saveShots(){ const d = await act({action:"shots", shots:editShots}, "<b>Shot list saved.</b> Drop folders renamed to match."); if(d.ok) editShots = null; }
 async function newMonth(){ if(!confirm("Start a new month? Ticks and redos clear (results stay). Do this after the month's reels are delivered.")) return; await act({action:"month"}, "<b>New month started.</b>"); }
