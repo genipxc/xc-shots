@@ -469,9 +469,10 @@
     </div>
     <div id="mvEdit" class="hide">
       <p class="msect">This month's shot list</p>
+      <p class="mono hide" id="draftBadge" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:99px;display:inline-block;padding:5px 12px;margin:4px 0 10px">✎ Draft — the client can't see this</p>
       <div class="mlist" id="mgEdit"></div>
-      <div class="sheetbtns"><button class="bigbtn" onclick="saveShots()">Save shot list</button><button class="up" onclick="newMonth()">New month</button></div>
-      <p class="demonote"><b>SAVE —</b> renames the drop folders to match. Guides keep their steps. <b>NEW MONTH —</b> clears ticks and redos (results stay), starts a fresh vault month. <b>⚠ REMOVING/REORDERING</b> mid-month shifts which tick sits on which shot — do list surgery at month start, or right after NEW MONTH.</p>
+      <div class="sheetbtns"><button class="up" onclick="saveDraft()">Save draft</button><button class="bigbtn" onclick="publishDraft()">Publish to client</button><button class="up" onclick="newMonth()">New month</button></div>
+      <p class="demonote"><b>SAVE DRAFT —</b> keeps your working copy here, invisible to the client, until you publish. <b>PUBLISH —</b> makes it their live list and renames the drop folders to match. <b>NEW MONTH —</b> clears ticks and redos (results stay), starts a fresh vault month. <b>⚠ REMOVING/REORDERING</b> a published list mid-month shifts which tick sits on which shot — do list surgery at month start. <a onclick="discardDraft()" role="button" tabindex="0">Discard draft</a></p>
     </div>
   </section>
 
@@ -670,7 +671,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.4.2";
+const BUILD = "4.5";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1203,13 +1204,13 @@ function mtab(which){
   ["mvShots","mvDeliv","mvTeam","mvResults","mvEdit","mvTools"].forEach(id => document.getElementById(id).classList.toggle("hide", !showIds.includes(id)));
   for(const k in tabs) document.getElementById(tabs[k]).classList.toggle("on", k===which);
   if(which==="tools") renderTools();
-  if(which==="edit" && !editShots && mgState) { editShots = JSON.parse(JSON.stringify(mgState.shots)); renderEdit(); }
+  if(which==="edit" && !editShots && mgState) { const dr = mgState.draftShots && mgState.draftShots.length; editShots = JSON.parse(JSON.stringify(dr ? mgState.draftShots : mgState.shots)); document.getElementById("draftBadge").classList.toggle("hide", !dr); renderEdit(); }
   if(which==="review" && !editResults && mgState) { editResults = JSON.parse(JSON.stringify(mgState.results||[])); renderResultsEdit(); }
 }
 function renderManage(){
   const S = mgState; if(!S) return;
   // late-init: state arrived after the user already opened Shot list / Results mid-load
-  if(!editShots && !document.getElementById("mvEdit").classList.contains("hide")) { editShots = JSON.parse(JSON.stringify(S.shots)); renderEdit(); }
+  if(!editShots && !document.getElementById("mvEdit").classList.contains("hide")) { const dr = S.draftShots && S.draftShots.length; editShots = JSON.parse(JSON.stringify(dr ? S.draftShots : S.shots)); document.getElementById("draftBadge").classList.toggle("hide", !dr); renderEdit(); }
   if(!editResults && !document.getElementById("mvResults").classList.contains("hide")) { editResults = JSON.parse(JSON.stringify(S.results||[])); renderResultsEdit(); }
   document.getElementById("mgEyebrow").textContent = `${monthName(S.month)} · code ${S.code}`;
   document.getElementById("mgName").textContent = S.name;
@@ -1311,6 +1312,24 @@ function renderEdit(){
   document.querySelectorAll("#mgEdit textarea").forEach(autogrow);
 }
 async function saveShots(){ const d = await act({action:"shots", shots:editShots}, "<b>Shot list saved.</b> Drop folders renamed to match."); if(d.ok) editShots = null; }
+async function saveDraft(quiet){
+  const d = await apiPost({pin, code:mgCode, action:"saveDraft", shots:editShots});
+  if(d.ok){ if(mgState) mgState.draftShots = JSON.parse(JSON.stringify(editShots)); document.getElementById("draftBadge").classList.remove("hide"); if(!quiet) toast("<b>Draft saved.</b> The client can't see any of this until you publish."); }
+  else toast(d.error === "unknown action" ? "Backend v2.4 needed for drafts — deploy it first." : "Couldn't save draft: " + esc(d.error));
+  return d;
+}
+async function publishDraft(){
+  if(!confirm("Publish this list to the client? It replaces their live shots and renames the drop folders.")) return;
+  const s = await saveDraft(true); if(!s.ok) return;
+  const d = await act({action:"publishDraft"}, "<b>Published.</b> The list is live for the client.");
+  if(d.ok){ editShots = null; document.getElementById("draftBadge").classList.add("hide"); loadManage(); }
+}
+async function discardDraft(){
+  if(!confirm("Throw away the draft and go back to the live list?")) return;
+  const d = await apiPost({pin, code:mgCode, action:"discardDraft"});
+  if(d.ok){ if(mgState) mgState.draftShots = null; editShots = null; document.getElementById("draftBadge").classList.add("hide"); await loadManage(); mtab("edit"); toast("Draft discarded — showing the live list."); }
+  else toast("Couldn't: " + esc(d.error));
+}
 async function newMonth(){ if(!confirm("Start a new month? Ticks and redos clear (results stay). Do this after the month's reels are delivered.")) return; await act({action:"month"}, "<b>New month started.</b>"); }
 
 /* ═══════════════ shared ═══════════════ */
