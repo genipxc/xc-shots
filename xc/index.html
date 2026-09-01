@@ -225,6 +225,9 @@
   .shotedit.gsec{align-items:flex-start;padding-top:12px}
   .glab{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:10px 0 5px}
   .glab:first-child{margin-top:0}
+  .glab.editable{cursor:text;outline:none;border-bottom:1px dashed transparent;display:inline-block}
+  .glab.editable:hover{border-bottom-color:rgba(205,168,95,.4)}
+  .glab.editable:focus{border-bottom-color:var(--gold);color:var(--goldB)}
   .grow{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
   .grow textarea{flex:1}
   .grow .mact{flex:none;padding:6px 9px}
@@ -687,7 +690,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.6.1";
+const BUILD = "4.6.2";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1326,7 +1329,11 @@ async function saveResults(){ await act({action:"results", results:editResults},
 /* shot list editor */
 function autogrow(el){ el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
 let editOpen = new Set();
+const LBL_DEFAULTS = {hook:"Hook line — shows under the shot title on the card", steps:"Guide steps — the how-to sheet (script + filming)", dont:"Don't"};
+function getLbls(){ try { return Object.assign({}, LBL_DEFAULTS, JSON.parse(localStorage.getItem("xcsEditLabels")||"{}")); } catch(e){ return Object.assign({}, LBL_DEFAULTS); } }
+function setLbl(key, val){ const l = getLbls(); l[key] = String(val||"").trim() || LBL_DEFAULTS[key]; try { localStorage.setItem("xcsEditLabels", JSON.stringify(l)); } catch(e){} }
 function renderEdit(){
+  const LBL = getLbls();
   document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>{
     if(!editOpen.has(k)) return `<div class="shotrow" role="button" tabindex="0" onclick="editOpen.add(${k});renderEdit()" onkeydown="if(event.key==='Enter'){editOpen.add(${k});renderEdit()}"><span class="i">${k+1}</span><span class="rn">${esc((s.n||"Untitled shot").split("\n")[0])}</span><span class="rm">wk ${s.w} · ${TLAB[s.t]||"Mid"}</span><span class="chev">▾</span></div>`;
     if(!s.steps) s.steps = [];
@@ -1335,12 +1342,12 @@ function renderEdit(){
   <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value;updateImgPrev(${k},this.value)" placeholder="Reference photos (optional — paste one or more Drive share links, spaces between)"></div>
   <div class="imgprev" id="imgprev${k}">${imgPrevHtml(s.img)}</div>
   <div class="shotedit gsec"><span class="i"></span><div style="flex:1;min-width:0">
-    <p class="glab">Hook line — under the title on his card</p>
+    <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('hook', this.textContent)" title="Click to rename this label">${esc(LBL.hook)}</p>
     <textarea rows="1" oninput="editShots[${k}].h=this.value;autogrow(this)" placeholder="One line: what & where">${esc(s.h||"")}</textarea>
-    <p class="glab">Guide steps — his how-to sheet (script + filming)</p>
+    <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('steps', this.textContent)" title="Click to rename this label">${esc(LBL.steps)}</p>
     ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div>`).join("")}
     <button class="mact" style="margin:6px 0 10px" onclick="editShots[${k}].steps.push('');renderEdit()">+ step</button>
-    <p class="glab">Don't</p>
+    <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('dont', this.textContent)" title="Click to rename this label">${esc(LBL.dont)}</p>
     <textarea rows="1" oninput="editShots[${k}].dont=this.value;autogrow(this)" placeholder="The thing not to do">${esc(s.dont||"")}</textarea>
   </div></div>`;
   }).join("")
