@@ -212,6 +212,14 @@
   .cardimg{flex:none;width:44px;height:34px;border-radius:6px;object-fit:cover;margin-top:2px;border:1px solid var(--hair)}
   .sheetimg{width:100%;max-height:280px;object-fit:cover;border-radius:12px;border:1px solid var(--hair);display:block}
   .plimg{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:8px;border:1px solid var(--hair);display:block}
+  .shotrow{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:13px 14px;cursor:pointer}
+  .shotrow:hover{border-color:rgba(205,168,95,.45)}
+  .shotrow .i{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);width:18px;flex:none}
+  .shotrow .rn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;font-weight:600;color:var(--ink)}
+  .shotrow .rm{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--goldB);text-transform:uppercase;flex:none}
+  .shotrow .chev{color:var(--dim);flex:none;font-size:11px}
+  .shotfold{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);background:none;border:0;cursor:pointer;padding:6px 0;margin:2px 0 6px 28px;display:block}
+  .shotfold:hover{color:var(--goldB)}
   .shotedit textarea{flex:1;min-width:0;appearance:none;background:transparent;border:0;border-bottom:1px solid var(--hair);color:var(--ink);font-family:inherit;font-size:13px;line-height:1.45;padding:4px 2px;outline:none;resize:none;overflow:hidden}.shotedit textarea:focus{border-color:var(--gold)}
   .shotedit.imgrow{margin-top:-4px}
   .shotedit.imgrow input{font-size:11px;color:var(--grey)}
@@ -671,7 +679,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.5";
+const BUILD = "4.5.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -701,6 +709,8 @@ function imgSrc(u){
   const m = String(u).match(/drive\.google\.com\/(?:file\/d\/|open\?id=|thumbnail\?id=)([\w-]{20,})/) || String(u).match(/drive\.google\.com\/.*[?&]id=([\w-]{20,})/);
   return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1200" : String(u);
 }
+/* several links can share the field — split on spaces/commas/newlines. Card shows the first, the sheet shows all. */
+function imgList(v){ return String(v||"").trim().split(/[\s,]+/).filter(u=>/^https?:\/\//.test(u)); }
 
 /* ═══════════════ api ═══════════════ */
 let pollT = null, inflight = 0;
@@ -881,7 +891,7 @@ function renderClient(){
             <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>
             ${isDone ? (rcv ? `<span class="byme rcv">✓ ${esc(C.by[i])} · received</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for upload</span>`) : (rcv ? `<span class="byme rcv">clip received — tick it!</span>` : "")}
           </span></span>
-        ${s.img ? `<img class="cardimg" src="${esc(imgSrc(s.img))}" alt="" loading="lazy" onerror="this.style.display='none'">` : frame(s.t, 44)}`;
+        ${imgList(s.img).length ? `<img class="cardimg" src="${esc(imgSrc(imgList(s.img)[0]))}" alt="" loading="lazy" onerror="this.style.display='none'">` : frame(s.t, 44)}`;
       box.appendChild(el);
     });
   }
@@ -917,7 +927,7 @@ function openSheet(i){
   document.getElementById("shTitle").textContent = s.n;
   document.getElementById("shChips").innerHTML = `<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip">Week ${s.w}</span>`;
   document.getElementById("shFrame").innerHTML = s.img
-    ? `<img class="sheetimg" src="${esc(imgSrc(s.img))}" alt="Reference — this is the framing" onerror="this.outerHTML=${q(frame(s.t,120))}">`
+    ? imgList(s.img).map(u=>`<img class="sheetimg" src="${esc(imgSrc(u))}" alt="Reference — this is the framing" onerror="this.style.display='none'">`).join("")
     : frame(s.t, 120);
   document.getElementById("shCap").textContent = CAP[s.t] || "";
   const redoNote = C.redo[i] ? `<div class="reason" style="margin-bottom:4px"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</div>` : "";
@@ -1182,7 +1192,7 @@ async function addClient(inputId){
 
 /* manage */
 async function openManage(c){
-  mgCode = c; stopPoll(); editDocs = null;
+  mgCode = c; stopPoll(); editDocs = null; editShots = null; editOpen.clear();
   document.getElementById("dash").classList.add("hide"); document.getElementById("today").classList.add("hide"); document.getElementById("manage").classList.remove("hide");
   ["nvToday","nvAct","nvStudio","xbToday","xbAct","xbStudio"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove("on"); });
   ["nvClients","xbClients"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add("on"); });
@@ -1305,10 +1315,15 @@ function addReel(){ const v = document.getElementById("newReel").value.trim(); i
 async function saveResults(){ await act({action:"results", results:editResults}, "<b>Results saved.</b> Their tab updated."); }
 /* shot list editor */
 function autogrow(el){ el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+let editOpen = new Set();
 function renderEdit(){
-  document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>`<div class="shotedit"><span class="i">${k+1}</span><textarea rows="1" oninput="editShots[${k}].n=this.value;autogrow(this)" placeholder="Shot name">${esc(s.n)}</textarea><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="if(confirm('Remove shot ${k+1}?')){editShots.splice(${k},1);renderEdit()}" aria-label="Remove shot">✕</button></div>
-  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photo link (optional — paste a Drive share link, it just works)"></div>`).join("")
-  + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],dont:'',img:''});renderEdit()">+ Add shot</button>`;
+  document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>{
+    if(!editOpen.has(k)) return `<div class="shotrow" role="button" tabindex="0" onclick="editOpen.add(${k});renderEdit()" onkeydown="if(event.key==='Enter'){editOpen.add(${k});renderEdit()}"><span class="i">${k+1}</span><span class="rn">${esc((s.n||"Untitled shot").split("\n")[0])}</span><span class="rm">wk ${s.w} · ${TLAB[s.t]||"Mid"}</span><span class="chev">▾</span></div>`;
+    return `<button class="shotfold" onclick="editOpen.delete(${k});renderEdit()">▴ Close shot ${k+1}</button>
+  <div class="shotedit"><span class="i">${k+1}</span><textarea rows="1" oninput="editShots[${k}].n=this.value;autogrow(this)" placeholder="Shot name">${esc(s.n)}</textarea><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="if(confirm('Remove shot ${k+1}?')){editShots.splice(${k},1);editOpen.delete(${k});renderEdit()}" aria-label="Remove shot">✕</button></div>
+  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photos (optional — paste one or more Drive share links, spaces between)"></div>`;
+  }).join("")
+  + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],dont:'',img:''});editOpen.add(editShots.length-1);renderEdit()">+ Add shot</button>`;
   document.querySelectorAll("#mgEdit textarea").forEach(autogrow);
 }
 async function saveShots(){ const d = await act({action:"shots", shots:editShots}, "<b>Shot list saved.</b> Drop folders renamed to match."); if(d.ok) editShots = null; }
@@ -1500,7 +1515,7 @@ function renderPList(it){
   document.getElementById("pList").innerHTML = head + S.shots.map((s,i)=>{
     const st = by[i] ? `<span class="st done">✓ ${esc(by[i])}</span>` : (redo[i] ? '<span class="st redo">redo out</span>' : '<span class="st">open</span>');
     const ex = plSel === i;
-    const steps = (s.img?`<img class="plimg" src="${esc(imgSrc(s.img))}" alt="" loading="lazy" onerror="this.style.display='none'">`:"") + (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${esc(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
+    const steps = imgList(s.img).map(u=>`<img class="plimg" src="${esc(imgSrc(u))}" alt="" loading="lazy" onerror="this.style.display='none'">`).join("") + (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${esc(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
     return `<div class="plrow${ex?" cur ex":""}" id="plr${i}" onclick="plToggle(${i})"><div class="r1"><span class="wk">W${s.w} · ${TLAB[s.t]||"Mid"}</span>${st}</div><h4>${esc(s.n)}</h4><p class="how">${esc(s.h)}</p><div class="plsteps">${steps}</div></div>`;
   }).join("");
   if(plSel !== null){ const el = document.getElementById("plr"+plSel); if(el) el.scrollIntoView({block:"nearest"}); }
