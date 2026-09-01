@@ -220,6 +220,12 @@
   .shotrow .chev{color:var(--dim);flex:none;font-size:11px}
   .shotfold{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);background:none;border:0;cursor:pointer;padding:6px 0;margin:2px 0 6px 28px;display:block}
   .shotfold:hover{color:var(--goldB)}
+  .shotedit.gsec{align-items:flex-start;padding-top:12px}
+  .glab{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:10px 0 5px}
+  .glab:first-child{margin-top:0}
+  .grow{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
+  .grow textarea{flex:1}
+  .grow .mact{flex:none;padding:6px 9px}
   .shotedit textarea{flex:1;min-width:0;appearance:none;background:transparent;border:0;border-bottom:1px solid var(--hair);color:var(--ink);font-family:inherit;font-size:13px;line-height:1.45;padding:4px 2px;outline:none;resize:none;overflow:hidden}.shotedit textarea:focus{border-color:var(--gold)}
   .shotedit.imgrow{margin-top:-4px}
   .shotedit.imgrow input{font-size:11px;color:var(--grey)}
@@ -679,7 +685,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.5.1";
+const BUILD = "4.6";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1319,9 +1325,19 @@ let editOpen = new Set();
 function renderEdit(){
   document.getElementById("mgEdit").innerHTML = editShots.map((s,k)=>{
     if(!editOpen.has(k)) return `<div class="shotrow" role="button" tabindex="0" onclick="editOpen.add(${k});renderEdit()" onkeydown="if(event.key==='Enter'){editOpen.add(${k});renderEdit()}"><span class="i">${k+1}</span><span class="rn">${esc((s.n||"Untitled shot").split("\n")[0])}</span><span class="rm">wk ${s.w} · ${TLAB[s.t]||"Mid"}</span><span class="chev">▾</span></div>`;
+    if(!s.steps) s.steps = [];
     return `<button class="shotfold" onclick="editOpen.delete(${k});renderEdit()">▴ Close shot ${k+1}</button>
   <div class="shotedit"><span class="i">${k+1}</span><textarea rows="1" oninput="editShots[${k}].n=this.value;autogrow(this)" placeholder="Shot name">${esc(s.n)}</textarea><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="if(confirm('Remove shot ${k+1}?')){editShots.splice(${k},1);editOpen.delete(${k});renderEdit()}" aria-label="Remove shot">✕</button></div>
-  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photos (optional — paste one or more Drive share links, spaces between)"></div>`;
+  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photos (optional — paste one or more Drive share links, spaces between)"></div>
+  <div class="shotedit gsec"><span class="i"></span><div style="flex:1;min-width:0">
+    <p class="glab">Hook line — under the title on his card</p>
+    <textarea rows="1" oninput="editShots[${k}].h=this.value;autogrow(this)" placeholder="One line: what & where">${esc(s.h||"")}</textarea>
+    <p class="glab">Guide steps — his how-to sheet (script + filming)</p>
+    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div>`).join("")}
+    <button class="mact" style="margin:6px 0 10px" onclick="editShots[${k}].steps.push('');renderEdit()">+ step</button>
+    <p class="glab">Don't</p>
+    <textarea rows="1" oninput="editShots[${k}].dont=this.value;autogrow(this)" placeholder="The thing not to do">${esc(s.dont||"")}</textarea>
+  </div></div>`;
   }).join("")
   + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],dont:'',img:''});editOpen.add(editShots.length-1);renderEdit()">+ Add shot</button>`;
   document.querySelectorAll("#mgEdit textarea").forEach(autogrow);
