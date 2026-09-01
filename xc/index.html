@@ -220,6 +220,8 @@
   .shotrow .chev{color:var(--dim);flex:none;font-size:11px}
   .shotfold{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);background:none;border:0;cursor:pointer;padding:6px 0;margin:2px 0 6px 28px;display:block}
   .shotfold:hover{color:var(--goldB)}
+  .imgprev{display:flex;gap:8px;margin:6px 0 6px 28px;flex-wrap:wrap}
+  .imgprev img{height:76px;border-radius:8px;border:1px solid var(--hair);display:block}
   .shotedit.gsec{align-items:flex-start;padding-top:12px}
   .glab{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:10px 0 5px}
   .glab:first-child{margin-top:0}
@@ -685,7 +687,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.6";
+const BUILD = "4.6.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -717,6 +719,8 @@ function imgSrc(u){
 }
 /* several links can share the field — split on spaces/commas/newlines. Card shows the first, the sheet shows all. */
 function imgList(v){ return String(v||"").trim().split(/[\s,]+/).filter(u=>/^https?:\/\//.test(u)); }
+function imgPrevHtml(v){ return imgList(v).map(u=>`<a href="${esc(u)}" target="_blank" rel="noreferrer"><img src="${esc(imgSrc(u))}" loading="lazy" onerror="this.parentNode.style.display='none'" alt=""></a>`).join(""); }
+function updateImgPrev(k, v){ const el = document.getElementById("imgprev"+k); if(el) el.innerHTML = imgPrevHtml(v); }
 
 /* ═══════════════ api ═══════════════ */
 let pollT = null, inflight = 0;
@@ -1328,7 +1332,8 @@ function renderEdit(){
     if(!s.steps) s.steps = [];
     return `<button class="shotfold" onclick="editOpen.delete(${k});renderEdit()">▴ Close shot ${k+1}</button>
   <div class="shotedit"><span class="i">${k+1}</span><textarea rows="1" oninput="editShots[${k}].n=this.value;autogrow(this)" placeholder="Shot name">${esc(s.n)}</textarea><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="if(confirm('Remove shot ${k+1}?')){editShots.splice(${k},1);editOpen.delete(${k});renderEdit()}" aria-label="Remove shot">✕</button></div>
-  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value" placeholder="Reference photos (optional — paste one or more Drive share links, spaces between)"></div>
+  <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value;updateImgPrev(${k},this.value)" placeholder="Reference photos (optional — paste one or more Drive share links, spaces between)"></div>
+  <div class="imgprev" id="imgprev${k}">${imgPrevHtml(s.img)}</div>
   <div class="shotedit gsec"><span class="i"></span><div style="flex:1;min-width:0">
     <p class="glab">Hook line — under the title on his card</p>
     <textarea rows="1" oninput="editShots[${k}].h=this.value;autogrow(this)" placeholder="One line: what & where">${esc(s.h||"")}</textarea>
