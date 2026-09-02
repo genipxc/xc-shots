@@ -176,6 +176,20 @@
   .player .ptop b{color:var(--ink)}
   .player .pmid{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
   .player iframe{width:min(56vh,92vw);aspect-ratio:9/16;border:0;background:#111;border-radius:12px}
+  /* review player: clip strip — scrub a shot's clips in your own order */
+  .pcol{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%;min-width:0}
+  .pcol iframe{max-height:calc(100% - 8px)}
+  .pcol.hasstrip iframe{max-height:calc(100% - 138px)}
+  .pstrip{display:none;gap:8px;overflow-x:auto;max-width:min(92vw,600px);padding:2px 2px 8px;-webkit-overflow-scrolling:touch}
+  .pstrip.show{display:flex}
+  .pchip{flex:none;width:62px;cursor:pointer;position:relative;opacity:.6}
+  .pchip .im,.pchip img{width:62px;height:92px;object-fit:cover;border-radius:8px;border:1px solid var(--hair);display:block;background:#141414}
+  .pchip.cur{opacity:1}
+  .pchip.cur .im,.pchip.cur img{border-color:var(--gold)}
+  .pchip .n{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.75);color:var(--goldB);font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px}
+  .pchip .mv{display:flex;justify-content:space-between;margin-top:4px}
+  .pchip .mv button{appearance:none;border:1px solid var(--hair);background:var(--panel);color:var(--grey);border-radius:6px;font-size:10px;line-height:1;padding:4px 8px;cursor:pointer}
+  .pchip .mv button:active{border-color:var(--gold);color:var(--goldB)}
   .player .pbar{display:flex;gap:10px;justify-content:center;padding:16px;flex-wrap:wrap}
   /* review player: shot-list panel */
   .plist{display:none;width:340px;height:100%;overflow-y:auto;padding:10px 18px 24px;border-left:1px solid var(--hair);flex:none}
@@ -660,7 +674,7 @@
 <!-- REVIEW PLAYER -->
 <div class="player" id="player">
   <div class="ptop"><span id="pInfo"><b>—</b></span><span class="pcount" id="pCount"></span><button class="x" onclick="closePlayer()" aria-label="Close">✕</button></div>
-  <div class="pmid"><iframe id="pVid" allow="autoplay; fullscreen" title="Clip"></iframe><div class="plist" id="pList" aria-label="Shot list"></div></div>
+  <div class="pmid"><div class="pcol" id="pCol"><iframe id="pVid" allow="autoplay; fullscreen" title="Clip"></iframe><div class="pstrip" id="pStrip" aria-label="Clips for this shot"></div></div><div class="plist" id="pList" aria-label="Shot list"></div></div>
   <div class="pbar">
     <button class="pkey good" onclick="pGood()"><b>G</b>Good</button>
     <button class="pkey redo" onclick="pRedo()"><b>R</b>Redo</button>
@@ -693,7 +707,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.6.3";
+const BUILD = "4.7";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1507,11 +1521,20 @@ document.addEventListener("keydown", e=>{
 
 /* ── REVIEW PLAYER ── */
 let pq = [], pi = 0;
+function clipOrders(){ try { return JSON.parse(localStorage.getItem("xc_clip_order")||"{}"); } catch(e){ return {}; } }
 function openPlayer(){
   const T = todayData; if(!T) return;
   pq = T.deliveries.map(x=>({kind:"delivery", code:x.code, client:x.client, shot:"Delivered", file:x.file}))
      .concat(T.fresh.map(x=>({kind:"fresh", code:x.code, client:x.client, shot:x.shot, idx:x.idx, file:x.file})));
   if(!pq.length) return;
+  // replay each shot's clips in the order XC last arranged them
+  const ords = clipOrders();
+  pq.sort((a,b)=>{
+    if(a.kind!=="fresh"||b.kind!=="fresh"||a.code!==b.code||a.idx!==b.idx) return 0;
+    const o = ords[a.code+"|"+a.idx]; if(!o) return 0;
+    const ai=o.indexOf(a.file.id), bi=o.indexOf(b.file.id);
+    return (ai<0?999:ai) - (bi<0?999:bi);
+  });
   pi = 0; document.getElementById("player").classList.add("show"); pShow();
 }
 function pShow(){
@@ -1521,7 +1544,38 @@ function pShow(){
   document.getElementById("pCount").textContent = (pi+1) + " / " + pq.length;
   document.getElementById("pApprove").classList.toggle("hide", it.kind !== "delivery");
   document.getElementById("pVid").src = it.file.preview;
+  renderStrip(it);
   loadPList(it);
+}
+/* the clip strip — every clip of the current shot, tap to jump, ‹ › to set the running order */
+function stripGroup(it){
+  const g = [];
+  pq.forEach((x,j)=>{ if(x.kind==="fresh" && it.kind==="fresh" && x.code===it.code && x.idx===it.idx) g.push(j); });
+  return g;
+}
+function renderStrip(it){
+  const host = document.getElementById("pStrip"), g = stripGroup(it);
+  const on = g.length > 1;
+  host.classList.toggle("show", on);
+  document.getElementById("pCol").classList.toggle("hasstrip", on);
+  if(!on){ host.innerHTML = ""; return; }
+  host.innerHTML = g.map((j,k)=>{
+    const f = pq[j].file, cur = j===pi;
+    return `<div class="pchip${cur?" cur":""}" id="pch${j}"><a onclick="stripGo(${j})" role="button" tabindex="0">${f.thumb?`<img src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="im"></span>'}<span class="n">${k+1}</span></a><div class="mv"><button onclick="stripMove(${j},-1)" aria-label="Play earlier">‹</button><button onclick="stripMove(${j},1)" aria-label="Play later">›</button></div></div>`;
+  }).join("");
+  const cur = document.getElementById("pch"+pi); if(cur) cur.scrollIntoView({block:"nearest", inline:"nearest"});
+}
+function stripGo(j){ if(j===pi) return; pi = j; pShow(); }
+function stripMove(j, dir){
+  const it = pq[j], g = stripGroup(it), k = g.indexOf(j);
+  if(k<0 || k+dir<0 || k+dir>=g.length) return;
+  const j2 = g[k+dir], curIt = pq[pi];
+  [pq[j], pq[j2]] = [pq[j2], pq[j]];
+  pi = pq.indexOf(curIt);
+  const ords = clipOrders();
+  ords[it.code+"|"+it.idx] = stripGroup(it).map(x=>pq[x].file.id);
+  try { localStorage.setItem("xc_clip_order", JSON.stringify(ords)); } catch(e){}
+  renderStrip(pq[pi]);
 }
 /* the shot list beside the video — so a clip can be checked against what was actually briefed */
 let plCache = {}, plSel = null, plToken = 0;
@@ -1568,6 +1622,7 @@ document.addEventListener("keydown", e=>{
   if(document.getElementById("fsheet").classList.contains("show")) return;
   const k = e.key.toLowerCase();
   if(k==="g") pGood(); else if(k==="r") pRedo(); else if(k==="a" && pq[pi] && pq[pi].kind==="delivery") pApprove(); else if(k==="s") pSkip(); else if(k==="l") togglePList(); else if(k==="escape") closePlayer();
+  else if(k==="arrowright" && pi<pq.length-1){ pi++; pShow(); } else if(k==="arrowleft" && pi>0){ pi--; pShow(); }
 });
 
 /* ── owner mode ── */
@@ -1703,7 +1758,7 @@ setTimeout(async ()=>{ try {
   const F = (id,name)=>({id, name, thumb:"", preview:"about:blank", created:"2026-09-01T00:00:00Z", note:""});
   const DEVT = {ok:true, week:1, month:"2026-09",
     deliveries:[{client:"Riley Nikolich",code:"RILEYN83",file:F("a","2026-09-02 1015 — Coach cue reel")},{client:"Marra & Co. Café",code:"MARRA24",file:F("b","2026-09-02 0900 — Latte art pour")}],
-    fresh:[{client:"Riley Nikolich",code:"RILEYN83",idx:1,shot:"Coach fixing a squat",file:F("c","clip 1")},{client:"Riley Nikolich",code:"RILEYN83",idx:3,shot:"PB celebration",file:F("d","clip 2")},{client:"Marra & Co. Café",code:"MARRA24",idx:0,shot:"Roller door opening",file:F("e","clip 3")}],
+    fresh:[{client:"Riley Nikolich",code:"RILEYN83",idx:1,shot:"Coach fixing a squat",file:F("c","clip 1")},{client:"Riley Nikolich",code:"RILEYN83",idx:1,shot:"Coach fixing a squat",file:F("c2","clip 1b")},{client:"Riley Nikolich",code:"RILEYN83",idx:1,shot:"Coach fixing a squat",file:F("c3","clip 1c")},{client:"Riley Nikolich",code:"RILEYN83",idx:1,shot:"Coach fixing a squat",file:F("c4","clip 1d")},{client:"Riley Nikolich",code:"RILEYN83",idx:3,shot:"PB celebration",file:F("d","clip 2")},{client:"Marra & Co. Café",code:"MARRA24",idx:0,shot:"Roller door opening",file:F("e","clip 3")}],
     quiet:[{client:"Marra & Co. Café",code:"MARRA24",quietDays:4,wkDone:0,wkTotal:3}],
     redosAging:[{client:"Riley Nikolich",code:"RILEYN83",idx:10,shot:"Member testimonial ask",reason:"Bit dark — try nearer the window",days:3}],
     feedback:[{client:"Riley Nikolich",code:"RILEYN83",fileId:"t1",v:"love",note:"AGREED TO TERMS: Minimum $1,150/mo…",by:"Client via welcome page",at:1}],
