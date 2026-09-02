@@ -137,7 +137,7 @@
     body.xc #mvDeliv{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
     body.xc #mvDeliv .demonote{grid-column:1/-1}
     body.xc #mvTeam,body.xc #mvResults{max-width:640px}
-    body.xc #mgEdit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    body.xc #mgEdit{display:flex;flex-direction:column;gap:10px;max-width:880px}
     body.xc .sheet{max-width:640px;border-radius:20px;bottom:auto;top:50%;transform:translate(0,-45%) scale(.98);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
     body.xc .sheet.show{transform:translate(0,-50%) scale(1);opacity:1;pointer-events:auto}
     body.xc .vid{max-height:70vh}
@@ -221,11 +221,14 @@
   .shotfold{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);background:none;border:0;cursor:pointer;padding:6px 0;margin:2px 0 6px 28px;display:block}
   .shotfold:hover{color:var(--goldB)}
   .imgprev{display:flex;gap:8px;margin:6px 0 6px 28px;flex-wrap:wrap}
-  .imgprev img{height:76px;border-radius:8px;border:1px solid var(--hair);display:block}
+  .imgchip{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--hair);border-radius:99px;padding:4px 12px 4px 4px;text-decoration:none;color:var(--goldB);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+  .imgchip:hover{border-color:var(--gold)}
+  .imgchip img{height:30px;width:30px;object-fit:cover;border-radius:99px;display:block}
   .shotedit.gsec{align-items:flex-start;padding-top:12px}
   .glab{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:10px 0 5px}
   .glab:first-child{margin-top:0}
-  .glab.editable{cursor:text;outline:none;border-bottom:1px dashed transparent;display:inline-block}
+  .glab.editable{cursor:text;outline:none;border-bottom:1px dashed transparent;display:block;width:max-content;max-width:100%}
+  .shotedit.gsec>div>textarea{display:block;width:100%}
   .glab.editable:hover{border-bottom-color:rgba(205,168,95,.4)}
   .glab.editable:focus{border-bottom-color:var(--gold);color:var(--goldB)}
   .grow{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
@@ -690,7 +693,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.6.2";
+const BUILD = "4.6.3";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -722,7 +725,7 @@ function imgSrc(u){
 }
 /* several links can share the field — split on spaces/commas/newlines. Card shows the first, the sheet shows all. */
 function imgList(v){ return String(v||"").trim().split(/[\s,]+/).filter(u=>/^https?:\/\//.test(u)); }
-function imgPrevHtml(v){ return imgList(v).map(u=>`<a href="${esc(u)}" target="_blank" rel="noreferrer"><img src="${esc(imgSrc(u))}" loading="lazy" onerror="this.parentNode.style.display='none'" alt=""></a>`).join(""); }
+function imgPrevHtml(v){ return imgList(v).map((u,i)=>`<a class="imgchip" href="${esc(u)}" target="_blank" rel="noreferrer" title="Open photo ${i+1}"><img src="${esc(imgSrc(u))}" loading="lazy" onerror="this.style.display='none'" alt=""><span>Photo ${i+1} ↗</span></a>`).join(""); }
 function updateImgPrev(k, v){ const el = document.getElementById("imgprev"+k); if(el) el.innerHTML = imgPrevHtml(v); }
 
 /* ═══════════════ api ═══════════════ */
@@ -1719,7 +1722,7 @@ setTimeout(async ()=>{ try {
   warm = ()=>{};
   pin = "DEV"; code = null;
   const v = q.get("view");
-  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage") openManage("RILEYN83"); if(v==="client"){ document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); } }catch(e){} }, 600);
+  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage"){ openManage("RILEYN83"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } }, 400); } if(v==="client"){ document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); } }catch(e){} }, 600);
 })();
 boot();
 </script>
