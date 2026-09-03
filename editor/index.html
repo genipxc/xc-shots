@@ -274,6 +274,9 @@
   .refin:focus{border-color:var(--gold)}
   .refrow{display:flex;gap:8px;align-items:flex-start}
   .refrow .refin{flex:1;min-width:0}
+  input.xnote{display:block;width:100%;appearance:none;background:rgba(229,72,77,.06);border:1px dashed rgba(229,72,77,.45);border-radius:8px;color:#E5484D;font-family:inherit;font-size:11px;padding:6px 8px;outline:none;margin:2px 0 6px}
+  input.xnote::placeholder{color:rgba(229,72,77,.55)}
+  input.xnote:focus{border-color:#E5484D}
   .shotrow{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:13px 14px;cursor:pointer}
   .shotrow:hover{border-color:rgba(205,168,95,.45)}
   .shotrow .i{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);width:18px;flex:none}
@@ -784,7 +787,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.9.3";
+const BUILD = "4.10";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1544,13 +1547,13 @@ function renderEdit(){
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('hook', this.textContent)" title="Click to rename this label">${esc(LBL.hook)}</p>
     <textarea rows="1" oninput="editShots[${k}].h=this.value;autogrow(this)" placeholder="One line: what & where">${esc(s.h||"")}</textarea>
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('steps', this.textContent)" title="Click to rename this label">${esc(LBL.steps)}</p>
-    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);if(editShots[${k}].refs)editShots[${k}].refs.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div><div class="refrow"><input class="refin" value="${esc((s.refs||[])[si]||"")}" oninput="(editShots[${k}].refs=editShots[${k}].refs||[])[${si}]=this.value" placeholder="↳ phone position reference for this take (paste a link, or 📎 a photo)"><button class="mact" style="flex:none" title="Attach a photo or short clip from this device" onclick="pickRef(${k},${si},this)">📎</button></div>`).join("")}
+    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);if(editShots[${k}].refs)editShots[${k}].refs.splice(${si},1);if(editShots[${k}].xn)editShots[${k}].xn.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div><input class="xnote" value="${esc((s.xn||[])[si]||"")}" oninput="(editShots[${k}].xn=editShots[${k}].xn||[])[${si}]=this.value" placeholder="🔴 your eyes only — where this happens / what the reference photo should show"><div class="refrow"><input class="refin" value="${esc((s.refs||[])[si]||"")}" oninput="(editShots[${k}].refs=editShots[${k}].refs||[])[${si}]=this.value" placeholder="↳ phone position reference for this take (paste a link, or 📎 a photo)"><button class="mact" style="flex:none" title="Attach a photo or short clip from this device" onclick="pickRef(${k},${si},this)">📎</button></div>`).join("")}
     <button class="mact" style="margin:6px 0 10px" onclick="editShots[${k}].steps.push('');renderEdit()">+ step</button>
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('dont', this.textContent)" title="Click to rename this label">${esc(LBL.dont)}</p>
     <textarea rows="1" oninput="editShots[${k}].dont=this.value;autogrow(this)" placeholder="The thing not to do">${esc(s.dont||"")}</textarea>
   </div></div>`;
   }).join("")
-  + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],refs:[],dont:'',img:''});editOpen.add(editShots.length-1);renderEdit()">+ Add shot</button>`;
+  + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],refs:[],xn:[],dont:'',img:''});editOpen.add(editShots.length-1);renderEdit()">+ Add shot</button>`;
   document.querySelectorAll("#mgEdit textarea").forEach(autogrow);
 }
 /* 📎 per-take reference upload — silent Drive store (no docs entry, no client-visible activity) */
