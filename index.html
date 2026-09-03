@@ -18,7 +18,7 @@
   body{background:var(--bg);color:var(--ink);font-family:'Schibsted Grotesk',-apple-system,'Helvetica Neue',Arial,sans-serif;min-height:100vh}
   .wrap{max-width:440px;margin:0 auto;padding:0 18px 90px}
   .mono{font-family:'Space Mono',ui-monospace,Menlo,monospace}
-  .top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 14px;position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 82%,rgba(10,10,10,0));z-index:10}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top, 0px)) 0 14px;position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 82%,rgba(10,10,10,0));z-index:10}
   .brand{display:flex;align-items:center;gap:10px}.brand .t{font-weight:900;font-size:17px;letter-spacing:-.01em}.brand .t span{color:var(--gold)}
   .switch{display:flex;background:var(--panel);border:1px solid var(--hair);border-radius:999px;padding:3px}
   .switch button{appearance:none;border:0;background:transparent;color:var(--dim);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:6px 11px;border-radius:999px;cursor:pointer}
@@ -782,7 +782,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.9.1";
+const BUILD = "4.9.2";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
