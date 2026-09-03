@@ -270,6 +270,8 @@
   .seebox{display:block;margin-top:8px}
   .refin{display:block;width:100%;appearance:none;background:transparent;border:0;border-bottom:1px dashed var(--hair);color:var(--grey);font-family:inherit;font-size:11px;padding:2px 2px 6px;outline:none;margin:-2px 0 8px}
   .refin:focus{border-color:var(--gold)}
+  .refrow{display:flex;gap:8px;align-items:flex-start}
+  .refrow .refin{flex:1;min-width:0}
   .shotrow{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:13px 14px;cursor:pointer}
   .shotrow:hover{border-color:rgba(205,168,95,.45)}
   .shotrow .i{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);width:18px;flex:none}
@@ -715,6 +717,8 @@
   <p class="sharenote"><b>ON A PHONE —</b> long-press the image → Save, then post it to your story.</p>
 </div>
 
+<input type="file" id="refFile" accept="image/*,video/*" style="display:none" onchange="refFileChosen(this)">
+
 <!-- GHOST PREVIEW pill — only XC sees this, only in preview -->
 <div class="prevpill" id="prevpill"><span>👁 PREVIEW — seeing what they see · nothing saves · they can't tell</span><button onclick="exitPreview()" aria-label="Exit preview">✕ exit</button></div>
 
@@ -778,7 +782,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.9";
+const BUILD = "4.9.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1062,7 +1066,7 @@ function refMedia(u){
   u = String(u).trim(); if(!u) return "";
   const lab = '<p class="fmreflab">📱 Phone position reference — set up like this</p>';
   const dm = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/);
-  if(/\.(jpe?g|png|webp|gif)(\?|$)/i.test(u) || /googleusercontent\.com/.test(u)) return lab + `<img class="fmref" src="${esc(u)}" alt="Phone position reference" loading="lazy" onerror="this.style.display='none'">`;
+  if(/\.(jpe?g|png|webp|gif)(\?|$)/i.test(u) || /googleusercontent\.com/.test(u) || /drive\.google\.com\/thumbnail/.test(u)) return lab + `<img class="fmref" src="${esc(u)}" alt="Phone position reference" loading="lazy" onerror="this.style.display='none'">`;
   if(dm) return lab + `<iframe class="fmvid" src="https://drive.google.com/file/d/${dm[1]}/preview" allow="autoplay; fullscreen" title="Phone position reference"></iframe>`;
   return lab + `<a class="fmwatch" href="${esc(u)}" target="_blank" rel="noreferrer">▶ Watch how to set it up</a>`;
 }
@@ -1532,7 +1536,7 @@ function renderEdit(){
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('hook', this.textContent)" title="Click to rename this label">${esc(LBL.hook)}</p>
     <textarea rows="1" oninput="editShots[${k}].h=this.value;autogrow(this)" placeholder="One line: what & where">${esc(s.h||"")}</textarea>
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('steps', this.textContent)" title="Click to rename this label">${esc(LBL.steps)}</p>
-    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);if(editShots[${k}].refs)editShots[${k}].refs.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div><input class="refin" value="${esc((s.refs||[])[si]||"")}" oninput="(editShots[${k}].refs=editShots[${k}].refs||[])[${si}]=this.value" placeholder="↳ phone position reference for this take (IG reel / Drive photo or video link — optional)">`).join("")}
+    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);if(editShots[${k}].refs)editShots[${k}].refs.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div><div class="refrow"><input class="refin" value="${esc((s.refs||[])[si]||"")}" oninput="(editShots[${k}].refs=editShots[${k}].refs||[])[${si}]=this.value" placeholder="↳ phone position reference for this take (paste a link, or 📎 a photo)"><button class="mact" style="flex:none" title="Attach a photo or short clip from this device" onclick="pickRef(${k},${si},this)">📎</button></div>`).join("")}
     <button class="mact" style="margin:6px 0 10px" onclick="editShots[${k}].steps.push('');renderEdit()">+ step</button>
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('dont', this.textContent)" title="Click to rename this label">${esc(LBL.dont)}</p>
     <textarea rows="1" oninput="editShots[${k}].dont=this.value;autogrow(this)" placeholder="The thing not to do">${esc(s.dont||"")}</textarea>
@@ -1540,6 +1544,32 @@ function renderEdit(){
   }).join("")
   + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],refs:[],dont:'',img:''});editOpen.add(editShots.length-1);renderEdit()">+ Add shot</button>`;
   document.querySelectorAll("#mgEdit textarea").forEach(autogrow);
+}
+/* 📎 per-take reference upload — silent Drive store (no docs entry, no client-visible activity) */
+let refFileTarget = null;
+function pickRef(k, si, btn){ refFileTarget = {k, si, btn}; document.getElementById("refFile").click(); }
+async function refFileChosen(inp){
+  const f = inp.files[0]; inp.value = ""; if(!f || !refFileTarget) return;
+  const {k, si, btn} = refFileTarget; refFileTarget = null;
+  btn.textContent = "…"; btn.disabled = true;
+  try {
+    let b64, mime = f.type || "image/jpeg", name = f.name || "ref.jpg";
+    if(/^image\//.test(mime) && mime !== "image/gif"){ b64 = await shrinkImage(f); mime = "image/jpeg"; name = name.replace(/\.\w+$/, "") + ".jpg"; }
+    else b64 = await fileB64(f);
+    if(b64.length > 19000000){ toast("That file's too big to push through — for videos over ~14MB, upload to Drive yourself and paste the share link."); btn.textContent = "📎"; btn.disabled = false; return; }
+    const d = await apiPost({action:"uploadRef", pin, code: mgCode, b64, mime, filename: name});
+    if(d.ok){ (editShots[k].refs = editShots[k].refs || [])[si] = d.url; renderEdit(); toast("<b>Reference attached.</b> Hit Save (or Publish) to push it to the client."); }
+    else { toast(d.error === "unknown action" ? "Backend v2.4.5 needed — deploy it first." : "Upload failed: " + esc(d.error || "")); btn.textContent = "📎"; btn.disabled = false; }
+  } catch(e){ toast("Upload failed — try again or paste a Drive link."); btn.textContent = "📎"; btn.disabled = false; }
+}
+function fileB64(f){ return new Promise((res, rej)=>{ const r = new FileReader(); r.onload = ()=>res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(f); }); }
+async function shrinkImage(f){
+  const img = await new Promise((res, rej)=>{ const i = new Image(); i.onload = ()=>res(i); i.onerror = rej; i.src = URL.createObjectURL(f); });
+  const sc = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const cv = document.createElement("canvas"); cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
+  cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+  URL.revokeObjectURL(img.src);
+  return cv.toDataURL("image/jpeg", .85).split(",")[1];
 }
 async function saveShots(){ const d = await act({action:"shots", shots:editShots}, "<b>Shot list saved.</b> Drop folders renamed to match."); if(d.ok) editShots = null; }
 async function saveDraft(quiet){
