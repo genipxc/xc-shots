@@ -229,12 +229,13 @@
   /* film mode — one take per screen: reference, script, tick, swipe */
   .fmode{position:fixed;inset:0;background:#080808;z-index:70;display:none;flex-direction:column}
   .fmode.show{display:flex}
-  .fmtop{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 18px 8px}
+  .fmtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:calc(14px + env(safe-area-inset-top, 0px)) 18px 8px}
   .fmshot{font-weight:800;font-size:15px}
   .fmcount{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-top:3px}
+  .fmode .x{width:42px;height:42px;font-size:17px;color:var(--ink);border-color:var(--gold);background:var(--panel2)}
   .fmrule{text-align:center;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--dim);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);padding:7px 10px}
-  .fmbody{flex:1;overflow-y:auto;padding:18px;display:flex;align-items:center;justify-content:center}
-  .fmcard{max-width:560px;width:100%;background:var(--panel);border:1px solid var(--hair);border-radius:16px;padding:18px}
+  .fmbody{flex:1;overflow-y:auto;padding:18px;display:flex}
+  .fmcard{max-width:560px;width:100%;background:var(--panel);border:1px solid var(--hair);border-radius:16px;padding:18px;margin:auto}
   .fmcard.on{border-color:var(--gold)}
   .fmtext{font-size:16.5px;line-height:1.6;white-space:pre-wrap}
   .fmref{width:100%;max-height:300px;object-fit:contain;border-radius:10px;margin-bottom:12px;border:1px solid var(--hair);background:#111;display:block}
@@ -244,11 +245,18 @@
   .fmnav{flex:none;width:52px;appearance:none;border:1px solid var(--hair);background:var(--panel);color:var(--ink);border-radius:12px;font-size:18px;cursor:pointer}
   .fmnav:disabled{opacity:.3}
   .fmtick{flex:1;appearance:none;border:1px solid var(--gold);background:var(--gold);color:#0A0A0A;font-weight:800;font-size:15px;border-radius:12px;padding:14px;cursor:pointer;font-family:inherit}
-  .fmdots{display:flex;gap:5px;justify-content:center;padding:8px 0 16px;flex-wrap:wrap}
+  .fmdots{display:flex;gap:5px;justify-content:center;padding:8px 0 calc(16px + env(safe-area-inset-bottom, 0px));flex-wrap:wrap}
   .fmdots i{width:9px;height:9px;border-radius:50%;background:var(--panel2);border:1px solid var(--hair);cursor:pointer}
   .fmdots i.on{background:var(--gold);border-color:var(--gold)}
   .fmdots i.cur{outline:2px solid var(--goldB);outline-offset:1px}
-  .fmdone{max-width:480px;text-align:center}
+  .fmdone{max-width:480px;text-align:center;margin:auto}
+  /* what's-new popup (one-time per device) */
+  .newsbox{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:80;display:none;align-items:center;justify-content:center;padding:24px}
+  .newsbox.show{display:flex}
+  .newscard{max-width:400px;width:100%;background:var(--panel);border:1px solid var(--gold);border-radius:18px;padding:24px;text-align:center}
+  .newscard .big{font-size:34px}
+  .newscard h3{font-size:19px;font-weight:900;margin-top:8px}
+  .newscard p{color:var(--grey);font-size:13px;line-height:1.55;margin-top:10px}
   .fmdone h3{font-size:20px}
   .fmdone p{color:var(--grey);margin-top:8px}
   .fmmiss a{color:var(--warn);font-weight:700;margin:0 4px;cursor:pointer}
@@ -701,6 +709,17 @@
   <p class="sharenote"><b>ON A PHONE —</b> long-press the image → Save, then post it to your story.</p>
 </div>
 
+<!-- WHAT'S NEW — one-time client popup -->
+<div class="newsbox" id="newsbox">
+  <div class="newscard">
+    <div class="big">🎬</div>
+    <h3>New: Film mode</h3>
+    <p>Tap any shot and it walks you through it <b>one take at a time</b> — what to say, a photo or clip of how it should look, and a tick when you've got it. Swipe to move between takes. Your ticks save as you go, so you can never lose your place.</p>
+    <button class="bigbtn" style="width:100%;margin-top:16px" onclick="newsTry()">🎬 Try it now</button>
+    <button class="mact" style="margin-top:10px" onclick="newsClose()">Got it</button>
+  </div>
+</div>
+
 <!-- FILM MODE — client take-by-take flow -->
 <div class="fmode" id="fmode" aria-modal="true" aria-label="Film mode">
   <div class="fmtop"><div><p class="fmshot" id="fmShot"></p><p class="fmcount" id="fmCount"></p></div><button class="x" onclick="closeFilm()" aria-label="Close">✕</button></div>
@@ -750,7 +769,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.8";
+const BUILD = "4.8.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -953,14 +972,14 @@ function renderClient(){
       const el = document.createElement("div");
       el.className = "card" + (isDone?" done":"") + (isRedo?" redo":"") + (s.w>WK && !isRedo?" future":"");
       el.setAttribute("role","button"); el.tabIndex = 0;
-      el.onclick = ()=>openSheet(i); el.onkeydown = e=>{ if(e.key==="Enter") openSheet(i); };
+      el.onclick = ()=>openFilm(i); el.onkeydown = e=>{ if(e.key==="Enter") openFilm(i); };
       el.innerHTML = `
         <span class="tick${isDone?" on":""}" role="checkbox" aria-checked="${isDone}" aria-label="Mark filmed" tabindex="0"
           onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();event.stopPropagation();tick(${i})}" onclick="event.stopPropagation();tick(${i})">
           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7.5L5.5 11L12 3.5" fill="none" stroke="#0A0A0A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span class="body"><h3>${esc(s.n)}</h3><span class="how">${esc(s.h)}</span>
           ${isRedo ? `<span class="reason"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</span>` : ""}
-          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip open" style="border-color:var(--gold);color:var(--goldB)" role="button" tabindex="0" onclick="event.stopPropagation();openFilm(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openFilm(${i})}">🎬 Film mode</span><span class="chip open">How-to ↗</span>
+          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip open" style="border-color:var(--gold);color:var(--goldB)" role="button" tabindex="0" onclick="event.stopPropagation();openFilm(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openFilm(${i})}">🎬 Film mode</span><span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();openSheet(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openSheet(${i})}">How-to ↗</span>
             ${(()=>{const tk=(s.steps||[]).filter((_,sk)=>((C.stepTicks||{})[i]||{})[sk]).length; return tk&&!isDone?`<span class="chip">${tk}/${s.steps.length} takes ✓</span>`:"";})()}
             <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>
             ${isDone ? (rcv ? `<span class="byme rcv">✓ ${esc(C.by[i])} · received</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for upload</span>`) : (rcv ? `<span class="byme rcv">clip received — tick it!</span>` : "")}
@@ -984,7 +1003,12 @@ function renderClient(){
   if(redos) pace.textContent += ` (Plus ${redos===1?"one quick redo":redos+" redos"} — look for the orange card.)`;
   if(sheetIdx !== null) syncSheetBtn();
   renderResults();
+  // one-time film-mode intro (clients only, once per device)
+  if(!document.body.classList.contains("xc") && C.shots.length && !LS.get("seenFilmMode"))
+    document.getElementById("newsbox").classList.add("show");
 }
+function newsClose(){ LS.set("seenFilmMode", "1"); document.getElementById("newsbox").classList.remove("show"); }
+function newsTry(){ newsClose(); if(!C) return; const i = C.shots.findIndex((s,k)=>!C.by[k]); openFilm(i < 0 ? 0 : i); }
 async function tick(i){
   if(!C) return;
   const was = !!C.by[i];
