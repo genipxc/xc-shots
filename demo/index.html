@@ -238,6 +238,8 @@
   .fmcard{max-width:560px;width:100%;background:var(--panel);border:1px solid var(--hair);border-radius:16px;padding:18px;margin:auto}
   .fmcard.on{border-color:var(--gold)}
   .fmtext{font-size:16.5px;line-height:1.6;white-space:pre-wrap}
+  .say{font-weight:800;color:var(--ink)}
+  .fmtext .say{color:var(--goldB)}
   .fmreflab{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
   .fmref{width:100%;max-height:300px;object-fit:contain;border-radius:10px;margin-bottom:12px;border:1px solid var(--hair);background:#111;display:block}
   .fmvid{width:100%;aspect-ratio:16/10;border:1px solid var(--hair);border-radius:10px;margin-bottom:12px;background:#111;display:block}
@@ -782,7 +784,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.9.2";
+const BUILD = "4.9.3";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1061,6 +1063,12 @@ async function tick(i){
 }
 /* ── film mode — one take per screen, tick + swipe, resumes at first unticked ── */
 let fmIdx = null, fmStep = 0, fmTouchX = null;
+/* spoken lines — anything in «…» or "…" — render bold so the script pops out of the directions */
+function fmtStep(t){
+  return esc(t)
+    .replace(/«[^»]*»/g, m => '<b class="say">' + m + '</b>')
+    .replace(/&quot;[\s\S]*?&quot;/g, m => '<b class="say">' + m + '</b>');
+}
 function refMedia(u){
   if(!u) return "";
   u = String(u).trim(); if(!u) return "";
@@ -1100,7 +1108,7 @@ function fmRender(){
     tickBtn.style.visibility = "";
     const on = !!t[fmStep];
     tickBtn.textContent = on ? "✓ Ticked — next" : "✓ Done — next";
-    body.innerHTML = `<div class="fmcard${on?" on":""}">${refMedia((s.refs||[])[fmStep])}<p class="fmtext">${esc(s.steps[fmStep])}</p></div>`;
+    body.innerHTML = `<div class="fmcard${on?" on":""}">${refMedia((s.refs||[])[fmStep])}<p class="fmtext">${fmtStep(s.steps[fmStep])}</p></div>`;
   }
   document.getElementById("fmPrev").disabled = fmStep <= 0;
   document.getElementById("fmNext").disabled = fmStep >= N;
@@ -1135,7 +1143,7 @@ function openSheet(i){
     : frame(s.t, 120);
   document.getElementById("shCap").textContent = CAP[s.t] || "";
   const redoNote = C.redo[i] ? `<div class="reason" style="margin-bottom:4px"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</div>` : "";
-  document.getElementById("shSteps").innerHTML = redoNote + (s.steps||[]).map((st,k)=>`<div class="step"><span class="num">${k+1}</span><p>${esc(st)}${(s.refs||[])[k]?`<span class="seeit" role="button" tabindex="0" onclick="this.nextElementSibling.classList.toggle('hide')" onkeydown="if(event.key==='Enter')this.nextElementSibling.classList.toggle('hide')">see it ▾</span><span class="seebox hide">${refMedia(s.refs[k])}</span>`:""}</p></div>`).join("");
+  document.getElementById("shSteps").innerHTML = redoNote + (s.steps||[]).map((st,k)=>`<div class="step"><span class="num">${k+1}</span><p>${fmtStep(st)}${(s.refs||[])[k]?`<span class="seeit" role="button" tabindex="0" onclick="this.nextElementSibling.classList.toggle('hide')" onkeydown="if(event.key==='Enter')this.nextElementSibling.classList.toggle('hide')">see it ▾</span><span class="seebox hide">${refMedia(s.refs[k])}</span>`:""}</p></div>`).join("");
   document.getElementById("shDont").textContent = s.dont || "";
   syncSheetBtn();
   document.getElementById("veil").classList.add("show"); document.getElementById("sheet").classList.add("show");
@@ -1800,7 +1808,7 @@ function renderPList(it){
   document.getElementById("pList").innerHTML = head + S.shots.map((s,i)=>{
     const st = by[i] ? `<span class="st done">✓ ${esc(by[i])}</span>` : (redo[i] ? '<span class="st redo">redo out</span>' : '<span class="st">open</span>');
     const ex = plSel === i;
-    const steps = imgList(s.img).map(u=>`<img class="plimg" src="${esc(imgSrc(u))}" alt="" loading="lazy" onerror="this.style.display='none'">`).join("") + (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${esc(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
+    const steps = imgList(s.img).map(u=>`<img class="plimg" src="${esc(imgSrc(u))}" alt="" loading="lazy" onerror="this.style.display='none'">`).join("") + (s.steps||[]).map((x,k)=>`<p><b>${k+1}</b>${fmtStep(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
     return `<div class="plrow${ex?" cur ex":""}" id="plr${i}" onclick="plToggle(${i})"><div class="r1"><span class="wk">W${s.w} · ${TLAB[s.t]||"Mid"}</span>${st}</div><h4>${esc(s.n)}</h4><p class="how">${esc(s.h)}</p><div class="plsteps">${steps}</div></div>`;
   }).join("");
   if(plSel !== null){ const el = document.getElementById("plr"+plSel); if(el) el.scrollIntoView({block:"nearest"}); }
