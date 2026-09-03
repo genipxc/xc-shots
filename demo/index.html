@@ -238,6 +238,7 @@
   .fmcard{max-width:560px;width:100%;background:var(--panel);border:1px solid var(--hair);border-radius:16px;padding:18px;margin:auto}
   .fmcard.on{border-color:var(--gold)}
   .fmtext{font-size:16.5px;line-height:1.6;white-space:pre-wrap}
+  .fmreflab{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
   .fmref{width:100%;max-height:300px;object-fit:contain;border-radius:10px;margin-bottom:12px;border:1px solid var(--hair);background:#111;display:block}
   .fmvid{width:100%;aspect-ratio:16/10;border:1px solid var(--hair);border-radius:10px;margin-bottom:12px;background:#111;display:block}
   .fmwatch{display:block;text-align:center;background:var(--panel2);border:1px solid var(--gold);color:var(--goldB);border-radius:10px;padding:12px;margin-bottom:12px;font-weight:700;cursor:pointer;text-decoration:none}
@@ -769,7 +770,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.8.1";
+const BUILD = "4.8.2";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1025,10 +1026,11 @@ let fmIdx = null, fmStep = 0, fmTouchX = null;
 function refMedia(u){
   if(!u) return "";
   u = String(u).trim(); if(!u) return "";
+  const lab = '<p class="fmreflab">📱 Phone position reference — set up like this</p>';
   const dm = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/);
-  if(/\.(jpe?g|png|webp|gif)(\?|$)/i.test(u) || /googleusercontent\.com/.test(u)) return `<img class="fmref" src="${esc(u)}" alt="Reference" loading="lazy" onerror="this.style.display='none'">`;
-  if(dm) return `<iframe class="fmvid" src="https://drive.google.com/file/d/${dm[1]}/preview" allow="autoplay; fullscreen" title="Reference"></iframe>`;
-  return `<a class="fmwatch" href="${esc(u)}" target="_blank" rel="noreferrer">▶ Watch the example</a>`;
+  if(/\.(jpe?g|png|webp|gif)(\?|$)/i.test(u) || /googleusercontent\.com/.test(u)) return lab + `<img class="fmref" src="${esc(u)}" alt="Phone position reference" loading="lazy" onerror="this.style.display='none'">`;
+  if(dm) return lab + `<iframe class="fmvid" src="https://drive.google.com/file/d/${dm[1]}/preview" allow="autoplay; fullscreen" title="Phone position reference"></iframe>`;
+  return lab + `<a class="fmwatch" href="${esc(u)}" target="_blank" rel="noreferrer">▶ Watch how to set it up</a>`;
 }
 function openFilm(i){
   if(!C) return;
@@ -1493,7 +1495,7 @@ function renderEdit(){
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('hook', this.textContent)" title="Click to rename this label">${esc(LBL.hook)}</p>
     <textarea rows="1" oninput="editShots[${k}].h=this.value;autogrow(this)" placeholder="One line: what & where">${esc(s.h||"")}</textarea>
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('steps', this.textContent)" title="Click to rename this label">${esc(LBL.steps)}</p>
-    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);if(editShots[${k}].refs)editShots[${k}].refs.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div><input class="refin" value="${esc((s.refs||[])[si]||"")}" oninput="(editShots[${k}].refs=editShots[${k}].refs||[])[${si}]=this.value" placeholder="↳ reference for this take (IG reel / Drive photo or video link — optional)">`).join("")}
+    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);if(editShots[${k}].refs)editShots[${k}].refs.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div><input class="refin" value="${esc((s.refs||[])[si]||"")}" oninput="(editShots[${k}].refs=editShots[${k}].refs||[])[${si}]=this.value" placeholder="↳ phone position reference for this take (IG reel / Drive photo or video link — optional)">`).join("")}
     <button class="mact" style="margin:6px 0 10px" onclick="editShots[${k}].steps.push('');renderEdit()">+ step</button>
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('dont', this.textContent)" title="Click to rename this label">${esc(LBL.dont)}</p>
     <textarea rows="1" oninput="editShots[${k}].dont=this.value;autogrow(this)" placeholder="The thing not to do">${esc(s.dont||"")}</textarea>
