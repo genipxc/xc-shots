@@ -226,6 +226,36 @@
   .cardimg{flex:none;width:44px;height:34px;border-radius:6px;object-fit:cover;margin-top:2px;border:1px solid var(--hair)}
   .sheetimg{width:100%;max-height:280px;object-fit:cover;border-radius:12px;border:1px solid var(--hair);display:block}
   .plimg{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:8px;border:1px solid var(--hair);display:block}
+  /* film mode — one take per screen: reference, script, tick, swipe */
+  .fmode{position:fixed;inset:0;background:#080808;z-index:70;display:none;flex-direction:column}
+  .fmode.show{display:flex}
+  .fmtop{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 18px 8px}
+  .fmshot{font-weight:800;font-size:15px}
+  .fmcount{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-top:3px}
+  .fmrule{text-align:center;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--dim);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);padding:7px 10px}
+  .fmbody{flex:1;overflow-y:auto;padding:18px;display:flex;align-items:center;justify-content:center}
+  .fmcard{max-width:560px;width:100%;background:var(--panel);border:1px solid var(--hair);border-radius:16px;padding:18px}
+  .fmcard.on{border-color:var(--gold)}
+  .fmtext{font-size:16.5px;line-height:1.6;white-space:pre-wrap}
+  .fmref{width:100%;max-height:300px;object-fit:contain;border-radius:10px;margin-bottom:12px;border:1px solid var(--hair);background:#111;display:block}
+  .fmvid{width:100%;aspect-ratio:16/10;border:1px solid var(--hair);border-radius:10px;margin-bottom:12px;background:#111;display:block}
+  .fmwatch{display:block;text-align:center;background:var(--panel2);border:1px solid var(--gold);color:var(--goldB);border-radius:10px;padding:12px;margin-bottom:12px;font-weight:700;cursor:pointer;text-decoration:none}
+  .fmbar{display:flex;gap:10px;padding:10px 18px 6px}
+  .fmnav{flex:none;width:52px;appearance:none;border:1px solid var(--hair);background:var(--panel);color:var(--ink);border-radius:12px;font-size:18px;cursor:pointer}
+  .fmnav:disabled{opacity:.3}
+  .fmtick{flex:1;appearance:none;border:1px solid var(--gold);background:var(--gold);color:#0A0A0A;font-weight:800;font-size:15px;border-radius:12px;padding:14px;cursor:pointer;font-family:inherit}
+  .fmdots{display:flex;gap:5px;justify-content:center;padding:8px 0 16px;flex-wrap:wrap}
+  .fmdots i{width:9px;height:9px;border-radius:50%;background:var(--panel2);border:1px solid var(--hair);cursor:pointer}
+  .fmdots i.on{background:var(--gold);border-color:var(--gold)}
+  .fmdots i.cur{outline:2px solid var(--goldB);outline-offset:1px}
+  .fmdone{max-width:480px;text-align:center}
+  .fmdone h3{font-size:20px}
+  .fmdone p{color:var(--grey);margin-top:8px}
+  .fmmiss a{color:var(--warn);font-weight:700;margin:0 4px;cursor:pointer}
+  .seeit{display:inline-block;margin-left:8px;color:var(--goldB);font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+  .seebox{display:block;margin-top:8px}
+  .refin{display:block;width:100%;appearance:none;background:transparent;border:0;border-bottom:1px dashed var(--hair);color:var(--grey);font-family:inherit;font-size:11px;padding:2px 2px 6px;outline:none;margin:-2px 0 8px}
+  .refin:focus{border-color:var(--gold)}
   .shotrow{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:13px 14px;cursor:pointer}
   .shotrow:hover{border-color:rgba(205,168,95,.45)}
   .shotrow .i{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);width:18px;flex:none}
@@ -671,6 +701,19 @@
   <p class="sharenote"><b>ON A PHONE —</b> long-press the image → Save, then post it to your story.</p>
 </div>
 
+<!-- FILM MODE — client take-by-take flow -->
+<div class="fmode" id="fmode" aria-modal="true" aria-label="Film mode">
+  <div class="fmtop"><div><p class="fmshot" id="fmShot"></p><p class="fmcount" id="fmCount"></p></div><button class="x" onclick="closeFilm()" aria-label="Close">✕</button></div>
+  <div class="fmrule">SAY IT TWICE · 2 SECONDS QUIET BEFORE + AFTER</div>
+  <div class="fmbody" id="fmBody"></div>
+  <div class="fmbar">
+    <button class="fmnav" id="fmPrev" onclick="fmGo(-1)" aria-label="Previous take">‹</button>
+    <button class="fmtick" id="fmTick" onclick="fmTickCur()">✓ Done — next</button>
+    <button class="fmnav" id="fmNext" onclick="fmGo(1)" aria-label="Next take">›</button>
+  </div>
+  <div class="fmdots" id="fmDots"></div>
+</div>
+
 <!-- REVIEW PLAYER -->
 <div class="player" id="player">
   <div class="ptop"><span id="pInfo"><b>—</b></span><span class="pcount" id="pCount"></span><button class="x" onclick="closePlayer()" aria-label="Close">✕</button></div>
@@ -707,7 +750,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.7";
+const BUILD = "4.8";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -917,7 +960,8 @@ function renderClient(){
           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7.5L5.5 11L12 3.5" fill="none" stroke="#0A0A0A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span class="body"><h3>${esc(s.n)}</h3><span class="how">${esc(s.h)}</span>
           ${isRedo ? `<span class="reason"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</span>` : ""}
-          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip open">How-to ↗</span>
+          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip open" style="border-color:var(--gold);color:var(--goldB)" role="button" tabindex="0" onclick="event.stopPropagation();openFilm(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openFilm(${i})}">🎬 Film mode</span><span class="chip open">How-to ↗</span>
+            ${(()=>{const tk=(s.steps||[]).filter((_,sk)=>((C.stepTicks||{})[i]||{})[sk]).length; return tk&&!isDone?`<span class="chip">${tk}/${s.steps.length} takes ✓</span>`:"";})()}
             <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>
             ${isDone ? (rcv ? `<span class="byme rcv">✓ ${esc(C.by[i])} · received</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for upload</span>`) : (rcv ? `<span class="byme rcv">clip received — tick it!</span>` : "")}
           </span></span>
@@ -952,6 +996,69 @@ async function tick(i){
   if(d.ok){ C = d; renderClient(); if(!was && Object.keys(C.by).length === C.shots.length) toast("<b>Month done.</b> XC gets pinged, your reels keep coming."); }
   else { toast("Couldn't save that — <b>check your signal</b> and try again."); loadClient(); }
 }
+/* ── film mode — one take per screen, tick + swipe, resumes at first unticked ── */
+let fmIdx = null, fmStep = 0, fmTouchX = null;
+function refMedia(u){
+  if(!u) return "";
+  u = String(u).trim(); if(!u) return "";
+  const dm = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/);
+  if(/\.(jpe?g|png|webp|gif)(\?|$)/i.test(u) || /googleusercontent\.com/.test(u)) return `<img class="fmref" src="${esc(u)}" alt="Reference" loading="lazy" onerror="this.style.display='none'">`;
+  if(dm) return `<iframe class="fmvid" src="https://drive.google.com/file/d/${dm[1]}/preview" allow="autoplay; fullscreen" title="Reference"></iframe>`;
+  return `<a class="fmwatch" href="${esc(u)}" target="_blank" rel="noreferrer">▶ Watch the example</a>`;
+}
+function openFilm(i){
+  if(!C) return;
+  fmIdx = i; const s = C.shots[i];
+  const t = (C.stepTicks||{})[i] || {};
+  fmStep = s.steps.findIndex((_,k)=>!t[k]); if(fmStep < 0) fmStep = s.steps.length;
+  document.getElementById("fmode").classList.add("show"); document.body.style.overflow = "hidden";
+  fmRender();
+}
+function closeFilm(){ if(fmIdx===null) return; document.getElementById("fmode").classList.remove("show"); document.body.style.overflow = ""; fmIdx = null; if(C) renderClient(); }
+function fmGo(d){ if(fmIdx===null) return; fmStep = Math.max(0, Math.min(C.shots[fmIdx].steps.length, fmStep + d)); fmRender(); }
+function fmRender(){
+  if(fmIdx === null || !C) return;
+  const i = fmIdx, s = C.shots[i], t = (C.stepTicks||{})[i] || {}, N = s.steps.length;
+  document.getElementById("fmShot").textContent = s.n;
+  const done = s.steps.filter((_,k)=>t[k]).length;
+  document.getElementById("fmCount").textContent = fmStep < N ? `Take ${fmStep+1} of ${N} · ${done} done` : `${done} of ${N} done`;
+  const body = document.getElementById("fmBody"), tickBtn = document.getElementById("fmTick");
+  if(fmStep >= N){
+    const missing = s.steps.map((_,k)=>k).filter(k=>!t[k]);
+    body.innerHTML = `<div class="fmdone">${missing.length
+      ? `<h3>Almost — ${missing.length} take${missing.length===1?"":"s"} not ticked.</h3><p>Tap a number to jump back:</p><p class="fmmiss">${missing.map(k=>`<a role="button" tabindex="0" onclick="fmStep=${k};fmRender()">#${k+1}</a>`).join(" ")}</p>`
+      : `<h3>All ${N} takes done 🎉</h3><p>Now get the clips off your camera and into the folder:</p>`}
+      ${s.folder ? `<a class="bigbtn" style="display:block;text-align:center;margin-top:14px;text-decoration:none" href="${esc(s.folder)}" target="_blank" rel="noreferrer">Open this shot's folder ↗</a>` : ""}
+      ${!missing.length && !C.by[i] ? `<button class="bigbtn" style="margin-top:10px;width:100%" onclick="tick(${i});closeFilm()">Mark shot as filmed ✓</button>` : ""}
+    </div>`;
+    tickBtn.style.visibility = "hidden";
+  } else {
+    tickBtn.style.visibility = "";
+    const on = !!t[fmStep];
+    tickBtn.textContent = on ? "✓ Ticked — next" : "✓ Done — next";
+    body.innerHTML = `<div class="fmcard${on?" on":""}">${refMedia((s.refs||[])[fmStep])}<p class="fmtext">${esc(s.steps[fmStep])}</p></div>`;
+  }
+  document.getElementById("fmPrev").disabled = fmStep <= 0;
+  document.getElementById("fmNext").disabled = fmStep >= N;
+  document.getElementById("fmDots").innerHTML = s.steps.map((_,k)=>`<i class="${t[k]?"on":""}${k===fmStep?" cur":""}" onclick="fmStep=${k};fmRender()"></i>`).join("");
+}
+async function fmTickCur(){
+  if(fmIdx === null) return;
+  const i = fmIdx, k = fmStep;
+  C.stepTicks = C.stepTicks || {}; C.stepTicks[i] = C.stepTicks[i] || {};
+  const was = !!C.stepTicks[i][k];
+  if(was) delete C.stepTicks[i][k]; else C.stepTicks[i][k] = 1;
+  if(!was) fmGo(1); else fmRender();
+  const d = await apiPost({action:"tickStep", code, idx:i, step:k, on:!was, by: me || "Someone"});
+  if(!d.ok) toast("Couldn't save that tick — <b>check your signal</b> and tap it again.");
+}
+document.getElementById("fmBody").addEventListener("touchstart", e=>{ fmTouchX = e.changedTouches[0].clientX; }, {passive:true});
+document.getElementById("fmBody").addEventListener("touchend", e=>{
+  if(fmTouchX === null) return;
+  const dx = e.changedTouches[0].clientX - fmTouchX; fmTouchX = null;
+  if(Math.abs(dx) > 60) fmGo(dx < 0 ? 1 : -1);
+}, {passive:true});
+
 function openSheet(i){
   sheetIdx = i; const s = C.shots[i];
   document.getElementById("shTitle").textContent = s.n;
@@ -961,7 +1068,7 @@ function openSheet(i){
     : frame(s.t, 120);
   document.getElementById("shCap").textContent = CAP[s.t] || "";
   const redoNote = C.redo[i] ? `<div class="reason" style="margin-bottom:4px"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</div>` : "";
-  document.getElementById("shSteps").innerHTML = redoNote + (s.steps||[]).map((st,k)=>`<div class="step"><span class="num">${k+1}</span><p>${esc(st)}</p></div>`).join("");
+  document.getElementById("shSteps").innerHTML = redoNote + (s.steps||[]).map((st,k)=>`<div class="step"><span class="num">${k+1}</span><p>${esc(st)}${(s.refs||[])[k]?`<span class="seeit" role="button" tabindex="0" onclick="this.nextElementSibling.classList.toggle('hide')" onkeydown="if(event.key==='Enter')this.nextElementSibling.classList.toggle('hide')">see it ▾</span><span class="seebox hide">${refMedia(s.refs[k])}</span>`:""}</p></div>`).join("");
   document.getElementById("shDont").textContent = s.dont || "";
   syncSheetBtn();
   document.getElementById("veil").classList.add("show"); document.getElementById("sheet").classList.add("show");
@@ -1362,13 +1469,13 @@ function renderEdit(){
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('hook', this.textContent)" title="Click to rename this label">${esc(LBL.hook)}</p>
     <textarea rows="1" oninput="editShots[${k}].h=this.value;autogrow(this)" placeholder="One line: what & where">${esc(s.h||"")}</textarea>
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('steps', this.textContent)" title="Click to rename this label">${esc(LBL.steps)}</p>
-    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div>`).join("")}
+    ${s.steps.map((x,si)=>`<div class="grow"><textarea rows="1" oninput="editShots[${k}].steps[${si}]=this.value;autogrow(this)">${esc(x)}</textarea><button class="mact cancel" onclick="editShots[${k}].steps.splice(${si},1);if(editShots[${k}].refs)editShots[${k}].refs.splice(${si},1);renderEdit()" aria-label="Remove step">✕</button></div><input class="refin" value="${esc((s.refs||[])[si]||"")}" oninput="(editShots[${k}].refs=editShots[${k}].refs||[])[${si}]=this.value" placeholder="↳ reference for this take (IG reel / Drive photo or video link — optional)">`).join("")}
     <button class="mact" style="margin:6px 0 10px" onclick="editShots[${k}].steps.push('');renderEdit()">+ step</button>
     <p class="glab editable" contenteditable spellcheck="false" onblur="setLbl('dont', this.textContent)" title="Click to rename this label">${esc(LBL.dont)}</p>
     <textarea rows="1" oninput="editShots[${k}].dont=this.value;autogrow(this)" placeholder="The thing not to do">${esc(s.dont||"")}</textarea>
   </div></div>`;
   }).join("")
-  + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],dont:'',img:''});editOpen.add(editShots.length-1);renderEdit()">+ Add shot</button>`;
+  + `<button class="mact" style="margin-top:12px" onclick="editShots.push({n:'',w:${Math.min(4, Math.max(1, (editShots[editShots.length-1]||{}).w || 1))},t:'mid',h:'',d:'20s',steps:[],refs:[],dont:'',img:''});editOpen.add(editShots.length-1);renderEdit()">+ Add shot</button>`;
   document.querySelectorAll("#mgEdit textarea").forEach(autogrow);
 }
 async function saveShots(){ const d = await act({action:"shots", shots:editShots}, "<b>Shot list saved.</b> Drop folders renamed to match."); if(d.ok) editShots = null; }
@@ -1413,7 +1520,7 @@ function barReview(){
 }
 function monthName(m){ const mm = String(m||"").match(/^(\d{4})-(\d{2})/); if(!mm) return String(m||""); return new Date(Number(mm[1]), Number(mm[2])-1, 1).toLocaleDateString("en-AU", {month:"long", year:"numeric"}); }
 let toastT; function toast(msg){ const t = document.getElementById("toast"); t.innerHTML = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3800); }
-document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeFlag(); closeBack(); closePreview(); closeShare(); closeUpPick(); } });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeFlag(); closeBack(); closePreview(); closeShare(); closeUpPick(); closeFilm(); } });
 /* ── sparkline ── */
 function spark(weeks){
   if(!weeks || !weeks.length) return "";
@@ -1767,8 +1874,8 @@ setTimeout(async ()=>{ try {
     {code:"MARRA24",name:"Marra & Co. Café",month:"2026-09",total:12,done:4,wkTotal:3,wkDone:1,redos:0,quietDays:4,deliveriesPending:1,inbox:"x",weeks:[{done:3,total:3},{done:2,total:3},{done:3,total:3},{done:1,total:3}]},
     {code:"RILEYN83",name:"Riley Nikolich",month:"2026-09",total:12,done:7,wkTotal:3,wkDone:2,redos:1,quietDays:0,deliveriesPending:2,inbox:"y",weeks:[{done:2,total:3},{done:3,total:3},{done:2,total:3},{done:0,total:3}]}]};
   const DEVSTATE = (c)=>({ok:true, code:c||"RILEYN83", name:"Riley Nikolich", month:"2026-09", week:1, role:2, team:["Riley"],
-    shots:[{w:1,t:"wide",n:"The 6am floor",h:"MBS at open.",d:"20s",steps:["s"],dont:"d"},{w:1,t:"mid",n:"Coach fixing a squat",h:"One cue.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"mid",n:"PB celebration",h:"After the lift.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"close",n:"Chalk hands",h:"Fill the frame.",d:"10s",steps:["s"],dont:"d"}],
-    by:{0:"Riley",1:"Riley"}, redo:{}, reasons:{}, received:{0:true}, results:[{n:"Coach cue reel",by:"Riley",wk:1,v:12400}], drive:"#",
+    shots:[{w:1,t:"wide",n:"The 6am floor",h:"MBS at open.",d:"20s",steps:["☐ TAKE 1 — THE QUESTION. Say ONLY this, 3 times: «Running or walking for fat loss?»","☐ TAKE 2 — THE HOOK. Twice: «Running burns more per minute. I'm still choosing walking.»","☐ SHOT 3 — NO TALKING. Phone far away, 15 seconds."],refs:["https://picsum.photos/seed/a/500/320","","https://picsum.photos/seed/b/500/320"],dont:"d",folder:"https://drive.google.com/drive/folders/x"},{w:1,t:"mid",n:"Coach fixing a squat",h:"One cue.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"mid",n:"PB celebration",h:"After the lift.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"close",n:"Chalk hands",h:"Fill the frame.",d:"10s",steps:["s"],dont:"d"}],
+    by:{1:"Riley"}, redo:{}, reasons:{}, received:{0:true}, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Riley",wk:1,v:12400}], drive:"#",
     approved:[F("ap1","2026-09-03 1100 — Coach cue reel")], feedback:{}, docs:[{label:"Terms & agreement",url:"https://example.com"},{label:"Set up your payment",url:"https://buy.stripe.com/x"}],
     activity:[{at:"2026-08-31T05:00:00Z",who:"Riley",what:"filmed “Coach fixing a squat”"},{at:"2026-08-31T02:00:00Z",who:"XC",what:"added a document"}],
     lastTick:"2026-08-31T05:00:00Z", weeks:DEVR.clients[1].weeks, history:[], files:{}, reviewed:{}, redoAt:{}, hasOwnerPin:true, ownerEmail:"", intake:{answers:{biz:"Riley Nikolich — MBS Gym, Prahran",ig:"@coachrileynikolich",offer:"12-week physique coaching + online",customer:"trained-for-years, want to look like it",voice:"enjoyment, performance, straight-up",times:"between sessions, 10am-2pm",approver:"Riley — WhatsApp",nogo:"no client faces without asking",ads:"not yet",goal:"5 online clients from content"},by:"Riley",at:"2026-08-31T00:00:00Z"}});
