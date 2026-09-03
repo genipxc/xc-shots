@@ -251,6 +251,11 @@
   .fmdots i.on{background:var(--gold);border-color:var(--gold)}
   .fmdots i.cur{outline:2px solid var(--goldB);outline-offset:1px}
   .fmdone{max-width:480px;text-align:center;margin:auto}
+  /* ghost preview pill */
+  .prevpill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom, 0px));z-index:90;display:none;align-items:center;gap:10px;background:#1B1B1B;border:1px solid var(--gold);border-radius:99px;padding:8px 8px 8px 14px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+  .prevpill.show{display:flex}
+  .prevpill span{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--goldB);text-transform:uppercase}
+  .prevpill button{appearance:none;border:1px solid var(--gold);background:var(--gold);color:#0A0A0A;font-weight:800;font-size:11px;border-radius:99px;padding:6px 12px;cursor:pointer;font-family:inherit}
   /* what's-new popup (one-time per device) */
   .newsbox{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:80;display:none;align-items:center;justify-content:center;padding:24px}
   .newsbox.show{display:flex}
@@ -710,6 +715,9 @@
   <p class="sharenote"><b>ON A PHONE —</b> long-press the image → Save, then post it to your story.</p>
 </div>
 
+<!-- GHOST PREVIEW pill — only XC sees this, only in preview -->
+<div class="prevpill" id="prevpill"><span>👁 PREVIEW — seeing what they see · nothing saves · they can't tell</span><button onclick="exitPreview()" aria-label="Exit preview">✕ exit</button></div>
+
 <!-- WHAT'S NEW — one-time client popup -->
 <div class="newsbox" id="newsbox">
   <div class="newscard">
@@ -770,7 +778,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.8.2";
+const BUILD = "4.9";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -822,6 +830,7 @@ async function apiGet(params){
   finally { inflight--; }
 }
 async function apiPost(body){
+  if(typeof previewMode !== "undefined" && previewMode){ toast("👁 <b>Preview only</b> — taps don't save, and the client can't see you."); return {ok:false, error:"preview"}; }
   inflight++; syncUI("busy");
   try {
     const r = await withTimeout(fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)}), 45000);
@@ -937,6 +946,30 @@ async function loadClient(){
     if(!document.getElementById("app").classList.contains("hide")){ stopPoll(); gate("gateCode"); }   // code revoked while showing cached state
   }
 }
+/* ── ghost preview: XC sees the client portal exactly as they do — read-only, no trace ── */
+let previewMode = false, prevSaved = null;
+async function previewClient(cc){
+  toast('<span class="spin"></span>Opening their view…');
+  const d = await apiGet({action:"state", code: cc});   // code-only fetch — identical to what a team member gets, logs nothing
+  if(!d.ok){ toast("Couldn't load that client's view."); return; }
+  prevSaved = { code, me, C, wasXC: document.body.classList.contains("xc") };
+  previewMode = true; code = cc; me = ""; C = d;
+  document.getElementById("prevpill").classList.add("show");
+  document.getElementById("meName").textContent = "—";
+  gate("app"); show("client"); document.body.classList.remove("xc");
+  renderClient(); startPoll(loadClient);
+  window.scrollTo({top:0});
+}
+function exitPreview(){
+  if(!previewMode) return;
+  previewMode = false; stopPoll(); closeFilm(); closeSheet(); closePreview();
+  document.getElementById("prevpill").classList.remove("show");
+  code = prevSaved.code; me = prevSaved.me; C = prevSaved.C;
+  if(prevSaved.wasXC) document.body.classList.add("xc");
+  prevSaved = null;
+  gate("app"); show("dash"); loadRoster();
+  window.scrollTo({top:0});
+}
 function enterClient(){
   gate("app"); show("client"); document.body.classList.remove("xc");
   document.getElementById("meName").textContent = me || "—";
@@ -1004,8 +1037,8 @@ function renderClient(){
   if(redos) pace.textContent += ` (Plus ${redos===1?"one quick redo":redos+" redos"} — look for the orange card.)`;
   if(sheetIdx !== null) syncSheetBtn();
   renderResults();
-  // one-time film-mode intro (clients only, once per device)
-  if(!document.body.classList.contains("xc") && C.shots.length && !LS.get("seenFilmMode"))
+  // one-time film-mode intro (clients only, once per device, never in ghost preview)
+  if(!previewMode && !document.body.classList.contains("xc") && C.shots.length && !LS.get("seenFilmMode"))
     document.getElementById("newsbox").classList.add("show");
 }
 function newsClose(){ LS.set("seenFilmMode", "1"); document.getElementById("newsbox").classList.remove("show"); }
@@ -1019,6 +1052,7 @@ async function tick(i){
   renderClient();
   const d = await apiPost(was ? {action:"untick", code, idx:i} : {action:"tick", code, idx:i, by: me || "Someone"});
   if(d.ok){ C = d; renderClient(); if(!was && Object.keys(C.by).length === C.shots.length) toast("<b>Month done.</b> XC gets pinged, your reels keep coming."); }
+  else if(d.error === "preview"){ loadClient(); }
   else { toast("Couldn't save that — <b>check your signal</b> and try again."); loadClient(); }
 }
 /* ── film mode — one take per screen, tick + swipe, resumes at first unticked ── */
@@ -1076,7 +1110,10 @@ async function fmTickCur(){
   if(was) delete C.stepTicks[i][k]; else C.stepTicks[i][k] = 1;
   if(!was) fmGo(1); else fmRender();
   const d = await apiPost({action:"tickStep", code, idx:i, step:k, on:!was, by: me || "Someone"});
-  if(!d.ok) toast("Couldn't save that tick — <b>check your signal</b> and tap it again.");
+  if(!d.ok){
+    if(d.error === "preview"){ if(was) C.stepTicks[i][k] = 1; else delete C.stepTicks[i][k]; fmRender(); }
+    else toast("Couldn't save that tick — <b>check your signal</b> and tap it again.");
+  }
 }
 document.getElementById("fmBody").addEventListener("touchstart", e=>{ fmTouchX = e.changedTouches[0].clientX; }, {passive:true});
 document.getElementById("fmBody").addEventListener("touchend", e=>{
@@ -1335,7 +1372,7 @@ function renderRoster(){
     const pct = c.total ? Math.round(c.done/c.total*100) : 0;
     const st = c.quietDays!==null && c.quietDays>=3 ? `<span class="st behind">${c.quietDays} days quiet</span>` : (c.wkDone>=c.wkTotal && c.wkTotal ? '<span class="st ok">Week done</span>' : '<span class="st ok">On track</span>');
     const nudge = c.quietDays!==null && c.quietDays>=3 ? `<span class="nudgebtn" role="button" tabindex="0" onclick="event.stopPropagation();nudge()">Nudge ↗</span>` : "";
-    return `<button class="cl" onclick="openManage(${q(c.code)})"><div class="r1"><h3>${esc(c.name)}</h3><span style="display:flex;gap:8px;align-items:center">${nudge}${st}</span></div>
+    return `<button class="cl" onclick="openManage(${q(c.code)})"><div class="r1"><h3>${esc(c.name)}</h3><span style="display:flex;gap:8px;align-items:center">${nudge}<span class="nudgebtn" role="button" tabindex="0" title="See exactly what they see — they can't tell" onclick="event.stopPropagation();previewClient(${q(c.code)})" onkeydown="if(event.key==='Enter'){event.stopPropagation();previewClient(${q(c.code)})}">👁</span>${st}</span></div>
       <div class="r2"><span>${c.done} of ${c.total} this month</span>${c.redos?`<span style="color:var(--warn)">${c.redos} redo out</span>`:""}${c.deliveriesPending?`<span style="color:var(--goldB)">${c.deliveriesPending} to review</span>`:""}<span>week: ${c.wkDone} of ${c.wkTotal}</span></div>
       ${spark(c.weeks)}
       <div class="bar"><i style="width:${pct}%"></i></div></button>`;
