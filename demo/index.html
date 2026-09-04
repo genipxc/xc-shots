@@ -187,6 +187,16 @@
   .pchip.cur{opacity:1}
   .pchip.cur .im,.pchip.cur img{border-color:var(--gold)}
   .pchip .n{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.75);color:var(--goldB);font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px}
+  .pchip .tk{position:absolute;right:4px;bottom:4px;background:#E5484D;color:#fff;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px}
+  .pchip .tk.miss{background:#333;color:var(--dim)}
+  /* transcript-matched take tag under the video */
+  .ptag{display:none;max-width:min(92vw,600px);font-size:12.5px;line-height:1.5;color:var(--grey);padding:8px 12px;border-radius:10px;border:1px solid var(--hair);background:var(--panel)}
+  .ptag.hit{display:block;border-color:#E5484D;background:rgba(229,72,77,.08)}
+  .ptag.hit b{color:#fff}
+  .ptag.miss{display:block;border-color:#444}
+  .ptag .conf{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);margin-left:6px}
+  .plrow .plsteps p.hit{background:rgba(229,72,77,.12);border-left:2px solid #E5484D;border-radius:4px;margin-left:-6px;padding-left:22px;padding-top:4px;padding-bottom:4px}
+  .plrow .plsteps p.hit b.stepn{left:6px;color:#E5484D}
   .pchip .mv{display:flex;justify-content:space-between;margin-top:4px}
   .pchip .mv button{appearance:none;border:1px solid var(--hair);background:var(--panel);color:var(--grey);border-radius:6px;font-size:10px;line-height:1;padding:4px 8px;cursor:pointer}
   .pchip .mv button:active{border-color:var(--gold);color:var(--goldB)}
@@ -755,7 +765,7 @@
 <!-- REVIEW PLAYER -->
 <div class="player" id="player">
   <div class="ptop"><span id="pInfo"><b>—</b></span><span class="pcount" id="pCount"></span><button class="x" onclick="closePlayer()" aria-label="Close">✕</button></div>
-  <div class="pmid"><div class="pcol" id="pCol"><iframe id="pVid" allow="autoplay; fullscreen" title="Clip"></iframe><div class="pstrip" id="pStrip" aria-label="Clips for this shot"></div></div><div class="plist" id="pList" aria-label="Shot list"></div></div>
+  <div class="pmid"><div class="pcol" id="pCol"><iframe id="pVid" allow="autoplay; fullscreen" title="Clip"></iframe><div class="ptag" id="pTag"></div><div class="pstrip" id="pStrip" aria-label="Clips for this shot"></div></div><div class="plist" id="pList" aria-label="Shot list"></div></div>
   <div class="pbar">
     <button class="pkey good" onclick="pGood()"><b>G</b>Good</button>
     <button class="pkey redo" onclick="pRedo()"><b>R</b>Redo</button>
@@ -788,7 +798,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.10.1";
+const BUILD = "4.11";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1737,7 +1747,7 @@ function clipOrders(){ try { return JSON.parse(localStorage.getItem("xc_clip_ord
 function openPlayer(){
   const T = todayData; if(!T) return;
   pq = T.deliveries.map(x=>({kind:"delivery", code:x.code, client:x.client, shot:"Delivered", file:x.file}))
-     .concat(T.fresh.map(x=>({kind:"fresh", code:x.code, client:x.client, shot:x.shot, idx:x.idx, file:x.file})));
+     .concat(T.fresh.map(x=>({kind:"fresh", code:x.code, client:x.client, shot:x.shot, idx:x.idx, file:x.file, tag:x.tag||null})));
   if(!pq.length) return;
   // replay each shot's clips in the order XC last arranged them
   const ords = clipOrders();
@@ -1756,8 +1766,19 @@ function pShow(){
   document.getElementById("pCount").textContent = (pi+1) + " / " + pq.length;
   document.getElementById("pApprove").classList.toggle("hide", it.kind !== "delivery");
   document.getElementById("pVid").src = it.file.preview;
+  renderTag(it);
   renderStrip(it);
   loadPList(it);
+}
+/* transcript-matched take tag under the video — set by the QC pass, XC-only */
+function renderTag(it){
+  const el = document.getElementById("pTag"), t = it.tag;
+  if(!t){ el.className = "ptag"; el.innerHTML = ""; return; }
+  if(t.step === null || t.step === undefined){
+    el.className = "ptag miss"; el.innerHTML = `<b>⚠️ No clean match</b> — probably a rehearsal or dead take${t.words?` · <i>“${esc(t.words)}”</i>`:""}`;
+  } else {
+    el.className = "ptag hit"; el.innerHTML = `<b>🎯 ${esc(t.label || ("Take " + (t.step+1)))}</b>${t.words?` · <i>“${esc(t.words)}”</i>`:""}${t.conf?` <span class="conf">${Math.round(t.conf*100)}%</span>`:""}`;
+  }
 }
 /* the clip strip — every clip of the current shot, tap to jump, ‹ › to set the running order */
 function stripGroup(it){
@@ -1773,7 +1794,8 @@ function renderStrip(it){
   if(!on){ host.innerHTML = ""; return; }
   host.innerHTML = g.map((j,k)=>{
     const f = pq[j].file, cur = j===pi;
-    return `<div class="pchip${cur?" cur":""}" id="pch${j}"><a onclick="stripGo(${j})" role="button" tabindex="0">${f.thumb?`<img src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="im"></span>'}<span class="n">${k+1}</span></a><div class="mv"><button onclick="stripMove(${j},-1)" aria-label="Play earlier">‹</button><button onclick="stripMove(${j},1)" aria-label="Play later">›</button></div></div>`;
+    const tg = pq[j].tag; const tk = tg ? (tg.step===null||tg.step===undefined ? '<span class="tk miss">✕</span>' : `<span class="tk">T${tg.step+1}</span>`) : "";
+    return `<div class="pchip${cur?" cur":""}" id="pch${j}"><a onclick="stripGo(${j})" role="button" tabindex="0">${f.thumb?`<img src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="im"></span>'}<span class="n">${k+1}</span>${tk}</a><div class="mv"><button onclick="stripMove(${j},-1)" aria-label="Play earlier">‹</button><button onclick="stripMove(${j},1)" aria-label="Play later">›</button></div></div>`;
   }).join("");
   const cur = document.getElementById("pch"+pi); if(cur) cur.scrollIntoView({block:"nearest", inline:"nearest"});
 }
@@ -1812,10 +1834,11 @@ function renderPList(it){
   document.getElementById("pList").innerHTML = head + S.shots.map((s,i)=>{
     const st = by[i] ? `<span class="st done">✓ ${esc(by[i])}</span>` : (redo[i] ? '<span class="st redo">redo out</span>' : '<span class="st">open</span>');
     const ex = plSel === i;
-    const steps = imgList(s.img).map(u=>`<img class="plimg" src="${esc(imgSrc(u))}" alt="" loading="lazy" onerror="this.style.display='none'">`).join("") + (s.steps||[]).map((x,k)=>`<p><b class="stepn">${k+1}</b>${fmtStep(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
+    const hit = (ex && it.tag && it.tag.step !== null && it.tag.step !== undefined) ? Number(it.tag.step) : -1;
+    const steps = imgList(s.img).map(u=>`<img class="plimg" src="${esc(imgSrc(u))}" alt="" loading="lazy" onerror="this.style.display='none'">`).join("") + (s.steps||[]).map((x,k)=>`<p${k===hit?' class="hit" id="plhit"':''}><b class="stepn">${k+1}</b>${fmtStep(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
     return `<div class="plrow${ex?" cur ex":""}" id="plr${i}" onclick="plToggle(${i})"><div class="r1"><span class="wk">W${s.w} · ${TLAB[s.t]||"Mid"}</span>${st}</div><h4>${esc(s.n)}</h4><p class="how">${esc(s.h)}</p><div class="plsteps">${steps}</div></div>`;
   }).join("");
-  if(plSel !== null){ const el = document.getElementById("plr"+plSel); if(el) el.scrollIntoView({block:"nearest"}); }
+  if(plSel !== null){ const el = document.getElementById("plhit") || document.getElementById("plr"+plSel); if(el) el.scrollIntoView({block:"center"}); }
 }
 function plToggle(i){
   const el = document.getElementById("plr"+i); if(!el) return;
