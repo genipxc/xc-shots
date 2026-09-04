@@ -290,6 +290,13 @@
   input.xnote{display:block;width:100%;appearance:none;background:rgba(229,72,77,.06);border:1px dashed rgba(229,72,77,.45);border-radius:8px;color:#E5484D;font-family:inherit;font-size:11px;padding:6px 8px;outline:none;margin:2px 0 6px}
   input.xnote::placeholder{color:rgba(229,72,77,.55)}
   input.xnote:focus{border-color:#E5484D}
+  .selshot{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .cov{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0 10px}
+  .cv{font-family:'Space Mono',monospace;font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid var(--hair);color:var(--dim)}
+  .cv.ok{background:var(--gold);color:#0A0A0A;border-color:var(--gold)}
+  .cv.miss{border-color:#E5484D;color:#E5484D}
+  .sel{display:flex;flex-direction:column;gap:4px;align-items:center}
+  .binbox summary{cursor:pointer;color:var(--dim);font-size:12px;margin:10px 0 6px}
   .shotrow{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:13px 14px;cursor:pointer}
   .shotrow:hover{border-color:rgba(205,168,95,.45)}
   .shotrow .i{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);width:18px;flex:none}
@@ -522,6 +529,7 @@
       <div id="mgUnsorted"></div>
     </div>
     <div id="mvDeliv" class="hide">
+      <div id="mgSelects"></div>
       <div><p class="msect">From the editor — to review</p><div class="mlist" id="mgPending"></div></div>
       <div><p class="msect">Approved — the client can watch these</p><div class="mlist" id="mgApproved"></div></div>
       <p class="demonote"><b>EDITOR —</b> they drop finished reels in <b>XC Footage — Received / [client] / Delivered</b>. Approve → it appears on the client's Results tab. Send back → it moves to "Sent back" with your note.</p>
@@ -771,6 +779,7 @@
   <div class="pbar">
     <button class="pkey good" onclick="pGood()"><b>G</b>Good</button>
     <button class="pkey redo" onclick="pRedo()"><b>R</b>Redo</button>
+    <button class="pkey" onclick="pBin()" title="Won't be using this one"><b>B</b>Bin</button>
     <button class="pkey good hide" id="pApprove" onclick="pApprove()"><b>A</b>Approve</button>
     <button class="pkey" onclick="pSkip()"><b>S</b>Skip</button>
     <button class="pkey plistBtn" onclick="togglePList()"><b>L</b>Shot list</button>
@@ -800,7 +809,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.12";
+const BUILD = "4.13";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1445,6 +1454,34 @@ function mtab(which){
   if(which==="edit" && !editShots && mgState) { const dr = mgState.draftShots && mgState.draftShots.length; editShots = JSON.parse(JSON.stringify(dr ? mgState.draftShots : mgState.shots)); document.getElementById("draftBadge").classList.toggle("hide", !dr); renderEdit(); }
   if(which==="review" && !editResults && mgState) { editResults = JSON.parse(JSON.stringify(mgState.results||[])); renderResultsEdit(); }
 }
+/* ── Selects: every clip called Good, pooled per shot in take order, with take coverage + pickups + bin ── */
+function renderSelects(){
+  const S = mgState, host = document.getElementById("mgSelects"); if(!host) return;
+  if(!S || !S.files){ host.innerHTML = ""; return; }
+  const vd = S.verdicts||{}, tg = S.clipTags||{}; const stepOf = f => (tg[f.id] && tg[f.id].step!==null && tg[f.id].step!==undefined) ? tg[f.id].step : null;
+  const clean = n => n.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,"");
+  let html = "", binned = [];
+  Object.keys(S.files).forEach(k=>{
+    if(k==="unsorted") return; const sh = S.shots[k]; if(!sh) return;
+    const good = S.files[k].filter(f=>vd[f.id]==="good"); binned = binned.concat(S.files[k].filter(f=>vd[f.id]==="bin"));
+    if(!good.length) return;
+    good.sort((a,b)=>((stepOf(a)??99)-(stepOf(b)??99)));
+    const covered = new Set(good.map(stepOf).filter(x=>x!==null));
+    const steps = sh.steps||[]; const missing = [];
+    const cov = steps.map((st,i)=>{ const talk = /^☐ TAKE/.test(st); const ok = covered.has(i); if(talk && !ok) missing.push(i); return `<span class="cv ${ok?"ok":(talk?"miss":"br")}" title="${esc(st.slice(0,70))}">${i+1}</span>`; }).join("");
+    html += `<div class="selshot"><div class="r"><span class="nm"><b>${esc(sh.n)}</b> · ${good.length} select${good.length===1?"":"s"}</span>${missing.length?`<button class="mact" onclick="askPickups(${k},[${missing.join(",")}])">Request ${missing.length} pickup${missing.length===1?"":"s"}</button>`:'<span class="who ok">every talking take covered ✓</span>'}</div>
+      <div class="cov">${cov}</div>
+      <div class="files">${good.map(f=>`<div class="sel"><a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${stepOf(f)!==null?"T"+(stepOf(f)+1)+" · ":""}${esc(clean(f.name))}</span></a><button class="mact cancel" title="Bin it" onclick="setVerdict(${q(f.id)},'bin')">✕ bin</button></div>`).join("")}</div></div>`;
+  });
+  if(binned.length) html += `<details class="binbox"><summary>Binned — ${binned.length} clip${binned.length===1?"":"s"} you won't use (kept in Drive, hidden from everything)</summary><div class="files">${binned.map(f=>`<div class="sel"><a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy">`:'<span class="th"></span>'}<span class="fn">${esc(clean(f.name))}</span></a><button class="mact" onclick="setVerdict(${q(f.id)},'none')">Restore</button></div>`).join("")}</div></details>`;
+  host.innerHTML = html ? `<p class="msect">Selects — every clip you called Good, in take order. Gold = take covered, red = talking take with no keeper.</p>${html}` : `<p class="msect">Selects</p><p class="sub">Nothing marked Good yet — hit ▶ Review and the keepers pool here.</p>`;
+}
+async function setVerdict(fid, v){ await act({action:"verdict", fileId:fid, v}, v==="bin" ? "<b>Binned.</b> Restore any time from the Binned list." : (v==="good" ? "<b>Selected.</b>" : "<b>Back in the review queue.</b>")); }
+async function askPickups(k, idxs){
+  const S = mgState; const names = idxs.map(i=>"Take "+(i+1)+" — "+S.shots[k].steps[i].replace(/^☐ TAKE \d+ — /,"").split(/\. |: /)[0].slice(0,40));
+  if(!confirm("Send a redo on “"+S.shots[k].n+"” asking for: "+names.join(", ")+"?")) return;
+  await act({action:"redo", idx:Number(k), reason:("Pickups needed — "+names.join(" · ")).slice(0,300)}, "<b>Pickups requested.</b> It's on their card as a redo with the exact takes listed.");
+}
 function renderManage(){
   const S = mgState; if(!S) return;
   // late-init: state arrived after the user already opened Shot list / Results mid-load
@@ -1467,6 +1504,7 @@ function renderManage(){
     return `<div class="mrow${isRedo?" redo":""}"><div class="r"><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${act}</div>${fh}</div>`;
   }).join("");
   const un = files.unsorted||[];
+  renderSelects();
   document.getElementById("mgUnsorted").innerHTML = un.length ? `<p class="msect">Unsorted — dropped without picking a shot</p><div class="mrow"><div class="files">${un.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="">`:'<span class="th"></span>'}<span class="fn">${esc(f.name)}</span></a>`).join("")}</div></div>` : "";
   document.getElementById("mgTeam").innerHTML = (S.team||[]).map(n=>`<span class="tchip">${esc(n)}<button aria-label="Remove ${esc(n)}" onclick="removeTeam(${q(n).replace(/"/g,'&quot;')})">✕</button></span>`).join("");
   // deliveries
@@ -1862,11 +1900,12 @@ async function pGood(){ const it = pq[pi]; pi++; pShow(); const d = await apiPos
 async function pApprove(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"approve", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 function pRedo(){ const it = pq[pi]; mgCode = it.code; flagIdx = it.idx===undefined?null:it.idx; flagFile = it.file.id; openFlagToday(it.shot); }
 function pSkip(){ pi++; pShow(); }
+async function pBin(){ const it = pq[pi]; if(it.kind !== "fresh"){ toast("Deliveries use <b>Approve</b> or <b>Redo</b> — Bin is for raw clips."); return; } pi++; pShow(); const d = await apiPost({action:"verdict", pin, code:it.code, fileId:it.file.id, v:"bin"}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 document.addEventListener("keydown", e=>{
   if(!document.getElementById("player").classList.contains("show")) return;
   if(document.getElementById("fsheet").classList.contains("show")) return;
   const k = e.key.toLowerCase();
-  if(k==="g") pGood(); else if(k==="r") pRedo(); else if(k==="a" && pq[pi] && pq[pi].kind==="delivery") pApprove(); else if(k==="s") pSkip(); else if(k==="l") togglePList(); else if(k==="escape") closePlayer();
+  if(k==="g") pGood(); else if(k==="r") pRedo(); else if(k==="a" && pq[pi] && pq[pi].kind==="delivery") pApprove(); else if(k==="s") pSkip(); else if(k==="b") pBin(); else if(k==="l") togglePList(); else if(k==="escape") closePlayer();
   else if(k==="arrowright" && pi<pq.length-1){ pi++; pShow(); } else if(k==="arrowleft" && pi>0){ pi--; pShow(); }
 });
 
@@ -1981,6 +2020,7 @@ function renderEditorQueue(d){
   document.getElementById("roster").innerHTML = d.clients.map(c=>`
     <div class="cl" style="cursor:default"><div class="r1"><h3>${esc(c.client)}</h3><span class="st ok">${c.clipsIn} clips in</span></div>
     <div class="r2"><a class="lnk" href="${esc(c.footageUrl)}" target="_blank" rel="noreferrer">Footage folder ↗</a><a class="lnk" href="${esc(c.deliveredUrl)}" target="_blank" rel="noreferrer">Delivered folder ↗</a></div>
+    ${c.selects&&c.selects.length?`<div class="mlist" style="margin-top:10px"><p class="msect">Cut list — ${c.selects.length} select${c.selects.length===1?"":"s"} XC approved</p>${c.selects.map(s=>`<div class="mrow"><div class="r"><span class="nm">${esc(s.shot)}${s.take?` · <b style="color:var(--goldB)">T${s.take}</b>`:""}</span><a class="lnk" href="${esc(s.url)}" target="_blank" rel="noreferrer">${esc(s.name.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,""))} ↗</a></div></div>`).join("")}</div>`:""}
     ${c.sentBack.length?`<div class="mlist" style="margin-top:10px">${c.sentBack.map(f=>`<div class="mrow"><div class="r"><span class="nm">${esc(f.name)}</span><span class="who out">sent back</span></div>${f.note?`<p class="m" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--warn)">${esc(f.note)}</p>`:""}</div>`).join("")}</div>`:""}
     </div>`).join("");
 }
