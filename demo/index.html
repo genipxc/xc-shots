@@ -809,7 +809,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.13";
+const BUILD = "4.13.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1474,7 +1474,13 @@ function renderSelects(){
       <div class="files">${good.map(f=>`<div class="sel"><a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${stepOf(f)!==null?"T"+(stepOf(f)+1)+" · ":""}${esc(clean(f.name))}</span></a><button class="mact cancel" title="Bin it" onclick="setVerdict(${q(f.id)},'bin')">✕ bin</button></div>`).join("")}</div></div>`;
   });
   if(binned.length) html += `<details class="binbox"><summary>Binned — ${binned.length} clip${binned.length===1?"":"s"} you won't use (kept in Drive, hidden from everything)</summary><div class="files">${binned.map(f=>`<div class="sel"><a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy">`:'<span class="th"></span>'}<span class="fn">${esc(clean(f.name))}</span></a><button class="mact" onclick="setVerdict(${q(f.id)},'none')">Restore</button></div>`).join("")}</div></details>`;
-  host.innerHTML = html ? `<p class="msect">Selects — every clip you called Good, in take order. Gold = take covered, red = talking take with no keeper.</p>${html}` : `<p class="msect">Selects</p><p class="sub">Nothing marked Good yet — hit ▶ Review and the keepers pool here.</p>`;
+  host.innerHTML = html ? `<p class="msect">Selects — every clip you called Good, in take order. Gold = take covered, red = talking take with no keeper.</p><div class="sheetbtns" style="margin:0 0 12px"><button class="bigbtn" onclick="syncSelects()">📁 Sync selects to Drive folder ↗</button></div><p class="sub" style="margin:-4px 0 14px">Builds a <b>✅ SELECTS</b> folder in the client's footage vault, one sub-folder per shot, with every Good clip inside — open it in Drive for desktop and drag straight into DaVinci, or send the link to your editor.</p>${html}` : `<p class="msect">Selects</p><p class="sub">Nothing marked Good yet — hit ▶ Review and the keepers pool here.</p>`;
+}
+async function syncSelects(){
+  toast('<span class="spin"></span>Building the selects folder…');
+  const d = await apiPost({pin, code:mgCode, action:"syncSelects"});
+  if(d.ok){ if(d.state) { mgState = d.state; renderManage(); } toast(`<b>${d.count} select${d.count===1?"":"s"} in the folder.</b> Opening it…`); window.open(d.url, "_blank", "noopener"); }
+  else toast("Couldn't sync: " + esc(d.error));
 }
 async function setVerdict(fid, v){ await act({action:"verdict", fileId:fid, v}, v==="bin" ? "<b>Binned.</b> Restore any time from the Binned list." : (v==="good" ? "<b>Selected.</b>" : "<b>Back in the review queue.</b>")); }
 async function askPickups(k, idxs){
@@ -2019,7 +2025,7 @@ function renderEditorQueue(d){
   document.querySelector("#dash .demonote").innerHTML = '<b>DELIVERY —</b> upload finished reels into each client\'s Delivered folder. XC reviews in the app.';
   document.getElementById("roster").innerHTML = d.clients.map(c=>`
     <div class="cl" style="cursor:default"><div class="r1"><h3>${esc(c.client)}</h3><span class="st ok">${c.clipsIn} clips in</span></div>
-    <div class="r2"><a class="lnk" href="${esc(c.footageUrl)}" target="_blank" rel="noreferrer">Footage folder ↗</a><a class="lnk" href="${esc(c.deliveredUrl)}" target="_blank" rel="noreferrer">Delivered folder ↗</a></div>
+    <div class="r2"><a class="lnk" href="${esc(c.footageUrl)}" target="_blank" rel="noreferrer">Footage folder ↗</a><a class="lnk" href="${esc(c.deliveredUrl)}" target="_blank" rel="noreferrer">Delivered folder ↗</a>${c.selectsUrl?`<a class="lnk" href="${esc(c.selectsUrl)}" target="_blank" rel="noreferrer" style="color:var(--goldB)">✅ Selects folder ↗</a>`:""}</div>
     ${c.selects&&c.selects.length?`<div class="mlist" style="margin-top:10px"><p class="msect">Cut list — ${c.selects.length} select${c.selects.length===1?"":"s"} XC approved</p>${c.selects.map(s=>`<div class="mrow"><div class="r"><span class="nm">${esc(s.shot)}${s.take?` · <b style="color:var(--goldB)">T${s.take}</b>`:""}</span><a class="lnk" href="${esc(s.url)}" target="_blank" rel="noreferrer">${esc(s.name.replace(/^\d{4}-\d{2}-\d{2} \d{4} — /,""))} ↗</a></div></div>`).join("")}</div>`:""}
     ${c.sentBack.length?`<div class="mlist" style="margin-top:10px">${c.sentBack.map(f=>`<div class="mrow"><div class="r"><span class="nm">${esc(f.name)}</span><span class="who out">sent back</span></div>${f.note?`<p class="m" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--warn)">${esc(f.note)}</p>`:""}</div>`).join("")}</div>`:""}
     </div>`).join("");
