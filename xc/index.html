@@ -197,6 +197,8 @@
   .ptag .conf{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);margin-left:6px}
   .plrow .plsteps p.hit{background:rgba(229,72,77,.12);border-left:2px solid #E5484D;border-radius:4px;margin-left:-6px;padding-left:22px;padding-top:4px;padding-bottom:4px}
   .plrow .plsteps p.hit b.stepn{left:6px;color:#E5484D}
+  .plrow .plsteps p.hit .w.ok{color:#8FBF8F}
+  .plrow .plsteps p.hit .w.miss{color:#E5484D;text-decoration:underline dotted}
   .pchip .mv{display:flex;justify-content:space-between;margin-top:4px}
   .pchip .mv button{appearance:none;border:1px solid var(--hair);background:var(--panel);color:var(--grey);border-radius:6px;font-size:10px;line-height:1;padding:4px 8px;cursor:pointer}
   .pchip .mv button:active{border-color:var(--gold);color:var(--goldB)}
@@ -798,7 +800,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.11";
+const BUILD = "4.12";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1770,6 +1772,13 @@ function pShow(){
   renderStrip(it);
   loadPList(it);
 }
+/* word-level view of the matched take: green = he said it, red = he skipped it (from the transcript's said-map) */
+function saidHtml(st, said){
+  const m = st.match(/«[^»]*»/); if(!m || !said || !said.length) return fmtStep(st);
+  const i = st.indexOf(m[0]), pre = st.slice(0, i), quote = m[0].slice(1, -1), post = st.slice(i + m[0].length);
+  const body = quote.split(/\s+/).map((w,j)=>`<span class="w ${said[j]===0?"miss":"ok"}">${esc(w)}</span>`).join(" ");
+  return esc(pre) + '<b class="say">«' + body + '»</b>' + fmtStep(post);
+}
 /* transcript-matched take tag under the video — set by the QC pass, XC-only */
 function renderTag(it){
   const el = document.getElementById("pTag"), t = it.tag;
@@ -1777,7 +1786,8 @@ function renderTag(it){
   if(t.step === null || t.step === undefined){
     el.className = "ptag miss"; el.innerHTML = `<b>⚠️ No clean match</b> — probably a rehearsal or dead take${t.words?` · <i>“${esc(t.words)}”</i>`:""}`;
   } else {
-    el.className = "ptag hit"; el.innerHTML = `<b>🎯 ${esc(t.label || ("Take " + (t.step+1)))}</b>${t.words?` · <i>“${esc(t.words)}”</i>`:""}${t.conf?` <span class="conf">${Math.round(t.conf*100)}%</span>`:""}`;
+    const sd = Array.isArray(t.said) ? ` <span class="conf">said ${t.said.filter(x=>x!==0).length}/${t.said.length} words</span>` : (t.conf ? ` <span class="conf">${Math.round(t.conf*100)}%</span>` : "");
+    el.className = "ptag hit"; el.innerHTML = `<b>🎯 ${esc(t.label || ("Take " + (t.step+1)))}</b>${t.words?` · <i>“${esc(t.words)}”</i>`:""}${sd}`;
   }
 }
 /* the clip strip — every clip of the current shot, tap to jump, ‹ › to set the running order */
@@ -1835,7 +1845,7 @@ function renderPList(it){
     const st = by[i] ? `<span class="st done">✓ ${esc(by[i])}</span>` : (redo[i] ? '<span class="st redo">redo out</span>' : '<span class="st">open</span>');
     const ex = plSel === i;
     const hit = (ex && it.tag && it.tag.step !== null && it.tag.step !== undefined) ? Number(it.tag.step) : -1;
-    const steps = imgList(s.img).map(u=>`<img class="plimg" src="${esc(imgSrc(u))}" alt="" loading="lazy" onerror="this.style.display='none'">`).join("") + (s.steps||[]).map((x,k)=>`<p${k===hit?' class="hit" id="plhit"':''}><b class="stepn">${k+1}</b>${fmtStep(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
+    const steps = imgList(s.img).map(u=>`<img class="plimg" src="${esc(imgSrc(u))}" alt="" loading="lazy" onerror="this.style.display='none'">`).join("") + (s.steps||[]).map((x,k)=>`<p${k===hit?' class="hit" id="plhit"':''}><b class="stepn">${k+1}</b>${k===hit && it.tag.said ? saidHtml(x, it.tag.said) : fmtStep(x)}</p>`).join("") + (s.dont?`<p class="pldont">${esc(s.dont)}</p>`:"");
     return `<div class="plrow${ex?" cur ex":""}" id="plr${i}" onclick="plToggle(${i})"><div class="r1"><span class="wk">W${s.w} · ${TLAB[s.t]||"Mid"}</span>${st}</div><h4>${esc(s.n)}</h4><p class="how">${esc(s.h)}</p><div class="plsteps">${steps}</div></div>`;
   }).join("");
   if(plSel !== null){ const el = document.getElementById("plhit") || document.getElementById("plr"+plSel); if(el) el.scrollIntoView({block:"center"}); }
