@@ -132,7 +132,8 @@
     body.xc .clients{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
     body.xc #dash .addteam{max-width:560px}
     body.xc .mstat{max-width:560px}
-    body.xc #mgShots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+    body.xc #mgShots{columns:2;column-gap:12px}
+    body.xc #mgShots>.mrow{break-inside:avoid;margin-bottom:12px;display:block}
     body.xc .file{width:132px}body.xc .file .th{width:132px;height:176px}body.xc .file .fn{font-size:9px}
     body.xc #mvDeliv{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
     body.xc #mvDeliv .demonote{grid-column:1/-1}
@@ -189,6 +190,8 @@
   .pchip .n{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.75);color:var(--goldB);font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px}
   .pchip .tk{position:absolute;right:4px;bottom:4px;background:#E5484D;color:#fff;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px}
   .pchip .tk.miss{background:#333;color:var(--dim)}
+  .pchip.vgood .im,.pchip.vgood img{box-shadow:0 0 0 2px var(--gold)}
+  .pchip.vbin{opacity:.25}
   /* transcript-matched take tag under the video */
   .ptag{display:none;max-width:min(92vw,600px);font-size:12.5px;line-height:1.5;color:var(--grey);padding:8px 12px;border-radius:10px;border:1px solid var(--hair);background:var(--panel)}
   .ptag.hit{display:block;border-color:#E5484D;background:rgba(229,72,77,.08)}
@@ -809,7 +812,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.13.1";
+const BUILD = "4.14";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1507,7 +1510,8 @@ function renderManage(){
     const who = isRedo ? '<span class="who out">redo out</span>' : isDone ? `<span class="who${fl.length?"":" todo"}">✓ ${esc(by[i])}${fl.length?"":" · no file yet"}</span>` : (fl.length ? '<span class="who">file in · not ticked</span>' : `<span class="who todo">wk ${s.w} · to-do</span>`);
     const act = isDone ? `<button class="mact" onclick="openFlag(${i})">Flag redo</button>` : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : (fl.length ? `<button class="mact ok" onclick="xcTick(${i})">Mark filmed</button>` : "");
     const fh = fl.length ? `<div class="files">${fl.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${esc(f.name.replace(/ — /," "))}</span></a>`).join("")}</div>` : "";
-    return `<div class="mrow${isRedo?" redo":""}"><div class="r"><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${act}</div>${fh}</div>`;
+    const rv = fl.length ? `<button class="mact ok" style="border-color:var(--gold);color:var(--goldB)" onclick="openPlayerFor(${i})">▶ Review ${fl.length}</button>` : "";
+    return `<div class="mrow${isRedo?" redo":""}${fl.length?" hasclips":""}"><div class="r"${fl.length?` style="cursor:pointer" onclick="openPlayerFor(${i})"`:""}><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${rv}<span onclick="event.stopPropagation()">${act}</span></div>${fh}</div>`;
   }).join("");
   const un = files.unsorted||[];
   renderSelects();
@@ -1805,6 +1809,15 @@ function openPlayer(){
   });
   pi = 0; document.getElementById("player").classList.add("show"); pShow();
 }
+/* review ONE shot's clips — every clip for that shot (already-rated ones included, so a verdict can be changed) */
+function openPlayerFor(i){
+  const S = mgState; if(!S || !S.files || !(S.files[i]||[]).length){ toast("No clips on that shot yet."); return; }
+  const vd = S.verdicts||{}, tg = S.clipTags||{};
+  pq = S.files[i].map(f=>({kind:"fresh", code:S.code, client:S.name, shot:S.shots[i].n, idx:i, file:f, tag:tg[f.id]||null, verdict:vd[f.id]||null}));
+  const ords = clipOrders(); const o = ords[S.code+"|"+i];
+  if(o) pq.sort((a,b)=>{ const ai=o.indexOf(a.file.id), bi=o.indexOf(b.file.id); return (ai<0?999:ai)-(bi<0?999:bi); });
+  pi = Math.max(0, pq.findIndex(x=>!x.verdict)); document.getElementById("player").classList.add("show"); pShow();
+}
 function pShow(){
   if(pi >= pq.length){ closePlayer(); toast("<b>Queue clear.</b>"); loadToday(); return; }
   const it = pq[pi];
@@ -1849,7 +1862,8 @@ function renderStrip(it){
   host.innerHTML = g.map((j,k)=>{
     const f = pq[j].file, cur = j===pi;
     const tg = pq[j].tag; const tk = tg ? (tg.step===null||tg.step===undefined ? '<span class="tk miss">✕</span>' : `<span class="tk">T${tg.step+1}</span>`) : "";
-    return `<div class="pchip${cur?" cur":""}" id="pch${j}"><a onclick="stripGo(${j})" role="button" tabindex="0">${f.thumb?`<img src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="im"></span>'}<span class="n">${k+1}</span>${tk}</a><div class="mv"><button onclick="stripMove(${j},-1)" aria-label="Play earlier">‹</button><button onclick="stripMove(${j},1)" aria-label="Play later">›</button></div></div>`;
+    const vcls = pq[j].verdict==="good" ? " vgood" : pq[j].verdict==="bin" ? " vbin" : "";
+    return `<div class="pchip${cur?" cur":""}${vcls}" id="pch${j}"><a onclick="stripGo(${j})" role="button" tabindex="0">${f.thumb?`<img src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="im"></span>'}<span class="n">${k+1}</span>${tk}</a><div class="mv"><button onclick="stripMove(${j},-1)" aria-label="Play earlier">‹</button><button onclick="stripMove(${j},1)" aria-label="Play later">›</button></div></div>`;
   }).join("");
   const cur = document.getElementById("pch"+pi); if(cur) cur.scrollIntoView({block:"nearest", inline:"nearest"});
 }
@@ -1901,12 +1915,12 @@ function plToggle(i){
   if(!was) el.classList.add("ex");
 }
 function togglePList(){ document.getElementById("pList").classList.toggle("open"); }
-function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; document.getElementById("pList").classList.remove("open"); plCache = {}; if(pin) loadToday(); }
-async function pGood(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"reviewGood", pin, code:it.code, fileId:it.file.id, idx: it.idx===undefined?null:it.idx}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
+function closePlayer(){ document.getElementById("player").classList.remove("show"); document.getElementById("pVid").src = "about:blank"; document.getElementById("pList").classList.remove("open"); plCache = {}; if(pin){ loadToday(); if(mgCode && !document.getElementById("manage").classList.contains("hide")) loadManage(); } }
+async function pGood(){ const it = pq[pi]; it.verdict = "good"; pi++; pShow(); const d = await apiPost({action:"reviewGood", pin, code:it.code, fileId:it.file.id, idx: it.idx===undefined?null:it.idx}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 async function pApprove(){ const it = pq[pi]; pi++; pShow(); const d = await apiPost({action:"approve", pin, code:it.code, fileId:it.file.id}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 function pRedo(){ const it = pq[pi]; mgCode = it.code; flagIdx = it.idx===undefined?null:it.idx; flagFile = it.file.id; openFlagToday(it.shot); }
 function pSkip(){ pi++; pShow(); }
-async function pBin(){ const it = pq[pi]; if(it.kind !== "fresh"){ toast("Deliveries use <b>Approve</b> or <b>Redo</b> — Bin is for raw clips."); return; } pi++; pShow(); const d = await apiPost({action:"verdict", pin, code:it.code, fileId:it.file.id, v:"bin"}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
+async function pBin(){ const it = pq[pi]; if(it.kind !== "fresh"){ toast("Deliveries use <b>Approve</b> or <b>Redo</b> — Bin is for raw clips."); return; } it.verdict = "bin"; pi++; pShow(); const d = await apiPost({action:"verdict", pin, code:it.code, fileId:it.file.id, v:"bin"}); if(!d.ok) toast("Save failed: "+esc(d.error)); }
 document.addEventListener("keydown", e=>{
   if(!document.getElementById("player").classList.contains("show")) return;
   if(document.getElementById("fsheet").classList.contains("show")) return;
