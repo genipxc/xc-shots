@@ -61,6 +61,7 @@
         <div class="trow"><span class="d">02</span><span><b>The price.</b> $1,150/month. Invoiced monthly, payable within 7 days. Posting stays yours at this tier — posting and ads live in the Amplify upgrade, whenever you want it.</span></div>
         <div class="trow"><span class="d">03</span><span><b>The term.</b> Month to month, no lock-in fee. Either of us can end it with <b>30 days' written notice</b>; work and billing run as normal through the notice period.</span></div>
         <div class="trow"><span class="d">04</span><span><b>The rhythm.</b> Film and upload across each week. If a week's footage doesn't arrive, that delivery slot rolls. Deliverables are finished reels — raw footage isn't included. No guarantees of views, followers or revenue — anyone who promises that is lying to you.</span></div>
+        <div class="trow"><span class="d">04b</span><span><b>Turnaround.</b> Footage that's in the app by Thursday midnight is cut over the weekend and lands the following Monday. Anything after that rolls to the next week's batch, and footage uploaded in the last five business days of a month lands in the first batch of the next month. A whole month's footage arriving at once is delivered across two weekly batches. There's no next-day or rush service. Late footage isn't refunded, stacked or rushed, and a posting date or launch that slips because footage came in late is on the footage, not on us.</span></div>
         <div class="trow"><span class="d">05</span><span><b>The case study.</b> XC can use your name, the content made here, and its performance in XC Media's marketing — plus one short testimonial after a couple of months. Your revenue and financials stay private, always.</span></div>
         <div class="trow"><span class="d">06</span><span><b>Ownership.</b> The finished reels are yours.</span></div>
       </div>
@@ -146,7 +147,7 @@ async function agree(){
   try {
     const r = await fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({action:"feedback", code:CODE, fileId:"TERMS-ACCEPTED-" + CODE, verdict:"love",
-        note:"AGREED TO TERMS (welcome page): Minimum $1,150/mo, 30-day notice, case-study permission, 1 refinement round, weekly delivery.", by:"Client via welcome page"})});
+        note:"AGREED TO TERMS (welcome page): Minimum $1,150/mo, 30-day notice, case-study permission, 1 refinement round, weekly delivery, turnaround terms (Thu cut-off, next-week batch, no rush, late footage rolls).", by:"Client via welcome page"})});
     const d = await r.json();
     if(d.ok){ btn.textContent = "Agreed ✓"; document.getElementById("agreeOk").style.display = "block"; try{ localStorage.setItem("xcw."+CODE,"1"); }catch(e){} }
     else { err.textContent = "Didn't save — try once more."; btn.disabled = false; btn.textContent = "I agree — let's go"; }
