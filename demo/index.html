@@ -1662,11 +1662,9 @@ function linkTargets(){
   ((calData && calData.entries) || []).forEach(e=>{ if(e.kind==="landed" && e.code===S.code) add(e.m, e.idx, e.shot); });
   return out.sort((a,b)=> a.m===b.m ? a.i-b.i : (a.m<b.m ? 1 : -1));
 }
-function guessShot(name, targets){   // XC's export names: "Riley N W1 V2" = week 1, video 2 · or "reel 4" / "shot 4"
-  const S = mgState || {}, rate = {min:3, std:4, scale:5}[S.tier] || 3; let i = null;
-  const wv = String(name).match(/\bw\s*(\d)\s*v\s*(\d)\b/i), rn = String(name).match(/\b(?:reel|shot)\s*0?(\d{1,2})\b/i);
-  if(wv) i = (Number(wv[1])-1)*rate + Number(wv[2]) - 1; else if(rn) i = Number(rn[1]) - 1;
-  const hit = i===null ? null : targets.find(x=>x.m===S.month && x.i===i);
+function guessShot(name, targets){   // only an explicit "reel 4" / "shot 4" in the export name. "W1 V2" has meant both video 2 and version 2, so it is never guessed from
+  const S = mgState || {}, rn = String(name).match(/\b(?:reel|shot)\s*0?(\d{1,2})\b/i);
+  const hit = rn ? targets.find(x=>x.m===S.month && x.i===Number(rn[1])-1) : null;
   return hit ? hit.k : "";
 }
 function shotSel(f, live){
