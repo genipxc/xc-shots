@@ -47,6 +47,7 @@ const DEMO = `
     ],
     by:{0:"Marco",1:"Jess",2:"Tay",3:"Marco",4:"Jess",5:"Jess",6:"Tay",7:"Marco",8:"Jess",9:"Jess"},
     received:{0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1,8:1},
+    recv:{0:{n:2,filing:0,last:"2026-08-24T22:10:00Z",names:["IMG_0410.MOV","IMG_0420.MOV"]},1:{n:3,filing:0,last:"2026-08-25T00:40:00Z",names:["IMG_0411.MOV","IMG_0421.MOV","IMG_0431.MOV"]},2:{n:4,filing:0,last:"2026-08-25T03:00:00Z",names:["IMG_0412.MOV"]},3:{n:2,filing:0,last:"2026-08-26T01:00:00Z",names:["IMG_0413.MOV"]},4:{n:3,filing:0,last:"2026-08-26T05:00:00Z",names:["IMG_0414.MOV"]},5:{n:4,filing:0,last:"2026-08-27T02:00:00Z",names:["IMG_0415.MOV"]},6:{n:2,filing:0,last:"2026-08-27T06:00:00Z",names:["IMG_0416.MOV"]},7:{n:3,filing:0,last:"2026-08-28T00:00:00Z",names:["IMG_0417.MOV"]},8:{n:4,filing:0,last:"2026-08-28T04:00:00Z",names:["IMG_0418.MOV"]}}, unsortedN:0,
     redo:{10:1},
     reasons:{10:"Bit dark — try again nearer the window. The question and the answer were perfect."},
     files:{},
@@ -83,6 +84,11 @@ const DEMO = `
     const a = p.action;
     if(a === "ping") return {ok:true, v:"demo"};
     if(a === "hello") return {ok:true, code:demoState.code, name:demoState.name, team:demoState.team};
+    if(a === "uploads"){   // v4.17 upload board: counts from the demo's received map, one shot mid-upload
+      const shots = {}; Object.keys(demoState.received).forEach((i,k) => { shots[i] = {n: 2 + (k % 3), filing: 0, last: new Date(Date.now() - (k + 1) * 5400000).toISOString(), names: ["IMG_0" + (410 + k) + ".MOV", "IMG_0" + (420 + k) + ".MOV"]}; });
+      shots[9] = {n: 0, filing: 2, last: null, names: []};
+      return {ok:true, code:demoState.code, month:demoState.month, shots, unsortedN:0, filingUnsorted:0, t:new Date().toISOString()};
+    }
     if(a === "tick"){ demoState.by[p.idx] = p.by || "Someone"; delete demoState.redo[p.idx]; delete demoState.reasons[p.idx]; return snap(); }
     if(a === "untick"){ delete demoState.by[p.idx]; return snap(); }
     if(a === "feedback"){ demoState.feedback[p.fileId] = {v:p.verdict, note:p.note||"", by:p.by||"You", at:Date.now()}; return snap(); }

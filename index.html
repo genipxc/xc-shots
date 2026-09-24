@@ -50,6 +50,22 @@
   .meta{display:flex;gap:8px;margin-top:9px;align-items:center;flex-wrap:wrap}
   .chip{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--dim);border:1px solid var(--hair);border-radius:99px;padding:3px 8px;text-transform:uppercase}.chip.open{color:var(--gold);border-color:var(--goldDim)}
   .byme{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase}.byme.wait{color:var(--dim)}.byme.rcv{color:var(--goldB)}
+  /* ── upload status (v4.17): what has landed for each shot, and what is still filing ── */
+  .upline{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-top:8px}
+  .upst{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+  .upst.in{color:var(--goldB)}.upst.in[role=button]{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}.upst.none{color:#E0913A}.upst.filing{color:var(--goldB)}
+  .upst i,.upboard .dot.filing{animation:uppulse 1.1s ease-in-out infinite}.upst i{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none}
+  @keyframes uppulse{0%,100%{opacity:.3}50%{opacity:1}}
+  .upnames{display:block;margin-top:6px;font-family:'Space Mono',monospace;font-size:9.5px;color:var(--grey);line-height:1.7;overflow-wrap:anywhere}
+  .upboard{margin-top:14px;background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px 16px}
+  .upboard .h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .upboard .t{font-weight:800;font-size:15px;letter-spacing:-.01em;line-height:1.25}
+  .upboard .rows{margin-top:10px}
+  .upboard .row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--hair)}.upboard .row:first-child{border-top:0}
+  .upboard .dot{width:8px;height:8px;border-radius:50%;background:var(--hair);flex:none}.upboard .dot.in{background:var(--ok)}.upboard .dot.filing{background:var(--gold)}.upboard .dot.none{background:#E0913A}
+  .upboard .nm{flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .upboard .st{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);white-space:nowrap}.upboard .st.in{color:var(--goldB)}.upboard .st.filing{color:var(--goldB)}.upboard .st.none{color:#E0913A}
+  .fmup{margin-top:12px}
   .frame{flex:none;margin-top:2px}
   .clients{display:flex;flex-direction:column;gap:10px;margin-top:20px}
   .cl{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:16px;cursor:pointer;text-align:left;width:100%;appearance:none;color:var(--ink);font-family:inherit;transition:border-color .2s}.cl:hover{border-color:var(--gold)}
@@ -723,6 +739,7 @@
         <p class="pace" id="paceLine"></p>
         <div class="month"><span id="moN">Month: —</span><span>uploads due Sun 9pm</span></div>
       </div>
+      <div class="upboard hide" id="upBoard"></div>
       <div id="shotList"></div>
       <p class="demonote"><b>SYNCED —</b> ticks are shared with your whole team and with XC. <a onclick="resetDevice()" role="button" tabindex="0">Use a different studio code</a> · <a onclick="gate('gatePin')" role="button" tabindex="0">Studio side</a></p>
     </div>
@@ -762,7 +779,7 @@
 <div class="sheet" id="upsheet" role="dialog" aria-modal="true" aria-labelledby="upTitle">
   <div class="grab"></div>
   <div class="shead"><h2 id="upTitle">Which shot is this for?</h2><button class="x" onclick="closeUpPick()" aria-label="Close">✕</button></div>
-  <p class="sub" style="margin-top:6px">Tap the shot and its Drive folder opens — drop the clip straight in.</p>
+  <p class="sub" style="margin-top:6px">Tap the shot and its Drive folder opens — drop the clips straight in. Each row shows what has already landed, so nothing gets missed.</p>
   <div class="mlist" id="upList" style="margin-top:14px"></div>
 </div>
 
@@ -873,7 +890,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.16";
+const BUILD = "4.17";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1026,7 +1043,7 @@ function buildGuide(){
   else { pill.textContent="You're on a computer"; steps.innerHTML = st(1,"This app lives on phones — open the same link on your phone.")+st(2,"iPhone: Share → <b>Add to Home Screen</b>. Android: ⋮ → <b>Add to Home screen</b>."); }
 }
 function finishGuide(){ LS.set("guided","1"); enterClient(); }
-function resetDevice(){ LS.set("code",null); LS.set("me",null); LS.set("ownercode",null); LS.set("ownerpin",null); dropCache("state"); dropCache("owner"); code=null; me=null; C=null; stopPoll(); gate("gateCode"); }
+function resetDevice(){ LS.set("code",null); LS.set("me",null); LS.set("ownercode",null); LS.set("ownerpin",null); dropCache("state"); dropCache("owner"); code=null; me=null; C=null; U=null; upOpen.clear(); stopWatchUploads(); stopPoll(); gate("gateCode"); }
 
 /* ═══════════════ client side ═══════════════ */
 let writeSeq = 0;   // bumped on every write; stale polls that started earlier are discarded
@@ -1068,13 +1085,13 @@ function exitPreview(){
 function enterClient(){
   gate("app"); show("client"); document.body.classList.remove("xc");
   document.getElementById("meName").textContent = me || "—";
-  if(!C || !C.shots){ document.getElementById("clientHead").innerHTML = '<span class="spin"></span>Loading your shots…'; loadClient(); }
-  else renderClient();
+  if(!C || !C.shots){ document.getElementById("clientHead").innerHTML = '<span class="spin"></span>Loading your shots…'; loadClient().then(()=>loadUploads()); }
+  else { renderClient(); loadUploads(); }
   startPoll(loadClient);
 }
 function startPoll(fn){ stopPoll(); pollT = setInterval(()=>{ if(document.visibilityState==="visible" && !inflight) fn(); }, POLL_MS); }
 function stopPoll(){ if(pollT) clearInterval(pollT); pollT = null; }
-document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible"){ if(C && !document.getElementById("client").classList.contains("hide")){ if(LS.get("ownerpin") && LS.get("ownercode")) ownerLoad(); else loadClient(); } if(pin && !document.getElementById("dash").classList.contains("hide")) loadRoster(); if(pin && !document.getElementById("calendar").classList.contains("hide")) loadCal(); if(pin && !document.getElementById("today").classList.contains("hide")) loadToday(); } });
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible"){ if(C && !document.getElementById("client").classList.contains("hide")){ if(LS.get("ownerpin") && LS.get("ownercode")) ownerLoad(); else loadClient(); watchUploads(); } if(pin && !document.getElementById("dash").classList.contains("hide")) loadRoster(); if(pin && !document.getElementById("calendar").classList.contains("hide")) loadCal(); if(pin && !document.getElementById("today").classList.contains("hide")) loadToday(); } });
 
 function renderClient(){
   if(!C || !C.shots) return;
@@ -1111,8 +1128,9 @@ function renderClient(){
           <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip open" style="border-color:var(--gold);color:var(--goldB)" role="button" tabindex="0" onclick="event.stopPropagation();openFilm(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openFilm(${i})}">🎬 Film mode</span><span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();openSheet(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openSheet(${i})}">How-to ↗</span>
             ${(()=>{const tk=(s.steps||[]).filter((_,sk)=>((C.stepTicks||{})[i]||{})[sk]).length; return tk&&!isDone?`<span class="chip">${tk}/${s.steps.length} takes ✓</span>`:"";})()}
             <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>
-            ${isDone ? (rcv ? `<span class="byme rcv">✓ ${esc(C.by[i])} · received</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for upload</span>`) : (rcv ? `<span class="byme rcv">clip received — tick it!</span>` : "")}
-          </span></span>
+            </span>
+          <span class="upline">${upStatHtml(i, s, isDone)}${isDone ? (rcv || upInfo(i) ? `<span class="byme rcv">✓ ${esc(C.by[i])}</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for the upload</span>`) : ((rcv || upInfo(i)) ? `<span class="byme rcv">tick it once it's all in</span>` : "")}</span>
+          ${(()=>{ const u = upInfo(i); return upOpen.has(i) && u && u.names.length ? `<span class="upnames">${u.names.map(esc).join("<br>")}${u.n > u.names.length ? "<br>…and " + (u.n - u.names.length) + " more" : ""}</span>` : ""; })()}</span>
         ${imgList(s.img).length ? `<img class="cardimg" src="${esc(imgSrc(imgList(s.img)[0]))}" alt="" loading="lazy" onerror="this.style.display='none'">` : frame(s.t, 44)}`;
       box.appendChild(el);
     });
@@ -1131,6 +1149,7 @@ function renderClient(){
   const redos = Object.keys(C.redo).length;
   if(redos) pace.textContent += ` (Plus ${redos===1?"one quick redo":redos+" redos"} — look for the orange card.)`;
   if(sheetIdx !== null) syncSheetBtn();
+  renderUpBoard();
   renderResults();
   // one-time film-mode intro (clients only, once per device, never in ghost preview)
   if(!previewMode && !document.body.classList.contains("xc") && C.shots.length && !LS.get("seenFilmMode"))
@@ -1150,6 +1169,63 @@ async function tick(i){
   else if(d.error === "preview"){ loadClient(); }
   else { toast("Couldn't save that — <b>check your signal</b> and try again."); loadClient(); }
 }
+/* ── upload status (v4.17): what has landed on each shot, and what is still filing from the drop folder.
+     C.recv comes with every state read (vault counts). action=uploads adds the clips the sweep has not filed yet, fetched the
+     moment the client comes back from Drive and every 15 s for three minutes after an upload. ── */
+let U = null, upWatchT = null, upWatchN = 0; const upOpen = new Set();
+function whenStr(iso){
+  if(!iso) return ""; const d = new Date(iso), now = new Date();
+  const tm = d.toLocaleTimeString("en-AU", {hour:"numeric", minute:"2-digit"}).toLowerCase().replace(/\s/g,"");
+  if(d.toDateString() === now.toDateString()) return tm;
+  const y = new Date(now); y.setDate(y.getDate() - 1); if(d.toDateString() === y.toDateString()) return "yesterday " + tm;
+  return d.toLocaleDateString("en-AU", {weekday:"short", day:"numeric", month:"short"}) + " " + tm;
+}
+function upInfo(i){   // merged view: the fresher of the state's vault count and the uploads read; filing only from the uploads read
+  const a = (C && C.recv) ? (C.recv[i] || null) : undefined, b = (U && U.shots) ? (U.shots[i] || null) : null;
+  if(a === undefined && !b) return (C && C.received && C.received[i]) ? {n:null, filing:0, last:null, names:[]} : null;   // older backend: flag only
+  if(!a && !b) return null;
+  const an = a ? a.n : 0, bn = b ? b.n : 0, src = bn >= an ? (b || a) : a;
+  return { n: Math.max(an, bn), filing: (b && bn >= an) ? (b.filing || 0) : 0, last: src.last, names: src.names || [] };
+}
+function upStatHtml(i, s, isDone){
+  const u = upInfo(i);
+  if(!u) return (s.w <= C.week && !isDone) ? `<span class="upst none">No clips yet</span>` : "";
+  if(u.filing) return `<span class="upst filing"><i></i>${u.n ? u.n + " in · " : ""}${u.filing} filing now…</span>`;
+  if(u.n === null) return `<span class="upst in">Clips in</span>`;
+  return `<span class="upst in" role="button" tabindex="0" title="Show the file names" onclick="event.stopPropagation();toggleNames(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();toggleNames(${i})}">${u.n} clip${u.n===1?"":"s"} in · ${whenStr(u.last)}</span>`;
+}
+function toggleNames(i){ if(upOpen.has(i)) upOpen.delete(i); else upOpen.add(i); renderClient(); }
+function renderUpBoard(){
+  const host = document.getElementById("upBoard"); if(!host || !C || previewMode && false) return;
+  const WK = C.week;
+  const rows = C.shots.map((s,i)=>({s,i,u:upInfo(i)})).filter(x => x.s.w === WK || C.redo[x.i] || (x.s.w < WK && !x.u && !C.by[x.i]));
+  if(!rows.length){ host.classList.add("hide"); return; }
+  host.classList.remove("hide");
+  const filingN = rows.filter(x => x.u && x.u.filing).length, inN = rows.filter(x => x.u && !x.u.filing).length, missing = rows.filter(x => !x.u);
+  const head = filingN ? `${filingN} shot${filingN===1?"":"s"} filing now…` : !inN ? "Nothing uploaded yet this week." : !missing.length ? `Clips landed on all ${rows.length} shot${rows.length===1?"":"s"}.` : `Clips landed on ${inN} of ${rows.length} shots.`;
+  let sub = "";
+  if(missing.length && (inN || filingN)) sub = `Still nothing on: ${missing.map(x => esc(x.s.n)).join(" · ")}.`;
+  else if(U && U.filingUnsorted) sub = `${U.filingUnsorted} clip${U.filingUnsorted===1?"":"s"} landed in the general folder — XC will sort ${U.filingUnsorted===1?"it":"them"} into the right shot.`;
+  else if(!inN && !filingN) sub = "Tap Upload on a shot, drop the clips in, and this fills in as they land.";
+  host.innerHTML = `<div class="h"><span class="t">${head}</span><button class="mact ok" onclick="loadUploads(true);toast('Checking your folders…')">↻ Check</button></div>${sub ? `<p class="sub" style="margin-top:4px">${sub}</p>` : ""}<div class="rows">${rows.map(x => {
+    const u = x.u, st = !u ? "none" : (u.filing ? "filing" : "in");
+    const lbl = !u ? "nothing yet" : u.filing ? `${u.n ? u.n + " in · " : ""}${u.filing} filing…` : (u.n === null ? "clips in" : `${u.n} clip${u.n===1?"":"s"} · ${whenStr(u.last)}`);
+    return `<div class="row"><span class="dot ${st}"></span><span class="nm">${esc(x.s.n)}</span><span class="st ${st}">${lbl}</span>${(st !== "in" || C.redo[x.i]) ? `<button class="mact ok" onclick="upload(${x.i})">Upload ↗</button>` : ""}</div>`; }).join("")}</div>`;
+}
+async function loadUploads(force){
+  if(!code || !C) return;
+  const d = await apiGet({action:"uploads", code});
+  if(!(d && d.ok && d.shots && "filingUnsorted" in d)) return;   // older backend, or a stubbed server answering with the state
+  const prev = U; U = d;
+  if(prev && prev.shots) Object.keys(d.shots).forEach(i => { const was = prev.shots[i] ? prev.shots[i].n : 0, now = d.shots[i].n; if(now > was && C.shots[i]) toast(`✓ <b>${now - was} clip${now - was === 1 ? "" : "s"} landed</b> on “${esc(C.shots[i].n)}”.`); });
+  if(!document.getElementById("client").classList.contains("hide")) renderClient();
+}
+function watchUploads(){   // right after an upload, or coming back from Drive: look every 15 s for three minutes, then rest
+  stopWatchUploads(); upWatchN = 0; loadUploads(true);
+  upWatchT = setInterval(()=>{ if(document.visibilityState !== "visible") return; if(++upWatchN > 12){ stopWatchUploads(); return; } loadUploads(); }, 15000);
+}
+function stopWatchUploads(){ if(upWatchT) clearInterval(upWatchT); upWatchT = null; }
+
 /* ── film mode — one take per screen, tick + swipe, resumes at first unticked ── */
 let fmIdx = null, fmStep = 0, fmTouchX = null;
 /* spoken lines — anything in «…» or "…" — render bold so the script pops out of the directions */
@@ -1189,7 +1265,8 @@ function fmRender(){
     body.innerHTML = `<div class="fmdone">${missing.length
       ? `<h3>Almost — ${missing.length} take${missing.length===1?"":"s"} not ticked.</h3><p>Tap a number to jump back:</p><p class="fmmiss">${missing.map(k=>`<a role="button" tabindex="0" onclick="fmStep=${k};fmRender()">#${k+1}</a>`).join(" ")}</p>`
       : `<h3>All ${N} takes done 🎉</h3><p>Now get the clips off your camera and into the folder:</p>`}
-      ${s.folder ? `<a class="bigbtn" style="display:block;text-align:center;margin-top:14px;text-decoration:none" href="${esc(s.folder)}" target="_blank" rel="noreferrer">Open this shot's folder ↗</a>` : ""}
+      ${s.folder ? `<a class="bigbtn" style="display:block;text-align:center;margin-top:14px;text-decoration:none" href="${esc(s.folder)}" target="_blank" rel="noreferrer" onclick="watchUploads()">Open this shot's folder ↗</a>` : ""}
+      <p class="fmup">${upStatHtml(i, s, !!C.by[i])}</p>
       ${!missing.length && !C.by[i] ? `<button class="bigbtn" style="margin-top:10px;width:100%" onclick="tick(${i});closeFilm()">Mark shot as filmed ✓</button>` : ""}
     </div>`;
     tickBtn.style.visibility = "hidden";
@@ -1243,8 +1320,9 @@ function upload(i){
   const s = (C && typeof i === "number") ? C.shots[i] : null;
   const url = (s && s.folder) || (C && C.drive);
   if(!url){ toast("No Drive folder set for this client yet — ask XC."); return; }
+  watchUploads();
   window.open(url, "_blank", "noopener");
-  toast("In Drive: <b>+ → Upload → pick your video</b>. Use the Drive app so it finishes in the background. The clip vanishes from the folder within a minute — that's XC receiving it. Then tick the shot.");
+  toast("In Drive: <b>+ → Upload → pick your clips</b>. Use the Drive app so it finishes in the background. Come back here and the count on the shot updates as they land.");
 }
 function subtab(which){
   const map = {shots:["shotsView","stShots"], results:["resultsView","stResults"], basics:["basicsView","stBasics"], owner:["ownerView","stOwner"], docs:["docsView",null], you:["youView",null]};
@@ -1260,12 +1338,14 @@ function youOwner(){ if(C && C.role >= 1) subtab("owner"); else gate("gateOwner"
 function openUpPick(){
   if(!C || !C.shots || !C.shots.length){ upload(); return; }
   const WK = C.week;
-  const cand = C.shots.map((s,i)=>({s,i}))
-    .filter(x => !C.received[x.i] || C.redo[x.i])
-    .sort((a,b) => (b.s.w<=WK && C.redo[b.i] ? 2 : b.s.w<=WK ? 1 : 0) - (a.s.w<=WK && C.redo[a.i] ? 2 : a.s.w<=WK ? 1 : 0) || a.s.w - b.s.w);
-  const rows = cand.map(x =>
-    `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload(${x.i})" onkeydown="if(event.key==='Enter'){closeUpPick();upload(${x.i})}"><div class="r"><span class="nm">${esc(x.s.n)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:${C.redo[x.i]?"var(--warn)":"var(--dim)"};text-transform:uppercase">${C.redo[x.i] ? "Redo — needs a fresh clip" : "Week " + x.s.w + (x.s.w===WK ? " · this week" : "")}</span></span><span class="who" style="color:var(--gold);font-weight:700">Open folder ↗</span></div></div>`
-  ).join("");
+  // v4.17: every shot stays in the list with what has landed on it — a shot never vanishes after its first clip
+  const rank = x => C.redo[x.i] ? 0 : (x.s.w <= WK && !x.u) ? 1 : (x.u && x.u.filing) ? 2 : (x.s.w <= WK) ? 3 : 4;
+  const cand = C.shots.map((s,i)=>({s,i,u:upInfo(i)})).sort((a,b) => rank(a) - rank(b) || a.s.w - b.s.w || a.i - b.i);
+  const rows = cand.map(x => {
+    const u = x.u, col = C.redo[x.i] ? "var(--warn)" : (!u ? (x.s.w > WK ? "var(--dim)" : "#E0913A") : "var(--goldB)");
+    const st = C.redo[x.i] ? "Redo asked — upload the new take" : !u ? (x.s.w > WK ? "Week " + x.s.w + " · nothing yet" : "Nothing uploaded yet") : u.filing ? (u.n ? u.n + " in · " : "") + u.filing + " filing now…" : (u.n === null ? "Clips in" : u.n + " clip" + (u.n===1?"":"s") + " in · " + whenStr(u.last));
+    return `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload(${x.i})" onkeydown="if(event.key==='Enter'){closeUpPick();upload(${x.i})}"><div class="r"><span class="nm">${esc(x.s.n)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:${col};text-transform:uppercase">${esc(st)}</span></span><span class="who" style="color:var(--gold);font-weight:700">Open folder ↗</span></div></div>`;
+  }).join("");
   document.getElementById("upList").innerHTML = rows +
     `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload()" onkeydown="if(event.key==='Enter'){closeUpPick();upload()}"><div class="r"><span class="nm">Something else<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">General drop folder</span></span><span class="who">Open ↗</span></div></div>`;
   document.getElementById("upveil").classList.add("show"); document.getElementById("upsheet").classList.add("show");
@@ -2251,7 +2331,7 @@ setTimeout(async ()=>{ try {
     {code:"RILEYN83",name:"Riley Nikolich",month:"2026-09",total:12,done:7,wkTotal:3,wkDone:2,redos:1,quietDays:0,deliveriesPending:2,inbox:"y",weeks:[{done:2,total:3},{done:3,total:3},{done:2,total:3},{done:0,total:3}]}]};
   const DEVSTATE = (c)=>({ok:true, code:c||"RILEYN83", name:"Riley Nikolich", month:"2026-09", week:1, role:2, team:["Riley"],
     shots:[{w:1,t:"wide",n:"The 6am floor",h:"MBS at open.",d:"20s",steps:["☐ TAKE 1 — THE QUESTION. Say ONLY this, 3 times: «Running or walking for fat loss?»","☐ TAKE 2 — THE HOOK. Twice: «Running burns more per minute. I'm still choosing walking.»","☐ SHOT 3 — NO TALKING. Phone far away, 15 seconds."],refs:["https://picsum.photos/seed/a/500/320","","https://picsum.photos/seed/b/500/320"],dont:"d",folder:"https://drive.google.com/drive/folders/x"},{w:1,t:"mid",n:"Coach fixing a squat",h:"One cue.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"mid",n:"PB celebration",h:"After the lift.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"close",n:"Chalk hands",h:"Fill the frame.",d:"10s",steps:["s"],dont:"d"}],
-    by:{1:"Riley"}, redo:{}, reasons:{}, received:{0:true}, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Riley",wk:1,v:12400}], drive:"#",
+    by:{1:"Riley"}, redo:{}, reasons:{}, received:{0:true}, recv:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"]}}, unsortedN:0, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Riley",wk:1,v:12400}], drive:"#",
     approved:[F("ap1","2026-09-03 1100 — Coach cue reel")], feedback:{}, docs:[{label:"Terms & agreement",url:"https://example.com"},{label:"Set up your payment",url:"https://buy.stripe.com/x"}],
     activity:[{at:"2026-08-31T05:00:00Z",who:"Riley",what:"filmed “Coach fixing a squat”"},{at:"2026-08-31T02:00:00Z",who:"XC",what:"added a document"}],
     lastTick:"2026-08-31T05:00:00Z", weeks:DEVR.clients[1].weeks, history:[], files:{0:[F("r1","2026-09-03 1300 — C3519.MP4")]}, reviewed:{}, redoAt:{}, rhythm:{filmDow:4}, tier:"min", billingDay:30, deliv:{ap1:{m:"2026-09",i:0,at:"2026-09-11T05:00:00Z"}}, hasOwnerPin:true, ownerEmail:"", intake:{answers:{biz:"Riley Nikolich — MBS Gym, Prahran",ig:"@coachrileynikolich",offer:"12-week physique coaching + online",customer:"trained-for-years, want to look like it",voice:"enjoyment, performance, straight-up",times:"between sessions, 10am-2pm",approver:"Riley — WhatsApp",nogo:"no client faces without asking",ads:"not yet",goal:"5 online clients from content"},by:"Riley",at:"2026-08-31T00:00:00Z"}});
@@ -2276,12 +2356,12 @@ setTimeout(async ()=>{ try {
       E(-1,"landed","grey","Footage landed: I'm doing everything right and still not seeing it","1 clip",R,"RILEYN83","shots",{m:"2026-09",idx:5,shot:"I'm doing everything right and still not seeing it"}),
       E(-4,"delivered","green","Delivered: reel 2 w1 v2","Not linked to a shot yet",R,"RILEYN83","deliveries",{linked:false})
     ].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)}; };
-  apiGet = async(p)=>{ if(p.action==="calList") return DEVCAL(); if(p.action==="today") return JSON.parse(JSON.stringify(DEVT)); if(p.action==="roster") return JSON.parse(JSON.stringify(DEVR)); if(p.action==="state") return DEVSTATE(p.code); if(p.action==="deliveries") return {ok:true,pending:[F("p1","2026-09-02 1015 — Coach cue reel")],approved:[F("ap1","2026-09-01 — Week one reel")],sentBack:[]}; return {ok:true}; };
+  apiGet = async(p)=>{ if(p.action==="uploads") return {ok:true, code:"RILEYN83", month:"2026-09", shots:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"]}, 1:{n:0, filing:2, last:null, names:[]}}, unsortedN:0, filingUnsorted:0, t:new Date().toISOString()}; if(p.action==="calList") return DEVCAL(); if(p.action==="today") return JSON.parse(JSON.stringify(DEVT)); if(p.action==="roster") return JSON.parse(JSON.stringify(DEVR)); if(p.action==="state") return DEVSTATE(p.code); if(p.action==="deliveries") return {ok:true,pending:[F("p1","2026-09-02 1015 — Coach cue reel")],approved:[F("ap1","2026-09-01 — Week one reel")],sentBack:[]}; return {ok:true}; };
   apiPost = async(b)=>({ok:true});
   warm = ()=>{};
   pin = "DEV"; code = null;
   const v = q.get("view");
-  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="calendar") xcnav("calendar"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage"){ openManage("RILEYN83"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } }, 400); } if(v==="client"){ document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); } }catch(e){} }, 600);
+  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="calendar") xcnav("calendar"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage"){ openManage("RILEYN83"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } }, 400); } if(v==="client"){ LS.set("seenFilmMode","1"); document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); } }catch(e){} }, 600);
 })();
 boot();
 </script>
