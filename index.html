@@ -890,7 +890,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.17";
+const BUILD = "4.18";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1583,13 +1583,18 @@ async function openManage(c){
   ["nvToday","nvCal","nvAct","nvStudio","xbToday","xbAct","xbStudio"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove("on"); });
   ["nvClients","xbClients"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add("on"); });
   document.getElementById("mgName").textContent = "Loading…"; window.scrollTo({top:0});
+  const cs = readCache("mg:"+c), cd = readCache("deliv:"+c);   // v4.18: paint the last-known state instantly, refresh behind it (same as Today)
+  mgState = (cs && cs.code === c) ? cs : null; mgDeliv = (cs && cs.code === c && cd) ? cd : null;
+  if(mgState) renderManage();
   await loadManage(); startPoll(loadManage);
 }
 function closeManage(){ if(mgFrom === "calendar"){ mgFrom = null; mgCode = null; calAt = 0; xcnav("calendar"); return; } document.getElementById("manage").classList.add("hide"); document.getElementById("dash").classList.remove("hide"); mgCode = null; startPoll(loadRoster); loadRoster(); }
 async function loadManage(){
   if(!mgCode) return;
-  const [s, d] = await Promise.all([apiGet({action:"state", code:mgCode, pin}), apiGet({action:"deliveries", code:mgCode, pin})]);
-  if(s.ok) mgState = s; if(d.ok) mgDeliv = d;
+  const want = mgCode;
+  const [s, d] = await Promise.all([apiGet({action:"state", code:want, pin}), apiGet({action:"deliveries", code:want, pin})]);
+  if(mgCode !== want) return;   // moved to another client while this was in flight
+  if(s.ok){ mgState = s; writeCache("mg:"+want, s); } if(d.ok){ mgDeliv = d; writeCache("deliv:"+want, d); }
   renderManage();
 }
 function mtab(which){
