@@ -66,6 +66,16 @@
   .upboard .nm{flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .upboard .st{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);white-space:nowrap}.upboard .st.in{color:var(--goldB)}.upboard .st.filing{color:var(--goldB)}.upboard .st.none{color:#E0913A}
   .fmup{margin-top:12px}
+  /* ── attention flags on a client's Shots tab (v4.19): what is late, what should be marked, what is unanswered ── */
+  .mrow.att-red{border-left:3px solid #E5484D}.mrow.att-orange{border-left:3px solid #E0913A}
+  .flags{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:2px}
+  .flag{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey)}
+  .flag i{width:7px;height:7px;border-radius:50%;background:var(--dim);flex:none}
+  .flag.red{color:#F08A8E}.flag.red i{background:#E5484D}.flag.orange{color:#E8A96A}.flag.orange i{background:#E0913A}.flag.gold{color:var(--goldB)}.flag.gold i{background:var(--gold)}.flag.white{color:var(--grey)}.flag.white i{background:#fff}
+  .needs{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:11px 14px;border:1px solid var(--hair);border-radius:12px;background:var(--panel)}
+  .needs.red{border-color:rgba(229,72,77,.5)}.needs.orange{border-color:rgba(224,145,58,.5)}
+  .needs .t{font-weight:700;font-size:13.5px}.needs .t b{color:#F08A8E}
+  .mstat .box.red .n{color:#F08A8E}
   .frame{flex:none;margin-top:2px}
   .clients{display:flex;flex-direction:column;gap:10px;margin-top:20px}
   .cl{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:16px;cursor:pointer;text-align:left;width:100%;appearance:none;color:var(--ink);font-family:inherit;transition:border-color .2s}.cl:hover{border-color:var(--gold)}
@@ -591,11 +601,12 @@
     <div style="display:flex;justify-content:space-between;align-items:center"><button class="back" id="mgBack" onclick="closeManage()">← All clients</button><button class="back" onclick="loadManage();toast('Refreshing…')">↻ Refresh</button></div>
     <div class="eyebrow" id="mgEyebrow"></div>
     <h1 id="mgName"></h1>
-    <div class="mstat"><div class="box"><div class="n" id="mgMonth">—</div><div class="l">Month</div></div><div class="box"><div class="n" id="mgWeek">—</div><div class="l">This week</div></div><div class="box"><div class="n" id="mgRedo">—</div><div class="l">Redos out</div></div></div>
+    <div class="mstat"><div class="box"><div class="n" id="mgMonth">—</div><div class="l">Month</div></div><div class="box"><div class="n" id="mgWeek">—</div><div class="l">This week</div></div><div class="box"><div class="n" id="mgRedo">—</div><div class="l">Redos out</div></div><div class="box" id="mgAttBox"><div class="n" id="mgAtt">—</div><div class="l">Need you</div></div></div>
     <div class="subtabs seg"><button id="mtShots" class="on" onclick="mtab('shots')">Shots</button><button id="mtReview" onclick="mtab('review')">Review <span id="delivCount"></span></button><button id="mtEdit" onclick="mtab('edit')">Shot list</button><button id="mtTools" onclick="mtab('tools')">Settings</button></div>
 
     <div id="mvShots">
       <p class="msect">Shots — clips land here automatically</p>
+      <div class="needs hide" id="mgNeeds"></div>
       <div class="mlist" id="mgShots"></div>
       <div id="mgUnsorted"></div>
     </div>
@@ -890,7 +901,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.18";
+const BUILD = "4.19";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1578,6 +1589,7 @@ async function addClient(inputId){
 async function openManage(c){
   mgCode = c; stopPoll(); editDocs = null; editShots = null; editOpen.clear(); rhDirty = false;
   mgFrom = document.getElementById("calendar").classList.contains("hide") ? null : "calendar";
+  loadCal();   // v4.19: the shot flags read the calendar
   document.getElementById("mgBack").textContent = mgFrom === "calendar" ? "← Calendar" : "← All clients";
   document.getElementById("dash").classList.add("hide"); document.getElementById("today").classList.add("hide"); document.getElementById("calendar").classList.add("hide"); document.getElementById("manage").classList.remove("hide");
   ["nvToday","nvCal","nvAct","nvStudio","xbToday","xbAct","xbStudio"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove("on"); });
@@ -1595,7 +1607,7 @@ async function loadManage(){
   const [s, d] = await Promise.all([apiGet({action:"state", code:want, pin}), apiGet({action:"deliveries", code:want, pin})]);
   if(mgCode !== want) return;   // moved to another client while this was in flight
   if(s.ok){ mgState = s; writeCache("mg:"+want, s); } if(d.ok){ mgDeliv = d; writeCache("deliv:"+want, d); }
-  renderManage();
+  renderManage(); loadCal();
 }
 function mtab(which){
   // 4 segments over 6 views: Review = deliveries + results, Settings = team + tools
@@ -1656,13 +1668,23 @@ function renderManage(){
   document.getElementById("mgMonth").textContent = `${Object.keys(by).length}/${S.shots.length}`;
   document.getElementById("mgWeek").textContent = `${wkIdx.filter(i=>by[i]).length}/${wkIdx.length}`;
   document.getElementById("mgRedo").textContent = String(Object.keys(redo).length);
-  document.getElementById("mgShots").innerHTML = S.shots.map((s,i)=>{
+  // v4.19: attention flags — the same rules as the calendar, shown on the shot they belong to
+  const flagsAll = S.shots.map((s,i)=>shotFlags(S,i));
+  const attN = flagsAll.filter(f=>f.length && SEV[f[0].sev] <= 1).length, redN = flagsAll.filter(f=>f.length && f[0].sev==="red").length;
+  document.getElementById("mgAtt").textContent = String(attN); document.getElementById("mgAttBox").classList.toggle("red", redN > 0);
+  const needs = document.getElementById("mgNeeds");
+  needs.className = "needs" + (redN ? " red" : attN ? " orange" : "") + ((!attN && !mgOnlyAtt) ? " hide" : "");
+  needs.innerHTML = `<span class="t">${attN ? `${attN} shot${attN===1?"":"s"} need${attN===1?"s":""} you${redN ? ` · <b>${redN} overdue</b>` : ""}` : "Nothing overdue on this client."}</span><button class="mact${mgOnlyAtt?" ok":""}" onclick="mgOnlyAtt=!mgOnlyAtt;renderManage()">${mgOnlyAtt ? "Show all shots" : "Only what needs me"}</button>`;
+  document.getElementById("mgShots").innerHTML = (mgOnlyAtt && !attN ? '<p class="sub">Nothing needs you here.</p>' : "") + S.shots.map((s,i)=>{
     const isDone = !!by[i], isRedo = !!redo[i], fl = files[i]||[];
+    const fg = flagsAll[i], sev = fg.length ? fg[0].sev : null;
+    if(mgOnlyAtt && !(sev && SEV[sev] <= 1)) return "";
+    const fgh = fg.length ? `<div class="flags">${fg.map(f=>`<span class="flag ${f.sev}"><i></i>${esc(f.text)}</span>`).join("")}</div>` : "";
     const who = isRedo ? '<span class="who out">redo out</span>' : isDone ? `<span class="who${fl.length?"":" todo"}">✓ ${esc(by[i])}${fl.length?"":" · no file yet"}</span>` : (fl.length ? '<span class="who">file in · not ticked</span>' : `<span class="who todo">wk ${s.w} · to-do</span>`);
     const act = isDone ? `<button class="mact" onclick="openFlag(${i})">Flag redo</button>` : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : (fl.length ? `<button class="mact ok" onclick="xcTick(${i})">Mark filmed</button>` : "");
     const fh = fl.length ? `<div class="files">${fl.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${esc(f.name.replace(/ — /," "))}</span></a>`).join("")}</div>` : "";
     const rv = fl.length ? `<button class="mact ok" style="border-color:var(--gold);color:var(--goldB)" onclick="openPlayerFor(${i})">▶ Review ${fl.length}</button>` : "";
-    return `<div class="mrow${isRedo?" redo":""}${fl.length?" hasclips":""}"><div class="r"${fl.length?` style="cursor:pointer" onclick="openPlayerFor(${i})"`:""}><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${rv}<span onclick="event.stopPropagation()">${act}</span></div>${fh}</div>`;
+    return `<div class="mrow${isRedo?" redo":""}${fl.length?" hasclips":""}${sev==="red"||sev==="orange"?" att-"+sev:""}"><div class="r"${fl.length?` style="cursor:pointer" onclick="openPlayerFor(${i})"`:""}><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${rv}<span onclick="event.stopPropagation()">${act}</span></div>${fgh}${fh}</div>`;
   }).join("");
   const un = files.unsorted||[];
   renderSelects();
@@ -2211,6 +2233,32 @@ function renderTools(){
     : '<p class="sub">No closed months yet.</p>';
 }
 
+/* ── attention flags (v4.19): per shot, what is late, what should be marked, what is unanswered.
+     Calendar entries carry the dated rules (rate by, delivery due, redo aging, scripts due); ticks vs clips and unanswered
+     client feedback come from the client's own state. Red = overdue, orange = due soon or should have been done, gold = yours
+     later, white = the client's move. ── */
+let mgOnlyAtt = false;
+const SEV = {red:0, orange:1, gold:2, white:3};
+function shotFlags(S, i){
+  const s = S.shots[i], by = S.by||{}, redo = S.redo||{}, files = (S.files||{})[i]||[], out = [];
+  const add = (sev, text) => out.push({sev, text});
+  const cal = ((calData && calData.entries) || []).filter(e => e.code === S.code);
+  const day = ds => new Date(ds + "T00:00:00").toLocaleDateString("en-AU", {weekday:"short", day:"numeric", month:"short"}).replace(",", "");
+  const late = ds => { const n = Math.round((Date.now() - new Date(ds + "T00:00:00").getTime()) / 86400000); return n <= 0 ? "due today" : n === 1 ? "1 day late" : n + " days late"; };
+  cal.filter(e => e.idx === i && (e.m === S.month || e.kind === "redo")).forEach(e => {
+    if(e.kind === "rate") add(e.state, e.state === "red" ? `Rating overdue · ${late(e.date)} · ${e.sub}` : `Rate by ${day(e.date)} · ${e.sub}`);
+    else if(e.kind === "deliver") add(e.state, e.state === "white" ? "Waiting on pickups" : e.state === "red" ? `Delivery overdue · ${late(e.date)}` : `Delivery due ${day(e.date)}`);
+    else if(e.kind === "redo") add("orange", `Redo out · ${e.sub || "no pickups yet"}`);
+  });
+  const isPh = !s || /^\s*incoming/i.test(s.n||"") || !(s.steps||[]).length;
+  if(isPh){ const sc = cal.filter(e => e.kind === "scripts").sort((a,b)=>a.date<b.date?-1:1)[0]; if(sc) add(sc.state, sc.state === "red" ? `Script overdue · ${late(sc.date)}` : `Script due ${day(sc.date)}`); else add("gold", "Script not written yet"); }
+  if(by[i] && !files.length && !redo[i]) add("white", "Ticked · no clips yet");
+  if(!by[i] && !redo[i] && files.length) add("orange", "Clips in · not marked filmed");
+  const dv = S.deliv || {}, fb = S.feedback || {};
+  Object.keys(fb).forEach(fid => { const x = fb[fid]; if(x && !x.ack && dv[fid] && dv[fid].i !== null && dv[fid].i !== undefined && Number(dv[fid].i) === i) add(x.v === "change" ? "red" : "gold", x.v === "change" ? "Client asked for a change · unanswered" : "Client loved it · not acknowledged"); });
+  return out.sort((a,b)=>SEV[a.sev]-SEV[b.sev]);
+}
+
 /* ── studio calendar (v4.16): agenda of derived entries. Backend v2.7 calList; nothing here is stored. ── */
 let calData = null, calAt = 0, calFilter = "", mgFrom = null, rhDirty = false;
 const CAL_AHEAD = 14, CAL_RECENT = 7;
@@ -2222,7 +2270,7 @@ async function loadCal(force){
   if(!pin) return;
   if(!force && calData && Date.now() - calAt < 55000) return;   // the backend caches 60s and busts on every write; no point asking faster
   const d = await apiGet({action:"calList", pin});
-  if(d.ok){ calData = d; calAt = Date.now(); writeCache("cal", d); renderCal(); }
+  if(d.ok){ calData = d; calAt = Date.now(); writeCache("cal", d); renderCal(); if(mgCode && mgState && !document.getElementById("manage").classList.contains("hide")) renderManage(); }
   else if(d.error === "pin"){ pin=null; LS.set("pin",null); dropCache("roster"); dropCache("today"); dropCache("cal"); gate("gatePin"); }
   else if(d.error === "unknown action"){
     document.getElementById("calHead").textContent = "Backend update needed.";
