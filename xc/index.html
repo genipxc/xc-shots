@@ -76,6 +76,20 @@
   .needs.red{border-color:rgba(229,72,77,.5)}.needs.orange{border-color:rgba(224,145,58,.5)}
   .needs .t{font-weight:700;font-size:13.5px}.needs .t b{color:#F08A8E}
   .mstat .box.red .n{color:#F08A8E}
+  /* ── rating queue (v4.20): clear unrated clips, all or picked, with undo ── */
+  .rqhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px}
+  .rqbtns{display:flex;gap:8px;flex-wrap:wrap}
+  .mact[disabled]{opacity:.35;cursor:default;pointer-events:none}
+  .rqchk{display:flex;align-items:center;flex:none;cursor:pointer}
+  .rqchk input,.rqclip input{width:16px;height:16px;accent-color:#CDA85F;cursor:pointer;margin:0}
+  .rqclips{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+  .rqclip{position:relative;display:flex;flex-direction:column;gap:5px;width:92px;cursor:pointer}
+  .rqclip img,.rqclip .ph{width:92px;height:122px;border-radius:8px;object-fit:cover;background:var(--panel2);border:2px solid var(--hair);display:block}
+  .rqclip.on img,.rqclip.on .ph{border-color:var(--gold)}
+  .rqclip input{position:absolute;top:6px;left:6px}
+  .rqclip .fn{font-family:'Space Mono',monospace;font-size:9px;color:var(--grey);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .toast.show.act{pointer-events:auto}
+  .tundo{appearance:none;cursor:pointer;margin-left:10px;border:1px solid var(--gold);background:transparent;color:var(--goldB);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:99px}
   .frame{flex:none;margin-top:2px}
   .clients{display:flex;flex-direction:column;gap:10px;margin-top:20px}
   .cl{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:16px;cursor:pointer;text-align:left;width:100%;appearance:none;color:var(--ink);font-family:inherit;transition:border-color .2s}.cl:hover{border-color:var(--gold)}
@@ -611,6 +625,7 @@
       <div id="mgUnsorted"></div>
     </div>
     <div id="mvDeliv" class="hide">
+      <div id="mgRateQ"></div>
       <div id="mgSelects"></div>
       <div><p class="msect">From the editor — to review</p><div class="mlist" id="mgPending"></div></div>
       <div><p class="msect">Approved — the client can watch these</p><div class="mlist" id="mgApproved"></div></div>
@@ -901,7 +916,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.19";
+const BUILD = "4.20";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1687,7 +1702,7 @@ function renderManage(){
     return `<div class="mrow${isRedo?" redo":""}${fl.length?" hasclips":""}${sev==="red"||sev==="orange"?" att-"+sev:""}"><div class="r"${fl.length?` style="cursor:pointer" onclick="openPlayerFor(${i})"`:""}><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${rv}<span onclick="event.stopPropagation()">${act}</span></div>${fgh}${fh}</div>`;
   }).join("");
   const un = files.unsorted||[];
-  renderSelects();
+  renderSelects(); renderRateQ();
   document.getElementById("mgUnsorted").innerHTML = un.length ? `<p class="msect">Unsorted — dropped without picking a shot</p><div class="mrow"><div class="files">${un.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="">`:'<span class="th"></span>'}<span class="fn">${esc(f.name)}</span></a>`).join("")}</div></div>` : "";
   document.getElementById("mgTeam").innerHTML = (S.team||[]).map(n=>`<span class="tchip">${esc(n)}<button aria-label="Remove ${esc(n)}" onclick="removeTeam(${q(n).replace(/"/g,'&quot;')})">✕</button></span>`).join("");
   // deliveries
@@ -1893,7 +1908,7 @@ function barReview(){
   openPlayer();
 }
 function monthName(m){ const mm = String(m||"").match(/^(\d{4})-(\d{2})/); if(!mm) return String(m||""); return new Date(Number(mm[1]), Number(mm[2])-1, 1).toLocaleDateString("en-AU", {month:"long", year:"numeric"}); }
-let toastT; function toast(msg){ const t = document.getElementById("toast"); t.innerHTML = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3800); }
+let toastT; function toast(msg){ const t = document.getElementById("toast"); t.classList.remove("act"); t.innerHTML = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3800); }
 document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeFlag(); closeBack(); closePreview(); closeShare(); closeUpPick(); closeFilm(); } });
 /* ── sparkline ── */
 function spark(weeks){
@@ -1948,10 +1963,10 @@ function renderToday(){
        <div class="acts"><button class="mact ok" onclick="tqApprove(${q(x.code)},${q(x.file.id)})">Approve</button><button class="mact" onclick="mgCode=${q(x.code)};openBack(${q(x.file.id)},${q(x.file.name)})">Send back</button></div></div></div>`).join("") + "</div>";
   }
   if(T.fresh.length){
-    h += stackHead("Fresh footage in", T.fresh.length) + '<div class="tq">' + T.fresh.map(x=>
+    h += stackHead("Fresh footage in", T.fresh.length, `<button class="mact cancel" style="margin-left:6px" onclick="tqClearAll()">Clear all</button>`) + '<div class="tq">' + T.fresh.map(x=>
       `<div class="tcard">${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th"></span>'}
        <div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${esc(x.file.name)}</p>
-       <div class="acts"><button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)},${x.idx===null?"null":x.idx})">Good ✓</button><button class="mact" onclick="tqRedo(${q(x.code)},${x.idx===null?"null":x.idx},${q(x.file.id)},${q(x.shot)})">Flag redo</button></div></div></div>`).join("") + "</div>";
+       <div class="acts"><button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)},${x.idx===null?"null":x.idx})">Good ✓</button><button class="mact" onclick="tqRedo(${q(x.code)},${x.idx===null?"null":x.idx},${q(x.file.id)},${q(x.shot)})">Flag redo</button><button class="mact" onclick="clearClips({[${q(x.code)}]:[${q(x.file.id)}]})">Clear</button></div></div></div>`).join("") + "</div>";
   }
   if(T.quiet.length){
     h += stackHead("Going quiet", T.quiet.length) + '<div class="tq">' + T.quiet.map(x=>
@@ -1970,7 +1985,7 @@ function renderToday(){
   }
   body.innerHTML = h;
 }
-function stackHead(t, n){ return `<div class="stack"><div class="stackhead"><span class="t">${t}</span><span class="line"></span><span class="ct">${n}</span></div></div>`; }
+function stackHead(t, n, extra){ return `<div class="stack"><div class="stackhead"><span class="t">${t}</span><span class="line"></span><span class="ct">${n}</span>${extra||""}</div></div>`; }
 /* ── ACTIVITY feed — everything that happened, one stream ── */
 function renderActivity(){
   const T = todayData, head = document.getElementById("actHead"), body = document.getElementById("actBody");
@@ -2233,6 +2248,56 @@ function renderTools(){
     : '<p class="sub">No closed months yet.</p>';
 }
 
+/* ── rating queue (v4.20): clips nobody has rated yet. Clear = seen, no verdict: they leave Today, the player queue, the Rate flag
+     and the calendar's Rate row. Selects are untouched and nothing is deleted. Undo puts them back. ── */
+const rqSel = new Set(), rqOpen = new Set();
+function rqItems(S){
+  const rv = S.reviewed || {}, out = [];
+  Object.keys(S.files || {}).forEach(k => {
+    const all = S.files[k] || [], fl = all.filter(f => !rv[f.id]); if(!fl.length) return;
+    const i = k === "unsorted" ? null : Number(k);
+    out.push({k, i, shot: i === null ? "Unsorted" : ((S.shots[i] || {}).n || "Shot " + (i + 1)), files: fl, total: all.length});
+  });
+  return out.sort((a,b) => (a.i === null) - (b.i === null) || (a.i || 0) - (b.i || 0));
+}
+function renderRateQ(){
+  const S = mgState, host = document.getElementById("mgRateQ"); if(!host) return;
+  if(!S || !S.files){ host.innerHTML = ""; return; }
+  const items = rqItems(S), all = items.flatMap(x => x.files.map(f => f.id));
+  [...rqSel].forEach(id => { if(!all.includes(id)) rqSel.delete(id); });
+  if(!all.length){ host.innerHTML = `<p class="msect">Waiting for a rating</p><p class="sub" style="margin-top:8px">Nothing waiting. Every clip is rated or cleared.</p>`; return; }
+  const selN = rqSel.size, clean = n => String(n).replace(/^\d{4}-\d{2}-\d{2} \d{4} — /, "");
+  host.innerHTML = `<div class="rqhead"><p class="msect" style="margin:0">Waiting for a rating — ${all.length} clip${all.length===1?"":"s"}</p><span class="rqbtns"><button class="mact" onclick="rqClear(false)"${selN?"":" disabled"}>Clear selected${selN?" ("+selN+")":""}</button><button class="mact cancel" onclick="rqClear(true)">Clear all ${all.length}</button></span></div>
+    <p class="sub" style="margin-top:6px">Clearing takes a clip out of the rating queue without rating it. Nothing is deleted and Selects stay as they are.</p>
+    <div class="mlist">${items.map(x => { const ids = x.files.map(f => f.id), on = ids.filter(id => rqSel.has(id)).length, open = rqOpen.has(x.k);
+      return `<div class="mrow"><div class="r"><label class="rqchk"><input type="checkbox"${on===ids.length?" checked":""} onchange="rqPickShot(${q(x.k)},this.checked)" aria-label="Pick every unrated clip on ${esc(x.shot)}"></label><span class="nm">${x.i===null?"":(x.i+1)+". "}${esc(x.shot)}</span><span class="who">${x.files.length} of ${x.total} unrated${on && on < ids.length ? " · " + on + " picked" : ""}</span>${x.i!==null?`<button class="mact ok" onclick="openPlayerFor(${x.i})">▶ Rate</button>`:""}<button class="mact" onclick="rqToggle(${q(x.k)})">${open ? "Hide clips" : "Pick clips"}</button></div>${open ? `<div class="rqclips">${x.files.map(f => `<label class="rqclip${rqSel.has(f.id)?" on":""}" title="${esc(clean(f.name))}"><input type="checkbox"${rqSel.has(f.id)?" checked":""} onchange="rqPick(${q(f.id)},this.checked)">${f.thumb ? `<img src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">` : '<span class="ph"></span>'}<span class="fn">${esc(clean(f.name))}</span></label>`).join("")}</div>` : ""}</div>`; }).join("")}</div>`;
+}
+function rqToggle(k){ if(rqOpen.has(k)) rqOpen.delete(k); else rqOpen.add(k); renderRateQ(); }
+function rqPick(id, on){ if(on) rqSel.add(id); else rqSel.delete(id); renderRateQ(); }
+function rqPickShot(k, on){ const x = mgState && rqItems(mgState).find(y => y.k === k); if(!x) return; x.files.forEach(f => { if(on) rqSel.add(f.id); else rqSel.delete(f.id); }); renderRateQ(); }
+function rqClear(all){ const S = mgState; if(!S) return; const ids = all ? rqItems(S).flatMap(x => x.files.map(f => f.id)) : [...rqSel]; if(ids.length) clearClips({[S.code]: ids}); }
+function tqClearAll(){ const map = {}; ((todayData && todayData.fresh) || []).forEach(x => { (map[x.code] = map[x.code] || []).push(x.file.id); }); clearClips(map); }
+async function clearClips(map){
+  const codes = Object.keys(map).filter(c => map[c] && map[c].length); if(!codes.length) return;
+  const total = codes.reduce((a,c) => a + map[c].length, 0);
+  codes.forEach(code => { const ids = map[code];   // optimistic: gone from both screens straight away
+    if(mgState && mgState.code === code){ mgState.reviewed = mgState.reviewed || {}; ids.forEach(id => { mgState.reviewed[id] = 1; rqSel.delete(id); }); }
+    if(todayData) todayData.fresh = todayData.fresh.filter(x => !(x.code === code && ids.includes(x.file.id))); });
+  if(todayData){ todayData.counts.fresh = todayData.fresh.length; renderToday(); }
+  if(mgState && codes.includes(mgState.code)) renderManage();
+  let bad = null;
+  for(const code of codes){ const d = await apiPost({action:"clearReview", pin, code, fileIds: map[code]}); if(!d.ok){ bad = d.error; break; } if(mgCode === code && d.shots){ mgState = d; writeCache("mg:" + code, d); renderManage(); } }
+  calAt = 0; loadToday(); if(mgCode) loadCal();
+  if(bad){ toast(bad === "unknown action" ? "Clearing needs backend 2.7.5." : "Couldn't clear: " + esc(bad)); if(mgCode) loadManage(); return; }
+  toastUndo(`<b>Cleared ${total} clip${total===1?"":"s"}</b> from the rating queue.`, () => undoClear(map));
+}
+async function undoClear(map){
+  for(const code of Object.keys(map)){ const d = await apiPost({action:"clearReview", pin, code, fileIds: map[code], undo: true}); if(!d.ok){ toast("Couldn't undo: " + esc(d.error)); return; } if(mgCode === code && d.shots){ mgState = d; writeCache("mg:" + code, d); renderManage(); } }
+  calAt = 0; loadToday(); if(mgCode) loadCal(); toast("Put back in the rating queue.");
+}
+let toastUndoFn = null;
+function toastUndo(msg, fn){ toastUndoFn = fn; const t = document.getElementById("toast"); t.innerHTML = msg + `<button class="tundo" onclick="const f=toastUndoFn;toastUndoFn=null;document.getElementById('toast').classList.remove('show','act');if(f)f()">Undo</button>`; t.classList.add("show","act"); clearTimeout(toastT); toastT = setTimeout(() => { t.classList.remove("show","act"); toastUndoFn = null; }, 9000); }
+
 /* ── attention flags (v4.19): per shot, what is late, what should be marked, what is unanswered.
      Calendar entries carry the dated rules (rate by, delivery due, redo aging, scripts due); ticks vs clips and unanswered
      client feedback come from the client's own state. Red = overdue, orange = due soon or should have been done, gold = yours
@@ -2387,7 +2452,7 @@ setTimeout(async ()=>{ try {
     by:{1:"Riley"}, redo:{}, reasons:{}, received:{0:true}, recv:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"]}}, unsortedN:0, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Riley",wk:1,v:12400}], drive:"#",
     approved:[F("ap1","2026-09-03 1100 — Coach cue reel")], feedback:{}, docs:[{label:"Terms & agreement",url:"https://example.com"},{label:"Set up your payment",url:"https://buy.stripe.com/x"}],
     activity:[{at:"2026-08-31T05:00:00Z",who:"Riley",what:"filmed “Coach fixing a squat”"},{at:"2026-08-31T02:00:00Z",who:"XC",what:"added a document"}],
-    lastTick:"2026-08-31T05:00:00Z", weeks:DEVR.clients[1].weeks, history:[], files:{0:[F("r1","2026-09-03 1300 — C3519.MP4")]}, reviewed:{}, redoAt:{}, rhythm:{filmDow:4}, tier:"min", billingDay:30, deliv:{ap1:{m:"2026-09",i:0,at:"2026-09-11T05:00:00Z"}}, hasOwnerPin:true, ownerEmail:"", intake:{answers:{biz:"Riley Nikolich — MBS Gym, Prahran",ig:"@coachrileynikolich",offer:"12-week physique coaching + online",customer:"trained-for-years, want to look like it",voice:"enjoyment, performance, straight-up",times:"between sessions, 10am-2pm",approver:"Riley — WhatsApp",nogo:"no client faces without asking",ads:"not yet",goal:"5 online clients from content"},by:"Riley",at:"2026-08-31T00:00:00Z"}});
+    lastTick:"2026-08-31T05:00:00Z", weeks:DEVR.clients[1].weeks, history:[], files:{0:[F("r1","2026-09-03 1300 — C3519.MP4"),F("r2","2026-09-03 1302 — C3520.MP4"),F("r3","2026-09-03 1305 — C3521.MP4"),F("r4","2026-09-03 1310 — C3522.MP4")], 1:[F("r5","2026-09-04 0900 — C3530.MP4"),F("r6","2026-09-04 0905 — C3531.MP4")]}, reviewed:{r4:1}, redoAt:{}, rhythm:{filmDow:4}, tier:"min", billingDay:30, deliv:{ap1:{m:"2026-09",i:0,at:"2026-09-11T05:00:00Z"}}, hasOwnerPin:true, ownerEmail:"", intake:{answers:{biz:"Riley Nikolich — MBS Gym, Prahran",ig:"@coachrileynikolich",offer:"12-week physique coaching + online",customer:"trained-for-years, want to look like it",voice:"enjoyment, performance, straight-up",times:"between sessions, 10am-2pm",approver:"Riley — WhatsApp",nogo:"no client faces without asking",ads:"not yet",goal:"5 online clients from content"},by:"Riley",at:"2026-08-31T00:00:00Z"}});
   const DEVCAL = ()=>{ const T = Math.floor((Date.now() + 10*3600000) / 86400000), ds = n => new Date(n*86400000).toISOString().slice(0,10);
     const E = (off, kind, state, title, sub, client, code, go, x) => Object.assign({id:"d:"+code+":"+kind+":"+off+title.length, date:ds(T+off), kind, state, title, sub, client, code, derived:true, go}, x||{});
     const R = "Riley Nikolich", M = "Marra & Co. Café";
@@ -2414,7 +2479,7 @@ setTimeout(async ()=>{ try {
   warm = ()=>{};
   pin = "DEV"; code = null;
   const v = q.get("view");
-  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="calendar") xcnav("calendar"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage"){ openManage("RILEYN83"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } }, 400); } if(v==="client"){ LS.set("seenFilmMode","1"); document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); } }catch(e){} }, 600);
+  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="calendar") xcnav("calendar"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage"){ openManage("RILEYN83"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } if(ms==="review" && q.get("rq")){ rqToggle("0"); rqPick("r2", true); } }, 400); } if(v==="client"){ LS.set("seenFilmMode","1"); document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); } }catch(e){} }, 600);
 })();
 boot();
 </script>
