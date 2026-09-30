@@ -512,6 +512,17 @@
   .tcard.red{border-color:#E5484D}.tcard .ln{font-size:12.5px;color:var(--grey);line-height:1.45;margin-top:5px}
   a.mact{text-decoration:none;display:inline-flex;align-items:center}
   .vitals{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;color:var(--dim);margin-top:26px;line-height:1.8}.vitals b{color:var(--grey);font-weight:400}.vitals .bad,.vitals .bad b{color:#E5484D}.vitals a{color:var(--gold)}
+  /* ── v4.28 in-app direct upload: the app sends each clip itself, with a receipt per clip ── */
+  .upd{position:fixed;inset:0;z-index:60;background:var(--bg);display:none;flex-direction:column;padding:calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px));overflow-y:auto}
+  .upd.show{display:flex}.upd .in{max-width:520px;width:100%;margin:0 auto}
+  .upd h2{font-weight:900;font-size:26px;letter-spacing:-.02em;line-height:1.05;margin-top:6px}.upd .keep{margin-top:12px;border:1px solid var(--gold);border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.45;color:var(--grey)}.upd .keep b{color:var(--ink)}
+  .upd .tot{margin-top:16px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--dim);display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+  .upd .f{margin-top:10px;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:11px 12px}.upd .f.done{border-color:var(--ok)}.upd .f.err{border-color:#E5484D}.upd .f.lost{border-color:#E0913A}
+  .upd .f .n{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:700}.upd .f .n span:last-child{font-family:'Space Mono',monospace;font-size:10px;font-weight:400;color:var(--dim);white-space:nowrap}
+  .upd .f .s{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-top:5px}.upd .f.done .s{color:var(--ok)}.upd .f.err .s{color:#E5484D}.upd .f.lost .s{color:#E0913A}
+  .upd .bar{height:5px;margin-top:8px}.upd .bar i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .3s}.upd .f.done .bar i{background:var(--ok)}
+  .upd .btns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+  .upboard .direct{margin:0 0 12px;padding:10px 12px;border:1px solid var(--gold);border-radius:10px}.upboard .direct.lost{border-color:#E0913A}.upboard .direct .tt{font-weight:800;font-size:14px;line-height:1.3}
 </style>
 
 <!-- SPLASH: visible the instant HTML paints; hidden by the first gate() -->
@@ -843,6 +854,16 @@
   <div class="sheetbtns"><button class="bigbtn" id="shTick" onclick="tick(sheetIdx)">Mark as filmed ✓</button><button class="up" onclick="upload(sheetIdx)">Upload ↗</button></div>
 </div>
 
+<!-- v4.28 IN-APP UPLOAD SCREEN -->
+<div class="upd" id="upd" role="dialog" aria-modal="true" aria-labelledby="updTitle"><div class="in">
+  <div class="eyebrow" id="updEyebrow">Sending to XC</div>
+  <h2 id="updTitle">Sending your clips…</h2>
+  <div class="keep" id="updKeep"><b>Keep this screen open</b>, on Wi-Fi if you can. If the phone locks or you switch apps it pauses, and picks up where it stopped when you come back. <b>Don't delete anything</b> until a clip says sent ✓.</div>
+  <div class="tot"><span id="updTot"></span><span id="updEta"></span></div>
+  <div id="updList"></div>
+  <div class="btns"><button class="bigbtn" id="updMore" onclick="updPick(updIdx)">+ Add more clips</button><button class="up" id="updClose" onclick="updHide()">Hide</button></div>
+</div></div>
+
 <!-- UPLOAD PICKER SHEET (mobile bar ↑) -->
 <div class="veil" id="upveil" onclick="closeUpPick()"></div>
 <div class="sheet" id="upsheet" role="dialog" aria-modal="true" aria-labelledby="upTitle">
@@ -959,7 +980,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.27";
+const BUILD = "4.28";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1153,6 +1174,7 @@ function exitPreview(){
   window.scrollTo({top:0});
 }
 function enterClient(){
+  updLoad();   // v4.28: clips that were still sending when the app last closed
   gate("app"); show("client"); document.body.classList.remove("xc");
   document.getElementById("meName").textContent = me || "—";
   if(!C || !C.shots){ document.getElementById("clientHead").innerHTML = '<span class="spin"></span>Loading your shots…'; loadClient().then(()=>loadUploads()); }
@@ -1289,7 +1311,7 @@ function renderUpBoard(){
   const WK = C.week;
   const rows = C.shots.map((s,i)=>({s,i,u:upInfo(i)})).filter(x => x.s.w === WK || C.redo[x.i] || (x.s.w < WK && !x.u && !C.by[x.i]) || dryMins(x.i));
   const trk = upTrackState(), gaps = openGaps();
-  if(!rows.length && !trk && !gaps.length){ host.classList.add("hide"); return; }
+  if(!rows.length && !trk && !gaps.length && !updStripHtml()){ host.classList.add("hide"); return; }
   host.classList.remove("hide");
   const filingN = rows.filter(x => x.u && x.u.filing).length, inN = rows.filter(x => x.u && !x.u.filing).length, missing = rows.filter(x => !x.u);
   const dry = rows.filter(x => dryMins(x.i));
@@ -1299,7 +1321,7 @@ function renderUpBoard(){
   else if(missing.length && (inN || filingN)) sub = `Still nothing on: ${missing.map(x => esc(x.s.n)).join(" · ")}.`;
   else if(U && U.filingUnsorted) sub = `${U.filingUnsorted} clip${U.filingUnsorted===1?"":"s"} landed in the general folder — XC will sort ${U.filingUnsorted===1?"it":"them"} into the right shot.`;
   else if(!inN && !filingN) sub = "Tap Upload on a shot, drop the clips in, and this fills in as they land.";
-  host.innerHTML = trkHtml(trk) + gaps.map(gapHtml).join("") + `<div class="h"><span class="t${dry.length ? " dry" : ""}">${head}</span><button class="mact ok" onclick="loadUploads(true);toast('Checking your folders…')">↻ Check</button></div>${sub ? `<p class="sub" style="margin-top:4px">${sub}</p>` : ""}<div class="rows">${rows.map(x => {
+  host.innerHTML = updStripHtml() + trkHtml(trk) + gaps.map(gapHtml).join("") + `<div class="h"><span class="t${dry.length ? " dry" : ""}">${head}</span><button class="mact ok" onclick="loadUploads(true);toast('Checking your folders…')">↻ Check</button></div>${sub ? `<p class="sub" style="margin-top:4px">${sub}</p>` : ""}<div class="rows">${rows.map(x => {
     const u = x.u, st = !u ? (dryMins(x.i) ? "dry" : "none") : (u.filing ? "filing" : "in");
     const lbl = st === "dry" ? "nothing in" : !u ? "nothing yet" : u.filing ? `${u.n ? u.n + " in · " : ""}${u.filing} filing…` : (u.n === null ? "clips in" : `${u.n} clip${u.n===1?"":"s"} · ${whenStr(u.last)}`);
     return `<div class="row"><span class="dot ${st === "dry" ? "none" : st}"></span><span class="nm">${esc(x.s.n)}</span><span class="st ${st}">${lbl}</span>${(st !== "in" || C.redo[x.i]) ? `<button class="mact ok" onclick="upload(${x.i})">Upload ↗</button>` : ""}</div>`; }).join("")}</div>`;
@@ -1438,12 +1460,128 @@ function noDriveApp(url){
 }
 function upload(i){
   const s = (C && typeof i === "number") ? C.shots[i] : null;
+  if(directOK()) return upChoose(i);
   const url = (s && s.folder) || (C && C.drive);
   if(!url){ toast("No Drive folder set for this client yet — ask XC."); return; }
   upTrackStart(s ? i : null);
   watchUploads();
   openDrive(url);
   toast("In Drive: <b>+ → Upload → pick your clips</b>. Keep Drive open until they finish. Each clip shows on the shot here as it lands.");
+}
+/* ── v4.28 in-app direct upload (backend 2.8.4 upStart / upDone). What YouTube, Drive, Vimeo and Frame.io do: the app sends each file
+   itself, straight into XC's Drive, in 8 MB resumable chunks, and every file is checked against what this phone sent before it says
+   sent ✓. The client's own Google account and storage are never touched, and there is no Drive app to fail quietly (Riley, 27 Sep:
+   14 recorded, 4 arrived). A web app can't send with the phone locked (iOS and Android both stop it), so: screen kept awake, a
+   "keep this open" screen, a pause on lock that resumes where it stopped, and the queue remembered on this phone so clips can be
+   picked again after the app was closed. The backend holds the shot at "Don't delete anything yet" until every declared clip is in. */
+const UPD_KEY = "upq", UPD_RETRY = [2, 4, 8, 15, 30, 30, 60, 60, 60, 60];
+let upd = [], updIdx = null, updBusy = false, updLock = null, updT0 = 0, updB0 = 0;
+function directOK(){ return !!(C && C.upDirect === true && (location.origin === "https://app.xcmedia.co" || window.__uidev)); }   // backend switch UP_DIRECT (on only after the live CORS test)
+function updKey(f){ return f.name + "|" + f.size; }
+function updSave(){ LS.set(UPD_KEY, JSON.stringify(upd.filter(x => x.st !== "done" || Date.now() - (x.doneAt || 0) < 12 * 3600000).map(x => ({ k:x.k, code:x.code, idx:x.idx, name:x.name, size:x.size, type:x.type, uri:x.uri || null, off:x.off || 0, st:x.st === "sending" || x.st === "queued" ? "lost" : x.st, doneAt:x.doneAt || 0, err:x.err || "" })))); }
+function updLoad(){ try{ upd = (JSON.parse(LS.get(UPD_KEY) || "[]") || []).filter(x => x.code === code); }catch(e){ upd = []; } }
+function updOpenN(){ return upd.filter(x => x.st !== "done").length; }
+function updPick(i){
+  updIdx = (typeof i === "number") ? i : null;
+  const inp = document.createElement("input"); inp.type = "file"; inp.multiple = true; inp.accept = "video/*,image/*";
+  inp.onchange = () => {
+    const files = [...(inp.files || [])]; if(!files.length) return;
+    files.forEach(f => {
+      const k = updKey(f), was = upd.find(x => x.k === k && x.code === code && x.st !== "done");
+      if(was){ was.file = f; if(was.st !== "sending") was.st = "queued"; if(was.idx === undefined) was.idx = updIdx; return; }   // same clip picked again: resume its session
+      upd.push({ k, code, idx: updIdx, name: f.name, size: f.size, type: f.type || "video/mp4", file: f, st: "queued", off: 0 });
+    });
+    updSave(); updShow(); updRun();
+  };
+  inp.click();
+}
+function updShow(){ document.getElementById("upd").classList.add("show"); updRender(); }
+function updHide(){ document.getElementById("upd").classList.remove("show"); renderUpBoard(); }
+function fmtB(b){ return b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : Math.max(0.1, b / 1e6).toFixed(b >= 1e7 ? 0 : 1) + " MB"; }
+function updRender(){
+  const el = document.getElementById("updList"); if(!el) return;
+  const at = x => x.st === "done" ? x.size : Math.min(x.size, (x.off || 0) + (x.fly || 0));
+  const mine = upd.filter(x => x.code === code), tot = mine.reduce((a, x) => a + x.size, 0), sent = mine.reduce((a, x) => a + at(x), 0);
+  const open = mine.filter(x => x.st !== "done"), lost = mine.filter(x => x.st === "lost" && !x.file);
+  const errs = open.filter(x => x.st === "error"), stuck = lost.length + errs.length;
+  document.getElementById("updTitle").textContent = !open.length ? "All sent. XC has them." : updBusy ? "Sending your clips…" : stuck ? stuck + " clip" + (stuck === 1 ? "" : "s") + " still to send" : "Sending your clips…";
+  document.getElementById("updKeep").style.display = open.length ? "" : "none";
+  document.getElementById("updTot").textContent = mine.length ? `${fmtB(sent)} of ${fmtB(tot)} · ${mine.filter(x => x.st === "done").length}/${mine.length} sent` : "";
+  const secs = updBusy && updT0 ? (Date.now() - updT0) / 1000 : 0, rate = secs > 5 ? (sent - updB0) / secs : 0;
+  document.getElementById("updEta").textContent = rate > 0 && tot > sent ? "about " + Math.ceil((tot - sent) / rate / 60) + " min left" : "";
+  document.getElementById("updClose").textContent = open.length ? "Hide" : "Done";
+  el.innerHTML = mine.map(x => {
+    const pct = Math.floor(100 * at(x) / x.size), shot = x.idx === null || x.idx === undefined ? "general folder" : ((C && C.shots[x.idx]) ? C.shots[x.idx].n : "shot " + (x.idx + 1));
+    const cls = x.st === "done" ? "done" : x.st === "error" ? "err" : (x.st === "lost" && !x.file) ? "lost" : "";
+    const stx = x.st === "done" ? "Sent ✓ · XC has it" : x.st === "error" ? (x.err || "Failed") + " · tap Add more to pick it again" : (x.st === "lost" && !x.file) ? "Didn't finish · pick it again to carry on from " + pct + "%" : x.st === "sending" ? (x.wait ? "Connection dropped · trying again in " + x.wait + " s" : "Sending · " + pct + "%") : "Waiting";
+    return `<div class="f ${cls}"><div class="n"><span>${esc(x.name)}</span><span>${fmtB(x.size)}</span></div><div class="s">${esc(stx)} · ${esc(shot)}</div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  }).join("");
+}
+function updPut(uri, blob, range, onProg){
+  if(/^harness:/.test(uri)) return new Promise(res => { const n = blob ? blob.size : 0; let k = 0; const tk = setInterval(() => { k += 1; onProg && onProg(Math.min(n, n * k / 5)); if(k >= 5){ clearInterval(tk); const m = String(range).match(/(\d+)-(\d+)\/(\d+)/); res(m && Number(m[2]) + 1 === Number(m[3]) ? { status: 200, text: JSON.stringify({ id: "h" + Date.now() }) } : { status: 308, range: m ? "bytes=0-" + m[2] : null }); } }, 120); });
+  return new Promise(res => {
+    const x = new XMLHttpRequest(); x.open("PUT", uri, true); x.timeout = 180000;
+    x.setRequestHeader("Content-Range", range);
+    if(onProg && x.upload) x.upload.onprogress = e => onProg(e.loaded);
+    x.onload = () => { let r = null; try { r = x.getResponseHeader("Range"); } catch(e){} res({ status: x.status, range: r, text: x.responseText }); };
+    x.onerror = () => res({ status: 0 }); x.ontimeout = () => res({ status: 0 }); x.onabort = () => res({ status: 0 });
+    x.send(blob || null);
+  });
+}
+function updRangeEnd(r){ const m = String(r || "").match(/bytes=0-(\d+)/); return m ? Number(m[1]) : null; }
+async function updWake(on){ try{ if(on && "wakeLock" in navigator && !updLock) { updLock = await navigator.wakeLock.request("screen"); updLock.addEventListener("release", () => { updLock = null; }); } if(!on && updLock){ await updLock.release(); updLock = null; } }catch(e){} }
+async function updOne(x){
+  x.st = "sending"; x.wait = 0; updRender();
+  let tries = 0, check = (x.off || 0) > 0;   // ask Drive where it stands only when resuming or after a failed chunk
+  for(;;){
+    if(!x.uri){
+      const d = await apiPost({ action: "upStart", code, idx: x.idx, name: x.name, size: x.size, type: x.type, by: me || "" });
+      if(!d.ok){ if(d.error === "network" && tries < UPD_RETRY.length){ await updSleep(x, UPD_RETRY[tries++]); continue; } x.st = "error"; x.err = d.error || "couldn't start"; return; }
+      x.uri = d.uri; x.chunk = d.chunk || 8388608; x.off = 0; updSave();
+    } else if(check){   // resuming: ask Drive how far it got before sending more
+      const r = await updPut(x.uri, null, "bytes */" + x.size); check = false;
+      if(r.status === 200 || r.status === 201){ x.fileId = (JSON.parse(r.text || "{}") || {}).id; break; }
+      if(r.status === 308){ const e = updRangeEnd(r.range); x.off = e === null ? (r.range === null && x.off ? x.off : 0) : e + 1; }
+      else if(r.status === 404 || r.status === 410){ x.uri = null; x.off = 0; updSave(); continue; }   // session expired (a week) or unknown: start fresh
+      else if(r.status === 0){ check = true; if(tries < UPD_RETRY.length){ await updSleep(x, UPD_RETRY[tries++]); continue; } x.st = "lost"; return; }
+    }
+    const ch = x.chunk || 8388608, end = Math.min(x.off + ch, x.size) - 1;
+    const r = await updPut(x.uri, x.file.slice(x.off, end + 1), "bytes " + x.off + "-" + end + "/" + x.size, n => { x.fly = n; updRenderSoon(); });   // x.off only ever holds bytes Drive confirmed
+    x.fly = 0;
+    if(r.status === 308){ const e = updRangeEnd(r.range); x.off = e === null ? end + 1 : e + 1; tries = 0; updSave(); continue; }
+    if(r.status === 200 || r.status === 201){ try { x.fileId = JSON.parse(r.text || "{}").id; } catch(e){} x.off = x.size; break; }
+    if(r.status === 404 || r.status === 410){ x.uri = null; x.off = 0; check = false; updSave(); continue; }
+    // this chunk didn't land (x.off is still the last confirmed byte): back off, then ask Drive where it stands
+    check = true;
+    if(tries >= UPD_RETRY.length){ x.st = "lost"; updSave(); return; }
+    await updSleep(x, UPD_RETRY[tries++]);
+  }
+  // the receipt: the backend checks the file is in this client's vault with exactly this many bytes
+  for(let k = 0; k < 5; k++){
+    const d = await apiPost({ action: "upDone", code, idx: x.idx, id: x.fileId, name: x.name, size: x.size });
+    if(d.ok){ x.st = "done"; x.doneAt = Date.now(); x.file = null; updSave(); return; }
+    if(d.error !== "network"){ x.st = "error"; x.err = d.error; x.uri = null; x.off = 0; updSave(); return; }
+    await new Promise(r => setTimeout(r, 3000 * (k + 1)));
+  }
+  x.st = "lost"; updSave();
+}
+function updSleep(x, s){ return new Promise(res => { x.wait = s; updRender(); const tk = setInterval(() => { x.wait--; updRender(); if(x.wait <= 0){ clearInterval(tk); res(); } }, 1000); }); }
+let updRT = 0; function updRenderSoon(){ if(updRT) return; updRT = setTimeout(() => { updRT = 0; updRender(); }, 400); }
+async function updRun(){
+  if(updBusy) return; updBusy = true; updT0 = Date.now(); updB0 = upd.reduce((a, x) => a + (x.st === "done" ? x.size : (x.off || 0)), 0);
+  await updWake(true);
+  try {
+    for(;;){ const x = upd.find(y => y.code === code && y.st === "queued" && y.file); if(!x) break; await updOne(x); updRender(); }
+  } finally { updBusy = false; await updWake(false); updSave(); updRender(); loadUploads(true); if(!updOpenN()) toast("✓ <b>All sent.</b> Tick the shot once you've sent everything for it."); }
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && upd.some(x => x.code === code && x.file && (x.st === "queued" || x.st === "sending" || x.st === "lost"))){ upd.forEach(x => { if(x.file && x.st === "lost") x.st = "queued"; }); updWake(true); updRun(); } });
+window.addEventListener("beforeunload", e => { if(updBusy){ e.preventDefault(); e.returnValue = ""; } });
+function updStripHtml(){
+  if(!directOK()) return "";
+  const mine = upd.filter(x => x.code === code), open = mine.filter(x => x.st !== "done"); if(!open.length) return "";
+  const lost = open.filter(x => !x.file);
+  if(updBusy) return `<div class="direct"><p class="tt">Sending ${open.length} clip${open.length===1?"":"s"} to XC…</p><p class="sub">Keep the app open. <button class="mact ok" onclick="updShow()">See progress</button></p></div>`;
+  return `<div class="direct lost"><p class="tt">${lost.length} clip${lost.length===1?"":"s"} didn't finish sending.</p><p class="sub">${esc(lost.slice(0,3).map(x=>x.name).join(", "))}${lost.length>3?"…":""}. Pick the same clips again and it carries on where it stopped. Don't delete anything yet.</p><button class="mact ok" onclick="updPick(${lost[0].idx === null || lost[0].idx === undefined ? "null" : lost[0].idx})">Pick them again</button></div>`;
 }
 /* v4.24: the upload tracker. Upload remembers which shot and when, on this phone. The board then leads with it: "waiting" for UP_LATE
    minutes, orange after that if nothing has landed, "N in so far" as clips arrive, gone 45 min after the last one (or after UP_MAX_H). */
@@ -1499,6 +1637,17 @@ function openUpPick(){
   }).join("");
   document.getElementById("upList").innerHTML = rows +
     `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload()" onkeydown="if(event.key==='Enter'){closeUpPick();upload()}"><div class="r"><span class="nm">Something else<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">General drop folder</span></span><span class="who">Open ↗</span></div></div>`;
+  document.getElementById("upveil").classList.add("show"); document.getElementById("upsheet").classList.add("show");
+}
+/* v4.28: Upload asks how. Sending from the app is first: straight to XC, a receipt per clip, nothing on the client's own Drive. */
+function upChoose(i){
+  const s = (C && typeof i === "number") ? C.shots[i] : null, url = (s && s.folder) || (C && C.drive);
+  if(!upSheetDefault) upSheetDefault = [document.getElementById("upTitle").textContent, document.getElementById("upSub").innerHTML];
+  document.getElementById("upTitle").textContent = s ? "Send clips for “" + s.n + "”" : "Send clips";
+  document.getElementById("upSub").innerHTML = "Pick the clips from your phone. The app sends them straight to XC and marks each one <b>sent ✓</b> when XC has it. Keep the screen open while it sends.";
+  document.getElementById("upList").innerHTML =
+    `<div class="mrow" role="button" tabindex="0" style="cursor:pointer;border-color:var(--gold)" onclick="closeUpPick();updPick(${typeof i === "number" ? i : "null"})" onkeydown="if(event.key==='Enter'){closeUpPick();updPick(${typeof i === "number" ? i : "null"})}"><div class="r"><span class="nm">Send from this phone<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--goldB);text-transform:uppercase">Recommended · a receipt for every clip</span></span><span class="who" style="color:var(--gold);font-weight:700">Pick clips ↑</span></div></div>` +
+    (url ? `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upTrackStart(${typeof i === "number" ? i : "null"});watchUploads();openDrive(${q(url)})" onkeydown="if(event.key==='Enter'){closeUpPick();openDrive(${q(url)})}"><div class="r"><span class="nm">Use the Google Drive app instead<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">For a computer, or clips already in Drive</span></span><span class="who">Open ↗</span></div></div>` : "");
   document.getElementById("upveil").classList.add("show"); document.getElementById("upsheet").classList.add("show");
 }
 function closeUpPick(){ document.getElementById("upveil").classList.remove("show"); document.getElementById("upsheet").classList.remove("show"); }
@@ -2764,6 +2913,7 @@ setTimeout(async ()=>{ try {
 (function(){
   const q = new URLSearchParams(location.search);
   if(q.get("uidev") !== "1") return;
+  window.__uidev = true;
   const F = (id,name)=>({id, name, thumb:"", preview:"about:blank", created:"2026-09-01T00:00:00Z", note:""});
   const DEVT = {ok:true, week:1, month:"2026-09",
     deliveries:[{client:"Riley Nikolich",code:"RILEYN83",file:F("a","2026-09-02 1015 — Coach cue reel")},{client:"Marra & Co. Café",code:"MARRA24",file:F("b","2026-09-02 0900 — Latte art pour")}],
@@ -2784,7 +2934,7 @@ setTimeout(async ()=>{ try {
     by:{1:"Riley", 2:"Riley"}, tickAt:{2:new Date(Date.now()-7200000).toISOString()}, gaps:[{from:"C3717", to:"C3730", n:10, missing:["C3719–C3722","C3724–C3729"]}], redo:{}, reasons:{}, received:{0:true}, recv:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"]}}, unsortedN:0, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Riley",wk:1,v:12400}], drive:"#",
     approved:[F("ap1","2026-09-03 1100 — Coach cue reel")], feedback:{}, docs:[{label:"Terms & agreement",url:"https://example.com"},{label:"Set up your payment",url:"https://buy.stripe.com/x"}],
     activity:[{at:"2026-08-31T05:00:00Z",who:"Riley",what:"filmed “Coach fixing a squat”"},{at:"2026-08-31T02:00:00Z",who:"XC",what:"added a document"}],
-    lastTick:"2026-08-31T05:00:00Z", weeks:DEVR.clients[1].weeks, history:[], files:{0:[F("r1","2026-09-03 1300 — C3519.MP4"),F("r2","2026-09-03 1302 — C3520.MP4"),F("r3","2026-09-03 1305 — C3521.MP4"),F("r4","2026-09-03 1310 — C3522.MP4")], 1:[F("r5","2026-09-04 0900 — C3530.MP4"),F("r6","2026-09-04 0905 — C3531.MP4")]}, reviewed:{r1:1,r2:1,r4:1}, verdicts:{r1:"good",r2:"good"}, clipTags:{r1:{step:0,label:"",words:"",conf:1},r2:{step:2,label:"",words:"",conf:1}}, portalUrl:"https://app.timeliner.io/portal/demo", selectsUrls:{0:"https://drive.google.com/drive/folders/demo-selects"}, redoAt:{}, rhythm:{filmDow:4}, tier:"min", billingDay:30, deliv:{ap1:{m:"2026-09",i:0,at:"2026-09-11T05:00:00Z"},"tl:2026-09:1":{m:"2026-09",i:1,at:"2026-09-28T05:00:00Z"}}, hasOwnerPin:true, ownerEmail:"", draftV:3,
+    lastTick:"2026-08-31T05:00:00Z", weeks:DEVR.clients[1].weeks, history:[], files:{0:[F("r1","2026-09-03 1300 — C3519.MP4"),F("r2","2026-09-03 1302 — C3520.MP4"),F("r3","2026-09-03 1305 — C3521.MP4"),F("r4","2026-09-03 1310 — C3522.MP4")], 1:[F("r5","2026-09-04 0900 — C3530.MP4"),F("r6","2026-09-04 0905 — C3531.MP4")]}, reviewed:{r1:1,r2:1,r4:1}, verdicts:{r1:"good",r2:"good"}, clipTags:{r1:{step:0,label:"",words:"",conf:1},r2:{step:2,label:"",words:"",conf:1}}, portalUrl:"https://app.timeliner.io/portal/demo", selectsUrls:{0:"https://drive.google.com/drive/folders/demo-selects"}, redoAt:{}, rhythm:{filmDow:4}, tier:"min", billingDay:30, deliv:{ap1:{m:"2026-09",i:0,at:"2026-09-11T05:00:00Z"},"tl:2026-09:1":{m:"2026-09",i:1,at:"2026-09-28T05:00:00Z"}}, hasOwnerPin:true, ownerEmail:"", draftV:3, upPlan:{}, upDirect:true,
     safe:{0:{ok:false,n:5,why:"unchecked"},1:{ok:false,n:0,why:"nothing in"},2:{ok:false,n:0,why:"nothing in"}},
     consent:{"tl:2026-09:1":{who:"Luke Miller",t:"Coach fixing a squat",m:"2026-09",i:1,since:new Date(Date.now()-2*86400000).toISOString(),ok:false,date:null},"ap1":{who:"Sam (member)",t:"Coach cue reel",m:null,i:null,since:"2026-09-20T00:00:00Z",ok:q.get("hold")!=="1",date:q.get("hold")!=="1"?"2026-09-21":null,note:"signed release"}}, intake:{answers:{biz:"Riley Nikolich — MBS Gym, Prahran",ig:"@coachrileynikolich",offer:"12-week physique coaching + online",customer:"trained-for-years, want to look like it",voice:"enjoyment, performance, straight-up",times:"between sessions, 10am-2pm",approver:"Riley — WhatsApp",nogo:"no client faces without asking",ads:"not yet",goal:"5 online clients from content"},by:"Riley",at:"2026-08-31T00:00:00Z"}});
   const DEVCAL = ()=>{ const T = Math.floor((Date.now() + 10*3600000) / 86400000), ds = n => new Date(n*86400000).toISOString().slice(0,10);
@@ -2809,7 +2959,7 @@ setTimeout(async ()=>{ try {
       E(-4,"delivered","green","Delivered: reel 2 w1 v2","Not linked to a shot yet",R,"RILEYN83","deliveries",{linked:false})
     ].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)}; };
   apiGet = async(p)=>{ if(p.action==="uploads") return {ok:true, code:"RILEYN83", month:"2026-09", shots:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"]}, 1:{n:0, filing:2, last:null, names:[]}}, unsortedN:0, filingUnsorted:0, safe:{0:{ok:true,n:5,why:""},1:{ok:false,n:0,why:"filing"},2:{ok:false,n:0,why:"nothing in"}}, t:new Date().toISOString()}; if(p.action==="health") return {ok:true, issues:[]}; if(p.action==="calList") return DEVCAL(); if(p.action==="today") return JSON.parse(JSON.stringify(DEVT)); if(p.action==="roster") return JSON.parse(JSON.stringify(DEVR)); if(p.action==="state") return DEVSTATE(p.code); if(p.action==="deliveries") return {ok:true,pending:[F("p1","2026-09-02 1015 — Coach cue reel")],approved:[F("ap1","2026-09-01 — Week one reel")],sentBack:[]}; return {ok:true}; };
-  apiPost = async(b)=>{ if(b.action==="setWa" && mgState){ const on = !!b.on, w = mgState.wa || {};   // v4.25: echo setWa like the backend does
+  apiPost = async(b)=>{ if(b.action==="upStart") return {ok:true, uri:"harness://s/"+encodeURIComponent(b.name), chunk:262144*4}; if(b.action==="upDone") return b.name==="broken.mov" ? {ok:false, error:"size mismatch: phone 10 bytes, Drive 9 bytes. Send it again."} : {ok:true, receipt:{id:b.id, size:b.size}}; if(b.action==="setWa" && mgState){ const on = !!b.on, w = mgState.wa || {};   // v4.25: echo setWa like the backend does
       return Object.assign({}, mgState, { ok:true, wa: { to: String(b.to||"").replace(/\D/g,"").replace(/^04/,"614"), name:b.name||"", optIn: b.optInAt ? {at:b.optInAt, how:b.optInHow||""} : null, on, off: Object.fromEntries((b.off||[]).map(k=>[k,true])), since: on ? (w.since || new Date().toISOString()) : null } }); }
     if(b.action==="waAdmin"){ if(b.op==="status") return {ok:true, at:new Date().toISOString(), templates:["xc_welcome","xc_redo","xc_alert"].map((n,i)=>({name:n, status:["APPROVED","PENDING","APPROVED"][i]}))};
       if(b.op==="submit") return {ok:true, submitted:{xc_welcome:"submitted"}}; if(b.op==="test") return {ok:true};
