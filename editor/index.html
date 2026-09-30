@@ -959,7 +959,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.26";
+const BUILD = "4.27";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -2053,10 +2053,16 @@ async function waStudioDo(op, extra){
   if(waBusy) return;
   if(op === "channels" && extra.on && !confirm("Turn WhatsApp sending on? Clients who are switched on in their Settings start getting messages, and you get your alerts on WhatsApp.")) return;
   if(op === "submit" && !confirm("Send all " + (waInfo && waInfo.templates || 20) + " templates to Meta for approval?")) return;
+  const before = waInfo ? waInfo.sending : null;
+  if(op === "channels" && waInfo){ waInfo = Object.assign({}, waInfo, {sending: !!extra.on}); }   // v4.27: the switch moves the moment you tap, and goes back if the server says no
   waBusy = op; waStudioRender();
   const d = await apiPost(Object.assign({action:"waAdmin", pin, op}, extra || {}));
   waBusy = "";
-  if(!d.ok){ toast("Couldn't: " + esc(d.error === "unknown action" ? "needs backend 2.8.2" : d.error)); waStudioRender(); return; }
+  if(!d.ok){
+    if(op === "channels" && waInfo) waInfo = Object.assign({}, waInfo, {sending: before});
+    toast(d.error === "network" ? (op === "submit" ? "No answer in time, but it may still have gone through. Tap <b>Check</b> in a minute." : "No answer in time. Nothing changed, try again.")
+      : "Couldn't: " + esc(d.error === "unknown action" ? "needs backend 2.8.3" : d.error));
+    waStudioRender(); return; }
   if(op === "status") waTpl = d;
   if(op === "submit"){ waSub = d.submitted; toast("<b>Sent to Meta.</b> Check status in a few minutes."); }
   if(op === "test") toast("<b>Test sent.</b> It should land on your phone from 0494 in a few seconds.");
@@ -2067,7 +2073,7 @@ function waStudioRender(){
   const el = document.getElementById("waStudio"); if(!el) return;
   const I = waInfo;
   if(!I){ el.innerHTML = '<p class="sub">Loading…</p>'; return; }
-  if(I.error){ el.innerHTML = `<p class="sub">${I.error === "unknown action" ? "Needs backend 2.8.2." : "Couldn't load: " + esc(I.error)}</p>`; return; }
+  if(I.error){ el.innerHTML = `<p class="sub">${I.error === "unknown action" ? "Needs backend 2.8.3." : "Couldn't load: " + esc(I.error)}</p>`; return; }
   const missing = Object.keys(I.keys || {}).filter(k => !I.keys[k]);
   const busy = op => waBusy === op ? " disabled" : "";
   const T = waTpl && waTpl.templates || null, cnt = {};
