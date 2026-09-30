@@ -2056,7 +2056,7 @@ async function waStudioDo(op, extra){
   waBusy = op; waStudioRender();
   const d = await apiPost(Object.assign({action:"waAdmin", pin, op}, extra || {}));
   waBusy = "";
-  if(!d.ok){ toast("Couldn't: " + esc(d.error === "unknown action" ? "needs backend 2.8.1" : d.error)); waStudioRender(); return; }
+  if(!d.ok){ toast("Couldn't: " + esc(d.error === "unknown action" ? "needs backend 2.8.2" : d.error)); waStudioRender(); return; }
   if(op === "status") waTpl = d;
   if(op === "submit"){ waSub = d.submitted; toast("<b>Sent to Meta.</b> Check status in a few minutes."); }
   if(op === "test") toast("<b>Test sent.</b> It should land on your phone from 0494 in a few seconds.");
@@ -2067,7 +2067,7 @@ function waStudioRender(){
   const el = document.getElementById("waStudio"); if(!el) return;
   const I = waInfo;
   if(!I){ el.innerHTML = '<p class="sub">Loading…</p>'; return; }
-  if(I.error){ el.innerHTML = `<p class="sub">${I.error === "unknown action" ? "Needs backend 2.8.1." : "Couldn't load: " + esc(I.error)}</p>`; return; }
+  if(I.error){ el.innerHTML = `<p class="sub">${I.error === "unknown action" ? "Needs backend 2.8.2." : "Couldn't load: " + esc(I.error)}</p>`; return; }
   const missing = Object.keys(I.keys || {}).filter(k => !I.keys[k]);
   const busy = op => waBusy === op ? " disabled" : "";
   const T = waTpl && waTpl.templates || null, cnt = {};
