@@ -624,6 +624,9 @@
     <p class="msect" style="margin-top:22px">Add a client</p>
     <div class="addteam" style="max-width:460px"><input id="newClientS" placeholder="New client name…" onkeydown="if(event.key==='Enter')addClient('newClientS')"><button onclick="addClient('newClientS')">Add client</button></div>
     <p class="demonote" style="border:0;padding:0"><b>ADD CLIENT —</b> creates their drop folder + 12 shot folders + a studio code in one go.</p>
+    <p class="msect">WhatsApp — automatic messages</p>
+    <p class="sub" style="margin-top:8px">From the XC Media number, 0494 798 319, through Chakra. Clients are switched on one by one in their Settings.</p>
+    <div class="mlist" id="waStudio" style="max-width:560px"><p class="sub">Loading…</p></div>
     <p class="msect">Session</p>
     <div class="mlist" style="max-width:460px">
       <div class="mrow"><div class="r"><span class="nm">Refresh everything</span><button class="mact" onclick="loadToday();loadRoster();toast('Refreshing…')">Refresh</button></div></div>
@@ -956,7 +959,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.25";
+const BUILD = "4.26";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -2039,6 +2042,46 @@ function xcnav(view){
   else if(view==="dash"){ loadRoster(); startPoll(loadRoster); }
   else if(view==="calendar"){ renderCal(); loadCal(); startPoll(loadCal); }
   else stopPoll();
+  if(view==="studio") waStudioLoad();   // v4.26
+}
+/* v4.26: WhatsApp setup from the Studio screen (backend 2.8.1 waAdmin). Keys never come back to the app, only whether each is set. */
+let waInfo = null, waTpl = null, waSub = null, waBusy = "";
+const WA_TPL_LABEL = {APPROVED:"approved", PENDING:"waiting on Meta", REJECTED:"rejected", PAUSED:"paused", DISABLED:"disabled", "NOT SUBMITTED":"not submitted"};
+async function waStudioLoad(){ const d = await apiPost({action:"waAdmin", pin, op:"info"});
+  if(d.ok){ waInfo = d; if(!waTpl && d.lastStatus) waTpl = d.lastStatus; } else waInfo = {error: d.error}; waStudioRender(); }
+async function waStudioDo(op, extra){
+  if(waBusy) return;
+  if(op === "channels" && extra.on && !confirm("Turn WhatsApp sending on? Clients who are switched on in their Settings start getting messages, and you get your alerts on WhatsApp.")) return;
+  if(op === "submit" && !confirm("Send all " + (waInfo && waInfo.templates || 20) + " templates to Meta for approval?")) return;
+  waBusy = op; waStudioRender();
+  const d = await apiPost(Object.assign({action:"waAdmin", pin, op}, extra || {}));
+  waBusy = "";
+  if(!d.ok){ toast("Couldn't: " + esc(d.error === "unknown action" ? "needs backend 2.8.1" : d.error)); waStudioRender(); return; }
+  if(op === "status") waTpl = d;
+  if(op === "submit"){ waSub = d.submitted; toast("<b>Sent to Meta.</b> Check status in a few minutes."); }
+  if(op === "test") toast("<b>Test sent.</b> It should land on your phone from 0494 in a few seconds.");
+  if(op === "channels"){ waInfo = d; toast(d.sending ? "<b>WhatsApp sending is on.</b>" : "WhatsApp sending is off. Email alerts carry on."); }
+  waStudioRender();
+}
+function waStudioRender(){
+  const el = document.getElementById("waStudio"); if(!el) return;
+  const I = waInfo;
+  if(!I){ el.innerHTML = '<p class="sub">Loading…</p>'; return; }
+  if(I.error){ el.innerHTML = `<p class="sub">${I.error === "unknown action" ? "Needs backend 2.8.1." : "Couldn't load: " + esc(I.error)}</p>`; return; }
+  const missing = Object.keys(I.keys || {}).filter(k => !I.keys[k]);
+  const busy = op => waBusy === op ? " disabled" : "";
+  const T = waTpl && waTpl.templates || null, cnt = {};
+  if(T) T.forEach(t => { cnt[t.status] = (cnt[t.status] || 0) + 1; });
+  const tplLine = T ? Object.keys(cnt).map(k => cnt[k] + " " + (WA_TPL_LABEL[k] || k.toLowerCase())).join(" · ") : (waSub ? "sent to Meta, check status" : "not checked yet");
+  const bad = T ? T.filter(t => t.status !== "APPROVED") : [];
+  el.innerHTML = `
+    <div class="mrow"><div class="r"><span class="nm">Keys in Script Properties</span><span class="who">${missing.length ? "missing: " + esc(missing.join(", ")) : "all set"}</span></div></div>
+    <div class="mrow"><div class="r"><span class="nm">Templates (${I.templates})</span><button class="mact"${busy("submit")} onclick="waStudioDo('submit')">${waBusy==="submit" ? "Sending…" : "Submit"}</button><button class="mact"${busy("status")} onclick="waStudioDo('status')">${waBusy==="status" ? "Checking…" : "Check"}</button></div>
+      <p class="sub" style="margin:6px 0 0">${esc(tplLine)}${bad.length && bad.length < 20 ? ". Not approved yet: " + bad.map(t => esc(t.name)).join(", ") : ""}</p></div>
+    <div class="mrow"><div class="r"><span class="nm">Test to your phone ${esc(I.xcTo || "")}</span><button class="mact"${busy("test")} onclick="waStudioDo('test')">${waBusy==="test" ? "Sending…" : "Send test"}</button></div></div>
+    <div class="mrow"><div class="r"><span class="nm">Sending</span><div class="switch"><button class="${I.sending ? "" : "on"}" onclick="waStudioDo('channels',{on:false})">Off</button><button class="${I.sending ? "on" : ""}" onclick="waStudioDo('channels',{on:true})">On</button></div></div>
+      <p class="sub" style="margin:6px 0 0">${I.sending ? "On" : "Off"}${I.clients && I.clients.length ? " · clients switched on: " + esc(I.clients.join(", ")) : " · no clients switched on yet"}</p></div>
+    <div class="mrow"><div class="r"><span class="nm">Timers</span></div><p class="sub" style="margin:6px 0 0">${esc((I.triggers || []).filter((h,i,a)=>a.indexOf(h)===i).join(", ") || "none")} · repaired automatically</p></div>`;
 }
 function barReview(){
   const T = todayData, n = T ? (T.deliveries.length + T.fresh.length) : 0;
@@ -2762,6 +2805,10 @@ setTimeout(async ()=>{ try {
   apiGet = async(p)=>{ if(p.action==="uploads") return {ok:true, code:"RILEYN83", month:"2026-09", shots:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"]}, 1:{n:0, filing:2, last:null, names:[]}}, unsortedN:0, filingUnsorted:0, safe:{0:{ok:true,n:5,why:""},1:{ok:false,n:0,why:"filing"},2:{ok:false,n:0,why:"nothing in"}}, t:new Date().toISOString()}; if(p.action==="health") return {ok:true, issues:[]}; if(p.action==="calList") return DEVCAL(); if(p.action==="today") return JSON.parse(JSON.stringify(DEVT)); if(p.action==="roster") return JSON.parse(JSON.stringify(DEVR)); if(p.action==="state") return DEVSTATE(p.code); if(p.action==="deliveries") return {ok:true,pending:[F("p1","2026-09-02 1015 — Coach cue reel")],approved:[F("ap1","2026-09-01 — Week one reel")],sentBack:[]}; return {ok:true}; };
   apiPost = async(b)=>{ if(b.action==="setWa" && mgState){ const on = !!b.on, w = mgState.wa || {};   // v4.25: echo setWa like the backend does
       return Object.assign({}, mgState, { ok:true, wa: { to: String(b.to||"").replace(/\D/g,"").replace(/^04/,"614"), name:b.name||"", optIn: b.optInAt ? {at:b.optInAt, how:b.optInHow||""} : null, on, off: Object.fromEntries((b.off||[]).map(k=>[k,true])), since: on ? (w.since || new Date().toISOString()) : null } }); }
+    if(b.action==="waAdmin"){ if(b.op==="status") return {ok:true, at:new Date().toISOString(), templates:["xc_welcome","xc_redo","xc_alert"].map((n,i)=>({name:n, status:["APPROVED","PENDING","APPROVED"][i]}))};
+      if(b.op==="submit") return {ok:true, submitted:{xc_welcome:"submitted"}}; if(b.op==="test") return {ok:true};
+      window.__waDevOn = b.op==="channels" ? !!b.on : !!window.__waDevOn;
+      return {ok:true, keys:{WA_KEY:true,WA_PLUGIN_ID:true,WA_PHONE_ID:true,WA_WABA_ID:true,WA_XC_TO:true}, ready:true, sending:window.__waDevOn, xcTo:"…0875", templates:20, lastStatus:null, triggers:["sweep","healthCheck","healthDaily","backupDb","waEvening"], clients:["Riley Nikolich"]}; }
     return {ok:true}; };
   warm = ()=>{};
   pin = "DEV"; code = null;
