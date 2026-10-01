@@ -784,7 +784,7 @@
       <p class="msect">Phone setup — once, then forget it</p>
       <div class="settings"><h3>iPhone</h3><ul><li>Settings → Camera → Record Video → <b>4K at 30 fps</b></li><li>Settings → Camera → <b>Grid ON</b></li><li>In the camera: tap the subject, then <b>hold</b> until "AE/AF LOCK"</li></ul></div>
       <div class="settings"><h3>Android</h3><ul><li>Camera → Settings → Video → <b>4K (UHD) 30 fps</b></li><li>Camera → Settings → <b>Grid lines ON</b></li><li>Tap the subject, then the <b>lock</b> icon</li></ul></div>
-      <div class="settings"><h3>Uploading</h3><ul><li>Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li><li>Clips <b>disappear from the folder within a minute</b> — that's XC receiving them, not a failure</li><li>Upload first, <b>then tick</b> the shot</li><li><b>Never delete footage off the camera or phone until the app says it's safe.</b> Each shot says <b>All in, safe to clear your card</b> once every clip has reached XC. Until then it says Don't delete anything yet</li><li>If the Drive app says upload failed or storage full, message XC</li></ul></div>
+      <div class="settings"><h3>Uploading</h3><ul><li>Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li><li>Clips <b>disappear from the folder within a few minutes</b> — that's XC receiving them, not a failure</li><li>Upload first, <b>then tick</b> the shot</li><li><b>Never delete footage off the camera or phone until the app says it's safe.</b> Each shot says <b>All in, safe to clear your card</b> once every clip has reached XC. Until then it says Don't delete anything yet</li><li>If the Drive app says upload failed or storage full, message XC</li></ul></div>
       <p class="mantra">When in doubt:<br>slower, closer, stiller.</p>
     </div>
 
@@ -980,7 +980,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.28";
+const BUILD = "4.29";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1513,7 +1513,7 @@ function updRender(){
   el.innerHTML = mine.map(x => {
     const pct = Math.floor(100 * at(x) / x.size), shot = x.idx === null || x.idx === undefined ? "general folder" : ((C && C.shots[x.idx]) ? C.shots[x.idx].n : "shot " + (x.idx + 1));
     const cls = x.st === "done" ? "done" : x.st === "error" ? "err" : (x.st === "lost" && !x.file) ? "lost" : "";
-    const stx = x.st === "done" ? "Sent ✓ · XC has it" : x.st === "error" ? (x.err || "Failed") + " · tap Add more to pick it again" : (x.st === "lost" && !x.file) ? "Didn't finish · pick it again to carry on from " + pct + "%" : x.st === "sending" ? (x.wait ? "Connection dropped · trying again in " + x.wait + " s" : "Sending · " + pct + "%") : "Waiting";
+    const stx = x.st === "done" ? "Sent ✓ · XC has it" : x.st === "error" ? (x.err || "Failed") + " · tap Add more to pick it again" : (x.st === "lost" && !x.file) ? "Didn't finish · pick it again to carry on from " + pct + "%" : x.st === "sending" ? (x.wait ? "Connection dropped · trying again in " + x.wait + " s" : pct >= 100 ? "Checking XC has it…" : "Sending · " + pct + "%") : "Waiting";
     return `<div class="f ${cls}"><div class="n"><span>${esc(x.name)}</span><span>${fmtB(x.size)}</span></div><div class="s">${esc(stx)} · ${esc(shot)}</div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
   }).join("");
 }
