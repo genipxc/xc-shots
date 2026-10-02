@@ -56,6 +56,10 @@
   .upst.in{color:var(--goldB)}.upst.in[role=button]{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}.upst.none{color:#E0913A}.upst.filing{color:var(--goldB)}.upst.dry{color:#E0913A;font-weight:700}
   .upst i,.upboard .dot.filing{animation:uppulse 1.1s ease-in-out infinite}.upst i{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none}
   @keyframes uppulse{0%,100%{opacity:.3}50%{opacity:1}}
+  .upclips{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+  .upclips .hint{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+  .upclip{appearance:none;border:0;background:transparent;color:var(--grey);font-family:'Space Mono',monospace;font-size:11px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;padding:7px 2px;min-height:34px;border-bottom:1px solid var(--hair);overflow-wrap:anywhere}
+  .upclip:last-of-type{border-bottom:0}.upclip b{color:var(--gold);font-size:12px;flex:none}.upclip:hover,.upclip:focus-visible{color:var(--ink)}
   .upnames{display:block;margin-top:6px;font-family:'Space Mono',monospace;font-size:9.5px;color:var(--grey);line-height:1.7;overflow-wrap:anywhere}
   .upboard{margin-top:14px;background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:14px 16px}
   .upboard .h{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -980,7 +984,7 @@
 <script>
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.29";
+const BUILD = "4.30";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1223,7 +1227,9 @@ function renderClient(){
             </span>
           <span class="upline">${upStatHtml(i, s, isDone)}${isDone ? (rcv || upInfo(i) ? `<span class="byme rcv">✓ ${esc(C.by[i])}</span>` : dryMins(i) ? `<span class="byme wait">✓ ${esc(C.by[i])} · ${whenStr(C.tickAt[i])}</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for the upload</span>`) : ((rcv || upInfo(i)) ? `<span class="byme rcv">tick it once it's all in</span>` : "")}</span>
           ${safeLine(i)}
-          ${(()=>{ const u = upInfo(i); return upOpen.has(i) && u && u.names.length ? `<span class="upnames">${u.names.map(esc).join("<br>")}${u.n > u.names.length ? "<br>…and " + (u.n - u.names.length) + " more" : ""}</span>` : ""; })()}</span>
+          ${(()=>{ const u = upInfo(i); if(!upOpen.has(i) || !u) return "";
+            if(u.clips && u.clips.length) return `<span class="upclips" onclick="event.stopPropagation()"><span class="hint">Tap a clip to watch it</span>${u.clips.map(c => `<button class="upclip" onclick="event.stopPropagation();openPreview(${q(c.id)},${q(c.n)},${q(s.n)})"><b>▶</b>${esc(c.n)}</button>`).join("")}${u.n > u.clips.length ? `<span class="hint" style="margin:6px 0 0">…and ${u.n - u.clips.length} older</span>` : ""}</span>`;
+            return u.names.length ? `<span class="upnames">${u.names.map(esc).join("<br>")}${u.n > u.names.length ? "<br>…and " + (u.n - u.names.length) + " more" : ""}</span>` : ""; })()}</span>
         ${imgList(s.img).length ? `<img class="cardimg" src="${esc(imgSrc(imgList(s.img)[0]))}" alt="" loading="lazy" onerror="this.style.display='none'">` : frame(s.t, 44)}`;
       box.appendChild(el);
     });
@@ -1280,7 +1286,7 @@ function upInfo(i){   // merged view: the fresher of the state's vault count and
   if(a === undefined && !b) return (C && C.received && C.received[i]) ? {n:null, filing:0, last:null, names:[]} : null;   // older backend: flag only
   if(!a && !b) return null;
   const an = a ? a.n : 0, bn = b ? b.n : 0, src = bn >= an ? (b || a) : a;
-  return { n: Math.max(an, bn), filing: (b && bn >= an) ? (b.filing || 0) : 0, last: src.last, names: src.names || [] };
+  return { n: Math.max(an, bn), filing: (b && bn >= an) ? (b.filing || 0) : 0, last: src.last, names: src.names || [], clips: src.clips || [] };
 }
 /* v4.22: a shot marked filmed with nothing landed after DRY_MIN minutes. Riley ticked three shots on 26 and 27 Sep and 4 of 14 clips
    reached XC without a word to anyone (his storage turned out fine; see v4.24: Upload opened the browser). tickAt comes from backend
@@ -1293,7 +1299,7 @@ function upStatHtml(i, s, isDone){
   if(!u) return (s.w <= C.week && !isDone) ? `<span class="upst none">No clips yet</span>` : "";
   if(u.filing) return `<span class="upst filing"><i></i>${u.n ? u.n + " in · " : ""}${u.filing} filing now…</span>`;
   if(u.n === null) return `<span class="upst in">Clips in</span>`;
-  return `<span class="upst in" role="button" tabindex="0" title="Show the file names" onclick="event.stopPropagation();toggleNames(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();toggleNames(${i})}">${u.n} clip${u.n===1?"":"s"} in · ${whenStr(u.last)}</span>`;
+  return `<span class="upst in" role="button" tabindex="0" title="Show and watch your clips" onclick="event.stopPropagation();toggleNames(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();toggleNames(${i})}">${u.n} clip${u.n===1?"":"s"} in · ${whenStr(u.last)}</span>`;
 }
 /* v4.23: can the client clear their card? Backend 2.7.8 answers per shot: ticked, every clip in the vault and link-shared, nothing
    still filing, nothing stuck, newest clip settled 15 min. Only the uploads read checks what is still filing, so a state read alone
@@ -2931,7 +2937,7 @@ setTimeout(async ()=>{ try {
     {code:"RILEYN83",name:"Riley Nikolich",month:"2026-09",total:12,done:7,wkTotal:3,wkDone:2,redos:1,quietDays:0,deliveriesPending:2,inbox:"y",weeks:[{done:2,total:3},{done:3,total:3},{done:2,total:3},{done:0,total:3}]}]};
   const DEVSTATE = (c)=>({ok:true, code:c||"RILEYN83", name:"Riley Nikolich", month:"2026-09", week:1, role:2, team:["Riley"],
     shots:[{w:1,t:"wide",n:"The 6am floor",h:"MBS at open.",d:"20s",steps:["☐ TAKE 1 — THE QUESTION. Say ONLY this, 3 times: «Running or walking for fat loss?»","☐ TAKE 2 — THE HOOK. Twice: «Running burns more per minute. I'm still choosing walking.»","☐ SHOT 3 — NO TALKING. Phone far away, 15 seconds."],refs:["https://picsum.photos/seed/a/500/320","","https://picsum.photos/seed/b/500/320"],dont:"d",folder:"https://drive.google.com/drive/folders/x"},{w:1,t:"mid",n:"Coach fixing a squat",h:"One cue.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"mid",n:"PB celebration",h:"After the lift.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"close",n:"Chalk hands",h:"Fill the frame.",d:"10s",steps:["s"],dont:"d"}],
-    by:{1:"Riley", 2:"Riley"}, tickAt:{2:new Date(Date.now()-7200000).toISOString()}, gaps:[{from:"C3717", to:"C3730", n:10, missing:["C3719–C3722","C3724–C3729"]}], redo:{}, reasons:{}, received:{0:true}, recv:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"]}}, unsortedN:0, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Riley",wk:1,v:12400}], drive:"#",
+    by:{1:"Riley", 2:"Riley"}, tickAt:{2:new Date(Date.now()-7200000).toISOString()}, gaps:[{from:"C3717", to:"C3730", n:10, missing:["C3719–C3722","C3724–C3729"]}], redo:{}, reasons:{}, received:{0:true}, recv:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"], clips:[{id:"r1",n:"C3601.MP4"},{id:"r2",n:"C3602.MP4"},{id:"r3",n:"C3603.MP4"},{id:"r4",n:"C3604.MP4"},{id:"r5",n:"IMG_0412.JPG"}]}}, unsortedN:0, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Riley",wk:1,v:12400}], drive:"#",
     approved:[F("ap1","2026-09-03 1100 — Coach cue reel")], feedback:{}, docs:[{label:"Terms & agreement",url:"https://example.com"},{label:"Set up your payment",url:"https://buy.stripe.com/x"}],
     activity:[{at:"2026-08-31T05:00:00Z",who:"Riley",what:"filmed “Coach fixing a squat”"},{at:"2026-08-31T02:00:00Z",who:"XC",what:"added a document"}],
     lastTick:"2026-08-31T05:00:00Z", weeks:DEVR.clients[1].weeks, history:[], files:{0:[F("r1","2026-09-03 1300 — C3519.MP4"),F("r2","2026-09-03 1302 — C3520.MP4"),F("r3","2026-09-03 1305 — C3521.MP4"),F("r4","2026-09-03 1310 — C3522.MP4")], 1:[F("r5","2026-09-04 0900 — C3530.MP4"),F("r6","2026-09-04 0905 — C3531.MP4")]}, reviewed:{r1:1,r2:1,r4:1}, verdicts:{r1:"good",r2:"good"}, clipTags:{r1:{step:0,label:"",words:"",conf:1},r2:{step:2,label:"",words:"",conf:1}}, portalUrl:"https://app.timeliner.io/portal/demo", selectsUrls:{0:"https://drive.google.com/drive/folders/demo-selects"}, redoAt:{}, rhythm:{filmDow:4}, tier:"min", billingDay:30, deliv:{ap1:{m:"2026-09",i:0,at:"2026-09-11T05:00:00Z"},"tl:2026-09:1":{m:"2026-09",i:1,at:"2026-09-28T05:00:00Z"}}, hasOwnerPin:true, ownerEmail:"", draftV:3, upPlan:{}, upDirect:true,
@@ -2958,7 +2964,7 @@ setTimeout(async ()=>{ try {
       E(-1,"landed","grey","Footage landed: I'm doing everything right and still not seeing it","1 clip",R,"RILEYN83","shots",{m:"2026-09",idx:5,shot:"I'm doing everything right and still not seeing it"}),
       E(-4,"delivered","green","Delivered: reel 2 w1 v2","Not linked to a shot yet",R,"RILEYN83","deliveries",{linked:false})
     ].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)}; };
-  apiGet = async(p)=>{ if(p.action==="uploads") return {ok:true, code:"RILEYN83", month:"2026-09", shots:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"]}, 1:{n:0, filing:2, last:null, names:[]}}, unsortedN:0, filingUnsorted:0, safe:{0:{ok:true,n:5,why:""},1:{ok:false,n:0,why:"filing"},2:{ok:false,n:0,why:"nothing in"}}, t:new Date().toISOString()}; if(p.action==="health") return {ok:true, issues:[]}; if(p.action==="calList") return DEVCAL(); if(p.action==="today") return JSON.parse(JSON.stringify(DEVT)); if(p.action==="roster") return JSON.parse(JSON.stringify(DEVR)); if(p.action==="state") return DEVSTATE(p.code); if(p.action==="deliveries") return {ok:true,pending:[F("p1","2026-09-02 1015 — Coach cue reel")],approved:[F("ap1","2026-09-01 — Week one reel")],sentBack:[]}; return {ok:true}; };
+  apiGet = async(p)=>{ if(p.action==="uploads") return {ok:true, code:"RILEYN83", month:"2026-09", shots:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"], clips:[{id:"r1",n:"C3601.MP4"},{id:"r2",n:"C3602.MP4"},{id:"r3",n:"C3603.MP4"},{id:"r4",n:"C3604.MP4"},{id:"r5",n:"IMG_0412.JPG"}]}, 1:{n:0, filing:2, last:null, names:[]}}, unsortedN:0, filingUnsorted:0, safe:{0:{ok:true,n:5,why:""},1:{ok:false,n:0,why:"filing"},2:{ok:false,n:0,why:"nothing in"}}, t:new Date().toISOString()}; if(p.action==="health") return {ok:true, issues:[]}; if(p.action==="calList") return DEVCAL(); if(p.action==="today") return JSON.parse(JSON.stringify(DEVT)); if(p.action==="roster") return JSON.parse(JSON.stringify(DEVR)); if(p.action==="state") return DEVSTATE(p.code); if(p.action==="deliveries") return {ok:true,pending:[F("p1","2026-09-02 1015 — Coach cue reel")],approved:[F("ap1","2026-09-01 — Week one reel")],sentBack:[]}; return {ok:true}; };
   apiPost = async(b)=>{ if(b.action==="upStart") return {ok:true, uri:"harness://s/"+encodeURIComponent(b.name), chunk:262144*4}; if(b.action==="upDone") return b.name==="broken.mov" ? {ok:false, error:"size mismatch: phone 10 bytes, Drive 9 bytes. Send it again."} : {ok:true, receipt:{id:b.id, size:b.size}}; if(b.action==="setWa" && mgState){ const on = !!b.on, w = mgState.wa || {};   // v4.25: echo setWa like the backend does
       return Object.assign({}, mgState, { ok:true, wa: { to: String(b.to||"").replace(/\D/g,"").replace(/^04/,"614"), name:b.name||"", optIn: b.optInAt ? {at:b.optInAt, how:b.optInHow||""} : null, on, off: Object.fromEntries((b.off||[]).map(k=>[k,true])), since: on ? (w.since || new Date().toISOString()) : null } }); }
     if(b.action==="waAdmin"){ if(b.op==="status") return {ok:true, at:new Date().toISOString(), templates:["xc_welcome","xc_redo","xc_alert"].map((n,i)=>({name:n, status:["APPROVED","PENDING","APPROVED"][i]}))};
@@ -2969,7 +2975,7 @@ setTimeout(async ()=>{ try {
   warm = ()=>{};
   pin = "DEV"; code = null;
   const v = q.get("view");
-  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="calendar") xcnav("calendar"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage"){ openManage("RILEYN83"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } if(ms==="review" && q.get("rq")){ rqToggle("0"); rqPick("r3", true); } }, 400); } if(v==="client"){ LS.set("seenFilmMode","1"); document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); } }catch(e){} }, 600);
+  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="calendar") xcnav("calendar"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage"){ openManage("RILEYN83"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } if(ms==="review" && q.get("rq")){ rqToggle("0"); rqPick("r3", true); } }, 400); } if(v==="client"){ LS.set("seenFilmMode","1"); document.body.classList.remove("xc"); code="RILEYN83"; me="Riley"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); if(q.get("clips")) setTimeout(()=>toggleNames(0), 600); } }catch(e){} }, 600);
 })();
 
 /* ═══════════════ DEMO MODE (injected by make-demo.js — do not edit demo/index.html by hand) ═══════════════ */
