@@ -994,7 +994,7 @@ if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !
     return Promise.resolve({}); } }; })();
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.31";
+const BUILD = "4.32";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1320,7 +1320,8 @@ function safeLine(i){
   const s = (U && U.safe) ? U.safe[i] : C.safe[i];
   if(!s && !C.by[i] && !upInfo(i)) return "";
   const mineOpen = upd.some(x => x.code === code && x.idx === i && x.st !== "done");   // v4.31: clips this phone still has to send
-  if(s && s.ok && C.by[i] && !mineOpen) return `<span class="safe ok">All in, safe to clear your card · ${s.n} clip${s.n===1?"":"s"}</span>`;
+  if(s && s.ok && C.by[i] && !mineOpen && s.app !== false) return `<span class="safe ok">All in, safe to clear your card · ${s.n} clip${s.n===1?"":"s"}</span>`;
+  if(s && s.ok && C.by[i] && !mineOpen) return `<span class="safe no">${s.n} clip${s.n===1?"":"s"} in · check that matches your camera before you clear it</span>`;   // v4.32: Drive-app clips can't be counted against what was filmed
   return `<span class="safe no">Don't delete anything yet</span>`;
 }
 function toggleNames(i){ if(upOpen.has(i)) upOpen.delete(i); else upOpen.add(i); renderClient(); }
@@ -2783,7 +2784,7 @@ let closingMonth = false;
 async function closeMonth(){
   if(closingMonth) return;
   const nm = mgState.name, cc = mgCode, left = (mgState.shots || []).filter((s, i) => !(mgState.by || {})[i]).length;
-  if(!confirm("Close " + monthName(mgState.month) + " for " + nm + "?\n\n" + (left ? left + " shot" + (left === 1 ? " isn't" : "s aren't") + " filmed yet.\n" : "") + "This clears ticks, redos, ratings and transcript tags, empties the SELECTS folder and starts the next month. The recap is kept. It can't be undone.")) return;
+  if(!confirm("Close " + monthName(mgState.month) + " for " + nm + "?\n\n" + (left ? left + " shot" + (left === 1 ? " isn't" : "s aren't") + " filmed yet.\n" : "") + "This clears ticks and redos and starts the next month. This month's SELECTS folder stays, its ratings and tags are saved next to the footage, and the SELECTS copies from 3 months back are cleared. It can't be undone.")) return;
   closingMonth = true; let d;
   try { d = await apiPost({action:"monthClose", pin, code:cc, results: mgState.results || []}); } finally { closingMonth = false; }
   if(!d.ok){ toast("Couldn't: "+esc(d.error)); return; }
