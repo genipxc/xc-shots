@@ -527,6 +527,22 @@
   .upd .bar{height:5px;margin-top:8px}.upd .bar i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .3s}.upd .f.done .bar i{background:var(--ok)}
   .upd .btns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
   .upboard .direct{margin:0 0 12px;padding:10px 12px;border:1px solid var(--gold);border-radius:10px}.upboard .direct.lost{border-color:#E0913A}.upboard .direct .tt{font-weight:800;font-size:14px;line-height:1.3}
+/* v4.33 feels like an app (iPhone app and website alike): no tap flash, no long-press selecting a button, no zoom when typing,
+   nothing under the camera or the home bar, toasts above the tab bar, the in-app confirm sheet */
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button,a,[role="button"],.mrow,.tab,.chip,.pkey,.bigbtn,.up,.mact,.lnk{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+@media (pointer:coarse){input,textarea,select{font-size:16px!important}.pkey b{display:none}}
+.player .ptop{padding-top:calc(14px + env(safe-area-inset-top,0px))}
+.player .pbar{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.plist.open{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+.toast{bottom:calc(26px + env(safe-area-inset-bottom,0px))}
+body.inapp .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.askwrap .veil{z-index:120}.askwrap .sheet{z-index:121;transform:none}
+.askwrap h2{margin:4px 0 8px;font-size:21px}.askwrap .sub{margin:0 0 14px}
+.askin{width:100%;box-sizing:border-box;background:var(--bg);color:var(--ink);border:1px solid var(--hair);border-radius:12px;padding:13px 14px;font:inherit;font-size:16px;margin:0 0 14px;resize:vertical}
+.bigbtn.danger{background:var(--warn);border-color:var(--warn);color:#0A0A0A}
+body.native{overscroll-behavior-x:none}
 /* v4.31 the iPhone app */
 .nat-only{display:none}body.native .nat-only{display:revert}body.native .web-only{display:none}
 </style>
@@ -545,7 +561,7 @@
   <div class="eyebrow">Your team's filming app</div>
   <h1>Enter your<br>studio code.</h1>
   <p class="sub">It's on the gold card in your staff room — or ask whoever runs your socials.</p>
-  <div class="codein"><input id="codeInput" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" aria-label="Studio code" onkeydown="if(event.key==='Enter')tryCode()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="codeBtn" onclick="tryCode()">Enter</button></div>
+  <div class="codein"><input id="codeInput" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Studio code" onkeydown="if(event.key==='Enter')tryCode()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="codeBtn" onclick="tryCode()">Enter</button></div>
   <p class="err" id="codeErr"></p>
   <p class="gatefoot">XC Media · <button class="lnk" onclick="gate('gatePin')">XC sign-in</button> · <button class="lnk" onclick="ownerStart()">Owner sign-in</button> · <span id="buildA"></span></p>
   <p class="diag" id="diagA"></p>
@@ -587,8 +603,9 @@
   <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
   <div class="eyebrow">Studio side</div>
   <h1>Your PIN.</h1>
-  <div class="codein"><input id="pinInput" type="password" placeholder="PIN" autocomplete="off" aria-label="PIN" onkeydown="if(event.key==='Enter')tryPin()"><button class="bigbtn" style="flex:none;padding:14px 20px" onclick="tryPin()">Enter</button></div>
+  <div class="codein"><input id="pinInput" type="password" placeholder="PIN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="PIN" onkeydown="if(event.key==='Enter')tryPin()"><button class="bigbtn" style="flex:none;padding:14px 20px" onclick="tryPin()">Enter</button></div>
   <p class="err" id="pinErr"></p>
+  <button class="up nat-only" style="margin-top:6px" onclick="natPinFaceId()">Unlock with Face ID</button>
   <p class="gatefoot"><button class="lnk" onclick="gate('gateCode')">← Back to the team app</button> · <span id="buildB"></span></p>
   <p class="diag" id="diagB"></p>
 </div>
@@ -790,7 +807,7 @@
       <p class="msect">Phone setup — once, then forget it</p>
       <div class="settings"><h3>iPhone</h3><ul><li>Settings → Camera → Record Video → <b>4K at 30 fps</b></li><li>Settings → Camera → <b>Grid ON</b></li><li>In the camera: tap the subject, then <b>hold</b> until "AE/AF LOCK"</li></ul></div>
       <div class="settings"><h3>Android</h3><ul><li>Camera → Settings → Video → <b>4K (UHD) 30 fps</b></li><li>Camera → Settings → <b>Grid lines ON</b></li><li>Tap the subject, then the <b>lock</b> icon</li></ul></div>
-      <div class="settings"><h3>Uploading</h3><ul><li>Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li><li>Clips <b>disappear from the folder within a few minutes</b> — that's XC receiving them, not a failure</li><li>Upload first, <b>then tick</b> the shot</li><li><b>Never delete footage off the camera or phone until the app says it's safe.</b> Each shot says <b>All in, safe to clear your card</b> once every clip has reached XC. Until then it says Don't delete anything yet</li><li>If the Drive app says upload failed or storage full, message XC</li></ul></div>
+      <div class="settings"><h3>Uploading</h3><ul><li class="nat-only">Send clips from <b>↑ Upload</b>. They keep sending with the phone locked or other apps open. Just don't swipe XC Shots away until each one says <b>sent ✓</b></li><li class="web-only">Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li><li>Clips <b>disappear from the folder within a few minutes</b> — that's XC receiving them, not a failure</li><li>Upload first, <b>then tick</b> the shot</li><li><b>Never delete footage off the camera or phone until the app says it's safe.</b> Each shot says <b>All in, safe to clear your card</b> once every clip has reached XC. Until then it says Don't delete anything yet</li><li>If the Drive app says upload failed or storage full, message XC</li></ul></div>
       <p class="mantra">When in doubt:<br>slower, closer, stiller.</p>
     </div>
 
@@ -857,7 +874,7 @@
   <div id="shFrame"></div><p class="framecap" id="shCap"></p>
   <div class="steps" id="shSteps"></div>
   <div class="dont"><span class="ic">DON'T</span><p id="shDont"></p></div>
-  <div class="sheetbtns"><button class="bigbtn" id="shTick" onclick="tick(sheetIdx)">Mark as filmed ✓</button><button class="up" onclick="upload(sheetIdx)">Upload ↗</button></div>
+  <div class="sheetbtns"><button class="bigbtn" id="shTick" onclick="tick(sheetIdx)">Mark as filmed ✓</button><button class="up" onclick="upload(sheetIdx)"><span class="web-only">Upload ↗</span><span class="nat-only">Send clips ↑</span></button></div>
 </div>
 
 <!-- v4.28 IN-APP UPLOAD SCREEN -->
@@ -986,6 +1003,8 @@
 
 <script>
 /* v4.31 harness only (?uidev=1&nat=1): a stand-in for the iPhone app's bridge, so the native upload path can be clicked through in a browser */
+window.__xcSelf = /XCShotsTest/.test(navigator.userAgent) && /[?&]xcselftest=1/.test(location.search);   // v4.33: test builds only (mode.cjs test)   // iPhone app test build only: sends files placed in Library/NoCloud/xc-test by the Mac (no picker)
+if(window.__xcSelf){ const m = /[?&]xcode=([A-Z0-9]{4,16})/.exec(location.search); if(m){ try { localStorage.setItem("xcs.code", m[1]); if(!localStorage.getItem("xcs.me")) localStorage.setItem("xcs.me", "XC"); } catch(e){} } }   // test build: signed in as the test client
 window.__xcPut = /[?&]uidev=1/.test(location.search) && /[?&]put=1/.test(location.search);   // harness: send native test uploads to a local sink (:3464)
 if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !window.Capacitor) (function(){ const LS_ = {}, n0 = { n: 0 }; const L = ev => LS_["Uploader"] && LS_["Uploader"](ev);
   window.Capacitor = { isNativePlatform: () => true, addListener: (p, e, cb) => { LS_[p] = cb; return { remove(){} }; }, nativePromise: (p, m, o) => {
@@ -994,7 +1013,7 @@ if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !
     return Promise.resolve({}); } }; })();
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.32";
+const BUILD = "4.33";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1031,7 +1050,7 @@ function updateImgPrev(k, v){ const el = document.getElementById("imgprev"+k); i
 
 /* ═══════════════ api ═══════════════ */
 let pollT = null, inflight = 0;
-function syncUI(state){ const el = document.getElementById("sync"); el.className = "sync " + state; el.textContent = state==="live" ? "synced" : state==="busy" ? "syncing" : "offline"; }
+function syncUI(state){ const el = document.getElementById("sync"); el.className = "sync " + state; el.textContent = state==="live" ? "synced" : state==="busy" ? "syncing" : (navigator.onLine === false ? "offline" : "reconnecting"); }
 let lastErr = "";
 function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout after "+ms/1000+"s")), ms))]); }
 async function apiGet(params){
@@ -1040,7 +1059,7 @@ async function apiGet(params){
     const u = API + "?" + new URLSearchParams(params).toString();
     const r = await withTimeout(fetch(u, {method:"GET", redirect:"follow", cache:"no-store"}), 45000);
     const txt = await r.text();
-    let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + "): " + txt.slice(0,80)); }
+    let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + " on " + (params && params.action) + " from " + String(r.url || "").replace(/^https:\/\//, "").slice(0, 50) + "): " + txt.slice(0,80)); }
     syncUI("live"); lastErr = ""; return d;
   } catch(e){ syncUI("err"); lastErr = String(e && e.message || e); diag(lastErr); return {ok:false, error:"network"}; }
   finally { inflight--; }
@@ -1051,12 +1070,13 @@ async function apiPost(body){
   try {
     const r = await withTimeout(fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)}), 45000);
     const txt = await r.text();
-    let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + "): " + txt.slice(0,80)); }
+    let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + " on " + (body && body.action) + " from " + String(r.url || "").replace(/^https:\/\//, "").slice(0, 50) + "): " + txt.slice(0,80)); }
     syncUI("live"); lastErr = ""; return d;
   } catch(e){ syncUI("err"); lastErr = String(e && e.message || e); diag(lastErr); return {ok:false, error:"network"}; }
   finally { inflight--; }
 }
-function diag(msg){ ["diagA","diagB"].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = msg ? "⚠ " + msg : ""; }); }
+function diag(msg){ if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && !/XCShotsTest/.test(navigator.userAgent)){ if(msg) console.log("diag " + msg); return; }   // v4.33: never raw errors on an app screen
+  ["diagA","diagB"].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = msg ? "⚠ " + msg : ""; }); }
 window.addEventListener("error", e=>diag("JS error: " + (e.message||"") + " @" + (e.lineno||"")));
 window.addEventListener("unhandledrejection", e=>diag("Promise error: " + (e.reason && e.reason.message || e.reason)));
 
@@ -1075,6 +1095,7 @@ function warm(){ if(warmed) return; warmed = true; fetch(API + "?action=ping", {
 let splashT1 = null, splashT2 = null;
 function splashDone(){
   const s = document.getElementById("splash"); if(s) s.classList.add("hide");
+  if(typeof natSplashHide === "function") try { natSplashHide(); } catch(e){}
   if(splashT1){ clearTimeout(splashT1); splashT1 = null; }
   if(splashT2){ clearTimeout(splashT2); splashT2 = null; }
 }
@@ -1102,12 +1123,13 @@ async function boot(){
   if(!code){ gate("gateCode"); return; }
   // returning team member: last-known state instantly, refresh in the background
   const cs = readCache("state");
-  if(cs && cs.code === code && cs.shots && me && cs.team && cs.team.indexOf(me) !== -1 && LS.get("guided")){
+  if(cs && cs.code === code && cs.shots && me && cs.team && cs.team.indexOf(me) !== -1 && (LS.get("guided") || NATIVE)){
     C = cs; enterClient(); loadClient(); return;
   }
   await loadClient();
   if(!C){ gate("gateCode"); return; }
   if(!me || C.team.indexOf(me) === -1){ buildNames(); gate("gateName"); return; }
+  if(!LS.get("guided") && NATIVE){ LS.set("guided", "1"); LS.set("seenFilmMode", "1"); enterClient(); natWelcome(); return; }
   if(!LS.get("guided")){ buildGuide(); gate("gateGuide"); return; }
   enterClient();
 }
@@ -1135,6 +1157,7 @@ function buildNames(){
 }
 function pickName(n){
   me = n; LS.set("me", n);
+  if(!LS.get("guided") && NATIVE){ LS.set("guided", "1"); LS.set("seenFilmMode", "1"); enterClient(); natWelcome(); return; }   // v4.33: the app is already on the home screen; new people get the welcome, not "what's new"
   if(!LS.get("guided")){ document.getElementById("guideHi").textContent = `Good to meet you, ${n}`; buildGuide(); gate("gateGuide"); }
   else enterClient();
 }
@@ -1147,7 +1170,7 @@ function buildGuide(){
   else if(isAndroid){ pill.textContent="Android · Chrome"; steps.innerHTML = st(1,"Tap the <b>⋮ menu</b>, top-right of Chrome.")+st(2,"Tap <b>Add to Home screen</b>.")+st(3,"Tap <b>Add</b>. Gold icon, one tap from now on.")+st(4,"Make sure the <b>Google Drive</b> app is installed — uploads finish in the background."); }
   else { pill.textContent="You're on a computer"; steps.innerHTML = st(1,"This app lives on phones — open the same link on your phone.")+st(2,"iPhone: Share → <b>Add to Home Screen</b>. Android: ⋮ → <b>Add to Home screen</b>."); }
 }
-function finishGuide(){ LS.set("guided","1"); enterClient(); }
+function finishGuide(){ LS.set("guided","1"); LS.set("seenFilmMode", "1"); enterClient(); }   // v4.33: a first open isn't "what's new"
 function resetDevice(){ LS.set("code",null); LS.set("me",null); LS.set("ownercode",null); LS.set("ownerpin",null); dropCache("state"); dropCache("owner"); code=null; me=null; C=null; U=null; upOpen.clear(); stopWatchUploads(); stopPoll(); gate("gateCode"); }
 
 /* ═══════════════ client side ═══════════════ */
@@ -1234,7 +1257,7 @@ function renderClient(){
           ${isRedo ? `<span class="reason"><b>XC ASKED FOR A REDO —</b> ${esc(C.reasons[i]||"")}</span>` : ""}
           <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="chip">${TLAB[s.t]||"Mid"}</span><span class="chip">${esc(s.d)}</span><span class="chip open" style="border-color:var(--gold);color:var(--goldB)" role="button" tabindex="0" onclick="event.stopPropagation();openFilm(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openFilm(${i})}">🎬 Film mode</span><span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();openSheet(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openSheet(${i})}">How-to ↗</span>
             ${(()=>{const tk=(s.steps||[]).filter((_,sk)=>((C.stepTicks||{})[i]||{})[sk]).length; return tk&&!isDone?`<span class="chip">${tk}/${s.steps.length} takes ✓</span>`:"";})()}
-            <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">Upload ↗</span>
+            <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">${upLbl()}</span>
             </span>
           <span class="upline">${upStatHtml(i, s, isDone)}${isDone ? (rcv || upInfo(i) ? `<span class="byme rcv">✓ ${esc(C.by[i])}</span>` : dryMins(i) ? `<span class="byme wait">✓ ${esc(C.by[i])} · ${whenStr(C.tickAt[i])}</span>` : `<span class="byme wait">✓ ${esc(C.by[i])} · waiting for the upload</span>`) : ((rcv || upInfo(i)) ? `<span class="byme rcv">tick it once it's all in</span>` : "")}</span>
           ${safeLine(i)}
@@ -1268,6 +1291,7 @@ function renderClient(){
 function newsClose(){ LS.set("seenFilmMode", "1"); document.getElementById("newsbox").classList.remove("show"); }
 function newsTry(){ newsClose(); if(!C) return; const i = C.shots.findIndex((s,k)=>!C.by[k]); openFilm(i < 0 ? 0 : i); }
 async function tick(i){
+  natHap("success");
   if(!C) return;
   const was = !!C.by[i];
   writeSeq++;
@@ -1336,14 +1360,14 @@ function renderUpBoard(){
   const dry = rows.filter(x => dryMins(x.i));
   const head = dry.length ? `${dry.length === 1 ? "1 shot" : dry.length + " shots"} marked filmed, nothing has reached XC.` : filingN ? `${filingN} shot${filingN===1?"":"s"} filing now…` : !inN ? "Nothing uploaded yet this week." : !missing.length ? `Clips landed on all ${rows.length} shot${rows.length===1?"":"s"}.` : `Clips landed on ${inN} of ${rows.length} shots.`;
   let sub = "";
-  if(dry.length) sub = "Open the Drive app and look at its uploads. If they failed or it says your storage is full, message XC. Don't delete anything until each shot says safe to clear.";
+  if(dry.length) sub = NATIVE ? "Open ↑ Upload and send them again. If it says your iPhone is full, free some space first. Don't delete anything until each shot says safe to clear." : "Open the Drive app and look at its uploads. If they failed or it says your storage is full, message XC. Don't delete anything until each shot says safe to clear.";
   else if(missing.length && (inN || filingN)) sub = `Still nothing on: ${missing.map(x => esc(x.s.n)).join(" · ")}.`;
   else if(U && U.filingUnsorted) sub = `${U.filingUnsorted} clip${U.filingUnsorted===1?"":"s"} landed in the general folder — XC will sort ${U.filingUnsorted===1?"it":"them"} into the right shot.`;
-  else if(!inN && !filingN) sub = "Tap Upload on a shot, drop the clips in, and this fills in as they land.";
+  else if(!inN && !filingN) sub = upDirectUi() ? "Tap Upload on a shot, pick its clips, and this fills in as each one lands." : "Tap Upload on a shot, drop the clips in, and this fills in as they land.";
   host.innerHTML = updStripHtml() + trkHtml(trk) + gaps.map(gapHtml).join("") + `<div class="h"><span class="t${dry.length ? " dry" : ""}">${head}</span><button class="mact ok" onclick="loadUploads(true);toast('Checking your folders…')">↻ Check</button></div>${sub ? `<p class="sub" style="margin-top:4px">${sub}</p>` : ""}<div class="rows">${rows.map(x => {
     const u = x.u, st = !u ? (dryMins(x.i) ? "dry" : "none") : (u.filing ? "filing" : "in");
     const lbl = st === "dry" ? "nothing in" : !u ? "nothing yet" : u.filing ? `${u.n ? u.n + " in · " : ""}${u.filing} filing…` : (u.n === null ? "clips in" : `${u.n} clip${u.n===1?"":"s"} · ${whenStr(u.last)}`);
-    return `<div class="row"><span class="dot ${st === "dry" ? "none" : st}"></span><span class="nm">${esc(x.s.n)}</span><span class="st ${st}">${lbl}</span>${(st !== "in" || C.redo[x.i]) ? `<button class="mact ok" onclick="upload(${x.i})">Upload ↗</button>` : ""}</div>`; }).join("")}</div>`;
+    return `<div class="row"><span class="dot ${st === "dry" ? "none" : st}"></span><span class="nm">${esc(x.s.n)}</span><span class="st ${st}">${lbl}</span>${(st !== "in" || C.redo[x.i]) ? `<button class="mact ok" onclick="upload(${x.i})">${upLbl()}</button>` : ""}</div>`; }).join("")}</div>`;
 }
 async function loadUploads(force){
   if(!code || !C) return;
@@ -1421,6 +1445,7 @@ async function fmTickCur(){
   const was = !!C.stepTicks[i][k];
   if(was) delete C.stepTicks[i][k]; else C.stepTicks[i][k] = 1;
   if(!was) fmGo(1); else fmRender();
+  natHap("light");
   const d = await apiPost({action:"tickStep", code, idx:i, step:k, on:!was, by: me || "Someone"});
   if(!d.ok){
     if(d.error === "preview"){ if(was) C.stepTicks[i][k] = 1; else delete C.stepTicks[i][k]; fmRender(); }
@@ -1480,7 +1505,7 @@ function noDriveApp(url){
 }
 function upload(i){
   const s = (C && typeof i === "number") ? C.shots[i] : null;
-  if(directOK()) return upChoose(i);
+  if(directOK() || NATIVE) return upChoose(i);
   const url = (s && s.folder) || (C && C.drive);
   if(!url){ toast("No Drive folder set for this client yet — ask XC."); return; }
   upTrackStart(s ? i : null);
@@ -1545,7 +1570,7 @@ function updRender(){
   el.innerHTML = mine.map(x => {
     const pct = Math.floor(100 * at(x) / x.size), shot = x.idx === null || x.idx === undefined ? "general folder" : ((C && C.shots[x.idx]) ? C.shots[x.idx].n : "shot " + (x.idx + 1));
     const cls = x.st === "done" ? "done" : x.st === "error" ? "err" : (x.st === "lost" && !x.file) ? "lost" : "";
-    const stx = x.st === "done" ? "Sent ✓ · XC has it" : x.st === "error" ? (x.err || "Failed") + " · tap Add more to pick it again" : (x.st === "lost" && !x.file) ? (x.nat ? "Didn't finish · pick it again to send it" : "Didn't finish · pick it again to carry on from " + pct + "%") : x.st === "queued" && x.nat && x.wait ? "Connection dropped · trying again shortly" : x.st === "sending" && x.nat ? (pct >= 100 ? "Checking XC has it…" : (x.fly ? "Sending · " + pct + "%" : "Handed to your iPhone · sending")) : x.st === "sending" ? (x.wait ? "Connection dropped · trying again in " + x.wait + " s" : pct >= 100 ? "Checking XC has it…" : "Sending · " + pct + "%") : "Waiting";
+    const stx = x.st === "done" ? "Sent ✓ · XC has it" : x.st === "error" ? (x.err || "Failed") + " · tap Add more to pick it again" : (x.st === "lost" && !x.file) ? (x.nat ? "Didn't finish · pick it again to send it" : "Didn't finish · pick it again to carry on from " + pct + "%") : x.st === "queued" && x.nat && x.wifiWait ? "Waiting for Wi-Fi" : x.st === "queued" && x.nat && x.wait ? "Connection dropped · trying again shortly" : x.st === "sending" && x.nat ? (pct >= 100 ? "Checking XC has it…" : (x.fly ? "Sending · " + pct + "%" : "Handed to your iPhone · sending")) : x.st === "sending" ? (x.wait ? "Connection dropped · trying again in " + x.wait + " s" : pct >= 100 ? "Checking XC has it…" : "Sending · " + pct + "%") : "Waiting";
     return `<div class="f ${cls}"><div class="n"><span>${esc(x.name)}</span><span>${fmtB(x.size)}</span></div><div class="s">${esc(stx)} · ${esc(shot)}</div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
   }).join("");
 }
@@ -1619,8 +1644,23 @@ const NATIVE = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform =
 const NAT_TRIES = 4;   // fresh Drive sessions per clip
 let natOn = false, natSeen = 0, natPicking = false, natPrep = false;
 function natCall(plugin, method, opts){ return window.Capacitor.nativePromise(plugin, method, opts || {}); }
+/* test builds only (?xcselftest=1, set by the Mac through server.url): files the Mac copied into the app's Library/NoCloud/xc-test
+   go through the same queue, declare, hand-off and receipt as picked clips, into the general folder (no transcription). */
+let natSelfDone = false;
+async function natSelfTest(){
+  if(!NATIVE || !window.__xcSelf || natSelfDone || !code) return; natSelfDone = true;
+  let list; try { list = await natCall("Filesystem", "readdir", { path: "xc-test", directory: "LIBRARY_NO_CLOUD" }); } catch(e){ console.log("selftest: no xc-test folder"); return; }
+  for(const f of (list.files || [])){
+    const nm = f.name || f, st = await natCall("Filesystem", "stat", { path: "xc-test/" + nm, directory: "LIBRARY_NO_CLOUD" }), size = Number(st.size), k = nm + "|" + size;
+    if(upd.some(x => x.k === k && x.code === code)) continue;
+    upd.push({ k, code, idx: null, name: nm, size, type: "video/mp4", path: st.uri, nat: true, st: "queued", off: 0 });
+    console.log("selftest: queued " + nm + " " + size);
+  }
+  updSave(); updShow(); await updDeclare(); console.log("selftest: declared"); natRun();
+}
 function natInit(){
   if(!NATIVE) return;
+  setTimeout(natSelfTest, 1500);
   document.body.classList.add("native");
   if(!natOn){ natOn = true; try { window.Capacitor.addListener("Uploader", "events", natEvent); } catch(e){}
     try { window.Capacitor.addListener("FilePicker", "pickerDismissed", () => { if(natPicking){ natPrep = true; updShow(); } }); } catch(e){}   // iOS copies the clips in before we get them: say so
@@ -1643,22 +1683,28 @@ async function natPick(i, from){
     if(was){ if(was.path && was.path !== path) natTidy(was.path); was.path = path; was.nat = true; was.st = "queued"; was.natTry = 0; was.uri = null; continue; }
     upd.push({ k, code, idx: updIdx, name: f.name, size: f.size, type: f.mimeType || "video/mp4", path, nat: true, st: "queued", off: 0 });
   }
-  updSave(); updShow(); await updDeclare(); natRun();
+  updSave(); updShow(); await updDeclare();
+  // v4.33: big clips on mobile data cost the client money: ask, and hold them for Wi-Fi if they'd rather
+  const qd = upd.filter(x => x.code === code && x.nat && x.st === "queued"), tot = qd.reduce((a, x) => a + x.size, 0);
+  if(natNetType === "cellular" && tot > 3e8 && !(await ask({ title: "You're on mobile data", body: "That's " + fmtB(tot) + " to send. Send it now, or wait until you're on Wi-Fi?", ok: "Send now", cancel: "Wait for Wi-Fi" }))){
+    qd.forEach(x => { x.wifiWait = true; }); updRender(); toast("<b>Waiting for Wi-Fi.</b> They send by themselves once you're connected. Keep the app open on Wi-Fi."); return;
+  }
+  natRun();
 }
 async function natRun(){
   if(updBusy) return; updBusy = true; updT0 = Date.now(); updB0 = 0;
-  try { for(;;){ const x = upd.find(y => y.code === code && y.nat && y.st === "queued" && !y.wait); if(!x) break; await natStart(x); updRender(); } }
+  try { for(;;){ const x = upd.find(y => y.code === code && y.nat && y.st === "queued" && !y.wait && !y.wifiWait); if(!x) break; await natStart(x); updRender(); } }
   finally { updBusy = false; updSave(); updRender(); }
 }
 async function natStart(x){
   x.st = "sending"; x.off = 0; x.fly = 0; x.natTry = (x.natTry || 0) + 1; updRender();
   let d = null;
   for(let t = 0; t < 4; t++){ d = await apiPost({ action: "upStart", code: x.code, idx: x.idx, name: x.name, size: x.size, type: x.type, by: me || "" }); if(d.ok || d.error !== "network") break; await new Promise(r => setTimeout(r, 2000 * (t + 1))); }
-  if(!d || !d.ok){ x.st = "error"; x.err = (d && d.error) || "couldn't start"; updSave(); return; }
+  if(!d || !d.ok){ console.log("nat: upStart failed " + JSON.stringify(d)); x.st = "error"; x.err = (d && d.error) || "couldn't start"; updSave(); return; }
   x.uri = d.uri; x.final = d.name;
   try {
     const r = await natCall("Uploader", "startUpload", { filePath: x.path, serverUrl: x.uri, method: "PUT", uploadType: "binary", mimeType: x.type, headers: { "Content-Type": x.type }, maxRetries: 0 });
-    x.natId = r.id; x.natAt = Date.now();
+    x.natId = r.id; x.natAt = Date.now(); console.log("nat: handed " + x.name + " to iOS as " + r.id + " final=" + x.final);
   } catch(e){ x.st = "error"; x.err = "this phone couldn't start sending it (" + String(e && (e.message || e)).slice(0, 60) + ")"; }
   updSave();
 }
@@ -1683,7 +1729,7 @@ async function natRetry(x, why){
 async function natReceipt(x, quiet){
   for(let k = 0; k < 6; k++){
     const d = await apiPost({ action: "upDone", code: x.code, idx: x.idx, final: x.final, name: x.name, size: x.size });
-    if(d.ok){ x.st = "done"; x.doneAt = Date.now(); x.off = x.size; const p = x.path; x.path = null; x.natId = null; updSave(); updRender(); natTidy(p); natAllDone(); return true; }
+    if(d.ok){ console.log("nat: RECEIPT ok " + x.name + " " + (d.receipt && d.receipt.id)); natHap("success"); x.st = "done"; x.doneAt = Date.now(); x.off = x.size; const p = x.path; x.path = null; x.natId = null; updSave(); updRender(); natTidy(p); natAllDone(); return true; }
     if(quiet && d.error !== "network") return false;   // checking on a clip that may still be sending: not there yet is fine
     if(d.error !== "network" && !/can't find/.test(d.error || "")){ x.st = "error"; x.err = d.error; x.uri = null; natTidy(x.path); x.path = null; updSave(); updRender(); return false; }
     await new Promise(r => setTimeout(r, 3000 * (k + 1)));   // Drive can take a moment to list a file it just finished
@@ -1721,6 +1767,181 @@ async function natCheck(){
     }
   } finally { natChecking = false; }
 }
+/* v4.33: the app's own confirm and prompt (the browser's say "app.xcmedia.co says…" and can't mark a delete in red).
+   ask({title, body | html, ok, cancel, danger}) → true / false · askText({title, body, value, placeholder, multiline}) → string / null */
+function ask(o){ return askSheet(Object.assign({ ok: "OK", cancel: "Cancel" }, o)); }
+function askText(o){ return askSheet(Object.assign({ ok: "Save", cancel: "Cancel", input: true }, o)); }
+function askC(text, danger){ const i = String(text).indexOf("?"); return i > 0 && i < 140 ? ask({ title: text.slice(0, i + 1), body: text.slice(i + 1).trim(), ok: danger ? "Yes, do it" : "Yes", danger }) : ask({ body: text, danger }); }
+function askSheet(o){
+  return new Promise(res => {
+    document.querySelectorAll(".askwrap").forEach(n => n.remove());
+    const w = document.createElement("div"); w.className = "askwrap";
+    const field = o.input ? (o.multiline ? `<textarea class="askin" rows="4" placeholder="${esc(o.placeholder || "")}">${esc(o.value || "")}</textarea>` : `<input class="askin" placeholder="${esc(o.placeholder || "")}" value="${esc(o.value || "")}" autocomplete="off">`) : "";
+    w.innerHTML = `<div class="veil show"></div><div class="sheet show askbox" role="alertdialog" aria-modal="true"><div class="grab"></div>
+      ${o.title ? `<h2>${esc(o.title)}</h2>` : ""}${o.html || (o.body ? `<p class="sub">${esc(o.body).replace(/\n/g, "<br>")}</p>` : "")}${field}
+      <div class="sheetbtns">${o.cancel ? `<button class="up askno">${esc(o.cancel)}</button>` : ""}<button class="bigbtn askok${o.danger ? " danger" : ""}">${esc(o.ok)}</button></div></div>`;
+    document.body.appendChild(w);
+    const inp = w.querySelector(".askin"), done = v => { w.remove(); res(v); };
+    w.querySelector(".askok").onclick = () => done(o.input ? (inp.value || "") : true);
+    const no = () => done(o.input ? null : false);
+    const nb = w.querySelector(".askno"); if(nb) nb.onclick = no;
+    w.querySelector(".veil").onclick = no;
+    if(inp){ setTimeout(() => inp.focus(), 60); if(!o.multiline) inp.onkeydown = e => { if(e.key === "Enter") w.querySelector(".askok").click(); }; }
+  });
+}
+/* ── v4.33 the iPhone app shell (repo ~/Developer/xc-shots-ios). Everything here only runs inside the app (NATIVE). The website is
+   untouched by it. The screens ship INSIDE the app (instant open, works with no signal) and update themselves from app.xcmedia.co:
+   a newer copy is checked, downloaded into Library/NoCloud/ionic_built_snapshots and switched to the next time the app goes to the
+   background; if a downloaded copy ever fails to draw twice in a row, MainViewController drops it and the built-in copy runs.
+   Sign-ins live in the iPhone Keychain (iOS can clear web storage); PINs come back only after Face ID or the passcode. ── */
+const NAT_TEST = NATIVE && /XCShotsTest/.test(navigator.userAgent);
+function natPlugin(p, m, o){ return NATIVE ? window.Capacitor.nativePromise(p, m, o || {}).catch(e => { throw e; }) : Promise.reject(new Error("web")); }
+function natHap(kind){ if(!NATIVE) return; (kind === "success" || kind === "warning" ? natPlugin("Haptics", "notification", { type: kind.toUpperCase() }) : natPlugin("Haptics", "impact", { style: kind === "heavy" ? "HEAVY" : "LIGHT" })).catch(() => {}); }
+
+/* sign-in: secrets in the Keychain behind Face ID, the rest mirrored so a cleared web storage doesn't sign anyone out */
+const NAT_SECRET = { pin: 1, ownerpin: 1, editorpin: 1 }, NAT_KEEP = { code: 1, me: 1, ownercode: 1, guided: 1, seenFilmMode: 1, gapHide: 1, upq: 1 }, NAT_MEM = {};   // upq = clips still sending: a wiped page must still check on them
+if(NATIVE){
+  const g = LS.get, s = LS.set;
+  LS.get = k => NAT_SECRET[k] ? (NAT_MEM[k] === undefined ? null : NAT_MEM[k]) : g(k);
+  LS.set = (k, v) => {
+    if(NAT_SECRET[k]){ NAT_MEM[k] = v; try { localStorage.removeItem("xcs." + k); } catch(e){} natPlugin("XCNative", "kcSet", { key: k, value: v || "", bio: true }).catch(() => {}); return; }
+    s(k, v); if(NAT_KEEP[k]) natPlugin("XCNative", "kcSet", { key: k, value: v || "" }).catch(() => {});
+  };
+}
+async function natUnlock(key, reason){
+  try { const h = await natPlugin("XCNative", "kcHas", { key, bio: true }); if(!h.has) return null;
+        const r = await natPlugin("XCNative", "kcGet", { key, bio: true, reason }); if(r && r.value){ NAT_MEM[key] = r.value; return r.value; } } catch(e){}
+  return null;
+}
+async function natPreBoot(){
+  setTimeout(() => natPlugin("SplashScreen", "hide", { fadeOutDuration: 180 }).catch(() => {}), 6000);   // never leave the launch screen up; bootOk only comes from a real first screen
+  try {
+    for(const k of Object.keys(NAT_SECRET)){ let v = null; try { v = localStorage.getItem("xcs." + k); } catch(e){} if(v){ NAT_MEM[k] = v; localStorage.removeItem("xcs." + k); await natPlugin("XCNative", "kcSet", { key: k, value: v, bio: true }); } }
+    if(!LS.get("code") && !LS.get("ownercode")){
+      const r = await natPlugin("XCNative", "kcAll"); const it = (r && r.items) || {};
+      Object.keys(NAT_KEEP).forEach(k => { if(it[k]) try { localStorage.setItem("xcs." + k, it[k]); } catch(e){} });
+      code = LS.get("code"); me = LS.get("me");
+    }
+    if(!code){ const p = await natUnlock("pin", "Unlock the XC studio"); if(p) pin = p; }   // the studio: XC's phone
+    else if(LS.get("ownercode")) await natUnlock("ownerpin", "Unlock the owner view");
+  } catch(e){}
+}
+async function natPinFaceId(){ const p = await natUnlock("pin", "Unlock the XC studio"); if(!p) return; pin = p; await enterXC(); }
+function natSplashHide(){ if(!NATIVE || natSplashHide.done) return; natSplashHide.done = true; natPlugin("SplashScreen", "hide", { fadeOutDuration: 180 }).catch(() => {}); natPlugin("XCNative", "bootOk").catch(() => {}); }
+
+/* the first open after the name: what the app does, and the one switch it needs */
+async function natWelcome(){
+  let st = "ask"; try { st = (await natPlugin("XCNative", "notifStatus")).status; } catch(e){}
+  const on = st === "on";
+  const html = `<p class="eyebrow">You're in</p><h2>One tap to film, one tap to send.</h2>
+    <p class="sub">Your shots for the week are here. Film them, tap <b>Mark as filmed</b>, then send the clips from <b>↑ Upload</b>. They keep sending with the phone locked, and each one says <b>sent ✓</b> when XC has it.</p>
+    <p class="sub">${on ? "Notifications are on, so you'll hear when your clips land." : "Turn on notifications so the app can tell you when your clips have landed."}</p>`;
+  const ok = await ask({ html, ok: on ? "Let's go" : "Turn on notifications", cancel: on ? "" : "Not now" });
+  if(ok && !on){ try { const r = await natPlugin("XCNative", "notifRequest"); if(!r.on && st === "off") natPlugin("XCNative", "openSettings"); } catch(e){} }
+}
+
+/* links that would leave the app open in an in-app browser sheet instead (Timeliner, Stripe, documents, Drive folders) */
+function natOpen(url){ natPlugin("Browser", "open", { url, presentationStyle: "popover", toolbarColor: "#0A0A0A" }).catch(() => { location.href = url; }); }
+if(NATIVE){
+  document.addEventListener("click", e => {
+    const a = e.target && e.target.closest && e.target.closest("a[href]"); if(!a) return;
+    const href = a.getAttribute("href") || "";
+    if(a.hasAttribute("download") && /^data:/.test(href)){ e.preventDefault(); natShareImage(href, a.getAttribute("download") || "xc-shots.png"); return; }
+    if(/^https?:/i.test(href) && !href.startsWith(location.origin)){ e.preventDefault(); natOpen(href); }
+  }, true);
+  const wo = window.open; window.open = (u, t, f) => { if(/^https?:/i.test(String(u || ""))){ natOpen(String(u)); return null; } return wo.call(window, u, t, f); };
+}
+/* the share card / month wrap: the iPhone share sheet (Save Image, Messages, Instagram…) */
+async function natShareImage(dataUrl, name){
+  try {
+    const path = "share/" + Date.now() + "-" + name.replace(/[^\w.-]/g, "_");
+    await natPlugin("Filesystem", "writeFile", { path, data: dataUrl.split(",")[1], directory: "CACHE", recursive: true });
+    const u = await natPlugin("Filesystem", "getUri", { path, directory: "CACHE" });
+    await natPlugin("Share", "share", { files: [u.uri], title: "XC Shots" });
+  } catch(e){ if(!/cancel/i.test(String(e && (e.message || e)))) toast("Couldn't open the share sheet."); }
+}
+
+/* swipe a sheet down to close it; pull a screen down to refresh it */
+if(NATIVE){
+  let sh = null, y0 = 0, dy = 0;
+  document.addEventListener("touchstart", e => {
+    const s = e.target.closest && e.target.closest(".sheet.show"); if(!s) return;
+    const t = e.touches[0], top = s.getBoundingClientRect().top;
+    if(t.clientY - top > 70 && s.scrollTop > 0) return;   // inside a scrolled sheet: that's a scroll, not a close
+    if(t.clientY - top > 70 && !e.target.closest(".grab")) return;
+    sh = s; y0 = t.clientY; dy = 0; s.style.transition = "none";
+  }, { passive: true });
+  document.addEventListener("touchmove", e => { if(!sh) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = dy ? `translateY(${dy}px)` : ""; }, { passive: true });
+  document.addEventListener("touchend", () => {
+    if(sh){ const s = sh; sh = null; s.style.transition = ""; s.style.transform = "";
+      if(dy > 90){ const v = s.previousElementSibling; if(v && v.classList.contains("veil")) v.click(); } }
+    if(window.scrollY < -70) natPullRefresh();
+  });
+}
+let natPulling = false;
+async function natPullRefresh(){
+  if(natPulling) return; natPulling = true; natHap("light");
+  const vis = id => { const el = document.getElementById(id); return el && !el.classList.contains("hide"); };
+  try {
+    if(vis("client")){ if(LS.get("ownerpin") && LS.get("ownercode")) await ownerLoad(); else await loadClient(); loadUploads(true); natCheck(); }
+    else if(vis("today")) await loadToday();
+    else if(vis("manage")) await loadManage();
+    else if(vis("calendar")) await loadCal();
+    else if(vis("dash")) await loadRoster();
+  } catch(e){}
+  natPulling = false;
+}
+
+/* no signal: say so once, and pick up queued clips when it's back */
+let natOnline = true, natNetType = "wifi";
+if(NATIVE){
+  natPlugin("Network", "getStatus").then(s => { natOnline = s.connected; natNetType = s.connectionType; }).catch(() => {});
+  try { window.Capacitor.addListener("Network", "networkStatusChange", s => {
+    const was = natOnline; natOnline = !!s.connected; natNetType = s.connectionType;
+    if(was && !natOnline) toast("<b>No connection.</b> Your shots are still here. Clips send when you're back online.");
+    if(!was && natOnline){ toast("Back online."); natCheck(); }
+    if(natOnline && natNetType === "wifi" && upd.some(x => x.nat && x.st === "queued" && x.wifiWait)){ upd.forEach(x => { if(x.wifiWait) x.wifiWait = false; }); natRun(); }
+  }); } catch(e){}
+  try { window.Capacitor.addListener("App", "appUrlOpen", d => natRoute(d && d.url)); } catch(e){}
+  try { window.Capacitor.addListener("App", "resume", () => { natCheck(); natLiveUpdate(); }); } catch(e){}
+  document.addEventListener("focusin", e => { if(e.target.matches && e.target.matches("input,textarea") && e.target.closest(".sheet")) setTimeout(() => e.target.scrollIntoView({ block: "center", behavior: "smooth" }), 320); });
+}
+/* links in WhatsApp and the welcome message open the app (universal links): web-only pages go to the in-app browser */
+function natRoute(url){
+  try {
+    const u = new URL(url); if(u.host !== "app.xcmedia.co") return;
+    if(/^\/(welcome|onboard|invoice|card|demo)(\/|$)/.test(u.pathname)){ natOpen(url); return; }
+    const c = (u.searchParams.get("code") || u.searchParams.get("c") || "").toUpperCase();
+    if(c && !code){ LS.set("code", c); location.reload(); }
+  } catch(e){}
+}
+
+/* the self-update */
+let natUpdReady = null, natUpdAt = 0;
+function natVer(v){ return String(v).split(".").map(Number); }
+function natNewer(a, b){ const x = natVer(a), y = natVer(b); for(let i = 0; i < Math.max(x.length, y.length); i++){ const d = (x[i] || 0) - (y[i] || 0); if(d) return d > 0; } return false; }
+async function natLiveUpdate(){
+  if(!NATIVE || NAT_TEST || location.protocol !== "capacitor:" || Date.now() - natUpdAt < 30 * 60000) return; natUpdAt = Date.now();
+  try {
+    const html = await (await fetch("https://app.xcmedia.co/index.html?nc=" + Date.now(), { cache: "no-store" })).text();
+    const b = (html.match(/const BUILD = "([^"]+)"/) || [])[1]; if(!b || !natNewer(b, BUILD) || !/<\/html>\s*$/.test(html)) return;
+    for(const m of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) new Function(m[1]);   // a copy that doesn't even parse is never used
+    const dir = "ionic_built_snapshots/b" + b.replace(/[^\d.]/g, "");
+    await natPlugin("Filesystem", "writeFile", { path: dir + "/index.html", data: html, directory: "LIBRARY_NO_CLOUD", encoding: "utf8", recursive: true });
+    for(const f of ["logo.png", "icon-192.png", "apple-touch-icon.png"]){
+      const blob = await (await fetch("https://app.xcmedia.co/" + f, { cache: "no-store" })).blob();
+      const b64 = await new Promise(res => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
+      await natPlugin("Filesystem", "writeFile", { path: dir + "/" + f, data: b64, directory: "LIBRARY_NO_CLOUD", recursive: true });
+    }
+    const u = await natPlugin("Filesystem", "getUri", { path: dir, directory: "LIBRARY_NO_CLOUD" });
+    natUpdReady = decodeURIComponent(String(u.uri).replace(/^file:\/\//, ""));
+  } catch(e){}
+}
+if(NATIVE) document.addEventListener("visibilitychange", () => {   // switch to the new copy while nobody's looking, never mid-pick or mid-hand-off
+  if(document.visibilityState !== "hidden" || !natUpdReady || updBusy || natPicking) return;
+  const p = natUpdReady; natUpdReady = null;
+  natPlugin("WebView", "setServerBasePath", { path: p }).then(() => natPlugin("WebView", "persistServerBasePath")).catch(() => {});
+});
 function updStripHtml(){
   if(!directOK()) return "";
   const mine = upd.filter(x => x.code === code), open = mine.filter(x => x.st !== "done"); if(!open.length) return "";
@@ -1768,9 +1989,13 @@ function subtab(which){
 }
 function youOwner(){ if(C && C.role >= 1) subtab("owner"); else gate("gateOwner"); }
 /* upload picker — the bar's ↑ asks which shot the clip belongs to, then opens THAT shot's folder */
+/* v4.33: when clips go through the app's own sender (the iPhone app always, the website when UP_DIRECT is on), no Drive wording */
+function upDirectUi(){ return NATIVE || directOK(); }
+function upLbl(){ return upDirectUi() ? "Upload ↑" : "Upload ↗"; }
 function openUpPick(){
   if(!C || !C.shots || !C.shots.length){ upload(); return; }
   if(upSheetDefault){ document.getElementById("upTitle").textContent = upSheetDefault[0]; document.getElementById("upSub").innerHTML = upSheetDefault[1]; }
+  if(upDirectUi()){ document.getElementById("upTitle").textContent = "Which shot is this for?"; document.getElementById("upSub").textContent = "Tap the shot, then pick its clips. Each row shows what has already landed, so nothing gets missed."; }
   const WK = C.week;
   // v4.17: every shot stays in the list with what has landed on it — a shot never vanishes after its first clip
   const rank = x => C.redo[x.i] ? 0 : (x.s.w <= WK && !x.u) ? 1 : (x.u && x.u.filing) ? 2 : (x.s.w <= WK) ? 3 : 4;
@@ -1778,10 +2003,10 @@ function openUpPick(){
   const rows = cand.map(x => {
     const u = x.u, col = C.redo[x.i] ? "var(--warn)" : (!u ? (x.s.w > WK ? "var(--dim)" : "#E0913A") : "var(--goldB)");
     const st = C.redo[x.i] ? "Redo asked — upload the new take" : !u ? (x.s.w > WK ? "Week " + x.s.w + " · nothing yet" : "Nothing uploaded yet") : u.filing ? (u.n ? u.n + " in · " : "") + u.filing + " filing now…" : (u.n === null ? "Clips in" : u.n + " clip" + (u.n===1?"":"s") + " in · " + whenStr(u.last));
-    return `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload(${x.i})" onkeydown="if(event.key==='Enter'){closeUpPick();upload(${x.i})}"><div class="r"><span class="nm">${esc(x.s.n)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:${col};text-transform:uppercase">${esc(st)}</span></span><span class="who" style="color:var(--gold);font-weight:700">Open folder ↗</span></div></div>`;
+    return `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload(${x.i})" onkeydown="if(event.key==='Enter'){closeUpPick();upload(${x.i})}"><div class="r"><span class="nm">${esc(x.s.n)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:${col};text-transform:uppercase">${esc(st)}</span></span><span class="who" style="color:var(--gold);font-weight:700">${upDirectUi() ? "Pick clips ↑" : "Open folder ↗"}</span></div></div>`;
   }).join("");
   document.getElementById("upList").innerHTML = rows +
-    `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload()" onkeydown="if(event.key==='Enter'){closeUpPick();upload()}"><div class="r"><span class="nm">Something else<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">General drop folder</span></span><span class="who">Open ↗</span></div></div>`;
+    `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upload()" onkeydown="if(event.key==='Enter'){closeUpPick();upload()}"><div class="r"><span class="nm">Something else<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${upDirectUi() ? "Not for one shot" : "General drop folder"}</span></span><span class="who">${upDirectUi() ? "Pick ↑" : "Open ↗"}</span></div></div>`;
   document.getElementById("upveil").classList.add("show"); document.getElementById("upsheet").classList.add("show");
 }
 /* v4.28: Upload asks how. Sending from the app is first: straight to XC, a receipt per clip, nothing on the client's own Drive. */
@@ -1791,9 +2016,9 @@ function upChoose(i){
   document.getElementById("upTitle").textContent = s ? "Send clips for “" + s.n + "”" : "Send clips";
   document.getElementById("upSub").innerHTML = "Pick the clips from your phone. The app sends them straight to XC and marks each one <b>sent ✓</b> when XC has it." + (NATIVE ? " It keeps sending with the phone locked." : " Keep the screen open while it sends.");
   document.getElementById("upList").innerHTML =
-    `<div class="mrow" role="button" tabindex="0" style="cursor:pointer;border-color:var(--gold)" onclick="closeUpPick();updPick(${typeof i === "number" ? i : "null"})" onkeydown="if(event.key==='Enter'){closeUpPick();updPick(${typeof i === "number" ? i : "null"})}"><div class="r"><span class="nm">Send from this phone<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--goldB);text-transform:uppercase">Recommended · a receipt for every clip</span></span><span class="who" style="color:var(--gold);font-weight:700">Pick clips ↑</span></div></div>` +
+    `<div class="mrow" role="button" tabindex="0" style="cursor:pointer;border-color:var(--gold)" onclick="closeUpPick();updPick(${typeof i === "number" ? i : "null"})" onkeydown="if(event.key==='Enter'){closeUpPick();updPick(${typeof i === "number" ? i : "null"})}"><div class="r"><span class="nm">${NATIVE ? "From Photos" : "Send from this phone"}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--goldB);text-transform:uppercase">${NATIVE ? "Your camera roll · a receipt for every clip" : "Recommended · a receipt for every clip"}</span></span><span class="who" style="color:var(--gold);font-weight:700">Pick clips ↑</span></div></div>` +
     (NATIVE ? `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();updPick(${typeof i === "number" ? i : "null"}, 'files')"><div class="r"><span class="nm">From the Files app<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Clips copied off a camera or a card</span></span><span class="who">Pick ↑</span></div></div>` : "") +
-    (url ? `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upTrackStart(${typeof i === "number" ? i : "null"});watchUploads();openDrive(${q(url)})" onkeydown="if(event.key==='Enter'){closeUpPick();openDrive(${q(url)})}"><div class="r"><span class="nm">Use the Google Drive app instead<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">For a computer, or clips already in Drive</span></span><span class="who">Open ↗</span></div></div>` : "");
+    (url && !NATIVE ? `<div class="mrow" role="button" tabindex="0" style="cursor:pointer" onclick="closeUpPick();upTrackStart(${typeof i === "number" ? i : "null"});watchUploads();openDrive(${q(url)})" onkeydown="if(event.key==='Enter'){closeUpPick();openDrive(${q(url)})}"><div class="r"><span class="nm">Use the Google Drive app instead<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">For a computer, or clips already in Drive</span></span><span class="who">Open ↗</span></div></div>` : "");
   document.getElementById("upveil").classList.add("show"); document.getElementById("upsheet").classList.add("show");
 }
 function closeUpPick(){ document.getElementById("upveil").classList.remove("show"); document.getElementById("upsheet").classList.remove("show"); }
@@ -1843,7 +2068,7 @@ async function ownerPost(body){
   return d;
 }
 async function ownerAddTeam(){ const v = document.getElementById("ovNewName").value.trim(); if(!v) return; document.getElementById("ovNewName").value=""; const d = await ownerPost({action:"teamAdd", name:v}); if(d.ok) toast(`<b>${esc(v)}</b> added — they'll see their name on the picker.`); }
-async function ownerRemoveTeam(n){ if(!confirm("Remove " + n + " from the name picker?")) return; await ownerPost({action:"teamRemove", name:n}); }
+async function ownerRemoveTeam(n){ if(!(await ask({ title: "Remove " + n + "?", body: "They come off the name picker on everyone's phone.", ok: "Remove", danger: true }))) return; await ownerPost({action:"teamRemove", name:n}); }
 function renderResults(){
   if(!C) return;
   const rs = [...(C.results||[])].sort((a,b)=>b.v-a.v), total = rs.reduce((a,r)=>a+(r.v||0),0), topV = rs.length ? rs[0].v : 0;
@@ -1868,7 +2093,7 @@ function renderResults(){
 }
 async function reelFeedback(fileId, verdict){
   let note = "";
-  if(verdict === "change"){ note = prompt("What should we refine?") || ""; if(!note.trim()) return; }
+  if(verdict === "change"){ note = (await askText({ title: "What should we refine?", placeholder: "One line for the editor" })) || ""; if(!note.trim()) return; }
   const d = await apiPost({action:"feedback", code, fileId, verdict, note, by: me || "Someone"});
   if(d.ok){ C = d; renderClient(); toast(verdict==="love" ? "<b>Nice.</b> XC sees the love." : "<b>Sent.</b> XC gets your note."); }
   else toast("Couldn't send: "+esc(d.error));
@@ -2091,7 +2316,7 @@ async function syncSelects(){
 async function setVerdict(fid, v){ await act({action:"verdict", fileId:fid, v}, v==="bin" ? "<b>Binned.</b> Restore any time from the Binned list." : (v==="good" ? "<b>Selected.</b>" : "<b>Back in the review queue.</b>")); }
 async function askPickups(k, idxs){
   const S = mgState; const names = idxs.map(i=>"Take "+(i+1)+" — "+S.shots[k].steps[i].replace(/^☐ TAKE \d+ — /,"").split(/\. |: /)[0].slice(0,40));
-  if(!confirm("Send a redo on “"+S.shots[k].n+"” asking for: "+names.join(", ")+"?")) return;
+  if(!(await ask({ title: "Send a redo?", body: "On “" + S.shots[k].n + "”, asking for: " + names.join(", ") + ".", ok: "Send redo" }))) return;
   await act({action:"redo", idx:Number(k), reason:("Pickups needed — "+names.join(" · ")).slice(0,300)}, "<b>Pickups requested.</b> It's on their card as a redo with the exact takes listed.");
 }
 function renderManage(){
@@ -2228,8 +2453,8 @@ function shotSel(f, live){
 async function linkDeliv(id, v){ const lk = v ? v.split(":") : null; const d = await apiPost({action:"linkDelivery", pin, code:mgCode, fileId:id, m: lk ? lk[0] : "", idx: lk ? Number(lk[1]) : ""});
   if(d.ok){ mgState = mgTake(d); if(mgDeliv) mgDeliv.deliv = d.deliv || {}; calAt = 0; renderManage(); toast(lk ? "<b>Linked.</b> That shot is cleared on the calendar." : "Link removed."); } else toast("Couldn't save: " + esc(d.error)); }
 function findCap(id){ const pools = [(typeof mgDeliv!=="undefined" && mgDeliv && mgDeliv.approved)||[], (typeof mgDeliv!=="undefined" && mgDeliv && mgDeliv.pending)||[], (typeof C!=="undefined" && C && C.approved)||[]]; for(const p of pools){ const f = p.find(x=>x.id===id); if(f) return f.note||""; } return ""; }
-async function copyCap(id){ const t = findCap(id); if(!t) return toast("No caption on this reel yet."); try{ await navigator.clipboard.writeText(t); toast("<b>Caption copied.</b> Paste it straight into the post."); }catch(e){ prompt("Copy the caption:", t); } }
-async function editCap(id){ const v = prompt("Caption for this reel (first line = the hook):", findCap(id)); if(v===null) return; await act({action:"caption", fileId:id, caption:v.trim()}, "<b>Caption saved.</b>"); }
+async function copyCap(id){ const t = findCap(id); if(!t) return toast("No caption on this reel yet."); try{ await navigator.clipboard.writeText(t); toast("<b>Caption copied.</b> Paste it straight into the post."); }catch(e){ askText({ title: "Copy the caption", body: "Hold on the text to copy it.", value: t, multiline: true, ok: "Done", cancel: "" }); } }
+async function editCap(id){ const v = await askText({ title: "Caption for this reel", body: "First line is the hook.", value: findCap(id), multiline: true }); if(v===null) return; await act({action:"caption", fileId:id, caption:v.trim()}, "<b>Caption saved.</b>"); }
 function openBack(id, name){ backFile = id; document.getElementById("bTitle").textContent = `Send back: ${name}`; document.getElementById("bNote").value = ""; document.getElementById("bveil").classList.add("show"); document.getElementById("bsheet").classList.add("show"); }
 function closeBack(){ document.getElementById("bveil").classList.remove("show"); document.getElementById("bsheet").classList.remove("show"); }
 async function confirmBack(){ const note = document.getElementById("bNote").value.trim(); if(!note){ toast("Say what to change."); return; } closeBack(); await act({action:"sendBack", fileId:backFile, note}, "Sent back with your note."); }
@@ -2251,7 +2476,7 @@ function renderEdit(){
     if(!editOpen.has(k)) return `<div class="shotrow" role="button" tabindex="0" onclick="editOpen.add(${k});renderEdit()" onkeydown="if(event.key==='Enter'){editOpen.add(${k});renderEdit()}"><span class="i">${k+1}</span><span class="rn">${esc((s.n||"Untitled shot").split("\n")[0])}</span><span class="rm">wk ${s.w} · ${TLAB[s.t]||"Mid"}</span><span class="chev">▾</span></div>`;
     if(!s.steps) s.steps = [];
     return `<button class="shotfold" onclick="editOpen.delete(${k});renderEdit()">▴ Close shot ${k+1}</button>
-  <div class="shotedit"><span class="i">${k+1}</span><textarea rows="1" oninput="editShots[${k}].n=this.value;autogrow(this)" placeholder="Shot name">${esc(s.n)}</textarea><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="if(confirm('Remove shot ${k+1}?')){editShots.splice(${k},1);editOpen.delete(${k});renderEdit()}" aria-label="Remove shot">✕</button></div>
+  <div class="shotedit"><span class="i">${k+1}</span><textarea rows="1" oninput="editShots[${k}].n=this.value;autogrow(this)" placeholder="Shot name">${esc(s.n)}</textarea><select onchange="editShots[${k}].w=Number(this.value)">${[1,2,3,4].map(w=>`<option value="${w}"${s.w===w?" selected":""}>wk ${w}</option>`).join("")}</select><select onchange="editShots[${k}].t=this.value">${["wide","mid","close"].map(t=>`<option value="${t}"${s.t===t?" selected":""}>${TLAB[t]}</option>`).join("")}</select><button class="mact cancel" style="flex:none" onclick="ask({title:'Remove shot ${k+1}?',ok:'Remove',danger:true}).then(y=>{if(y){editShots.splice(${k},1);editOpen.delete(${k});renderEdit()}})" aria-label="Remove shot">✕</button></div>
   <div class="shotedit imgrow"><span class="i"></span><input value="${esc(s.img||"")}" oninput="editShots[${k}].img=this.value;updateImgPrev(${k},this.value)" placeholder="Reference photos (optional — paste one or more Drive share links, spaces between)"></div>
   <div class="imgprev" id="imgprev${k}">${imgPrevHtml(s.img)}</div>
   <div class="shotedit gsec"><span class="i"></span><div style="flex:1;min-width:0">
@@ -2307,7 +2532,7 @@ function staleDraft(){
   const b = document.querySelector("#toast .tundo"); if(b) b.textContent = "Reload";
 }
 async function publishDraft(){
-  if(!confirm("Publish this list to the client? It replaces their live shots and renames the drop folders.")) return;
+  if(!(await ask({ title: "Publish this list?", body: "It replaces their live shots and renames the drop folders.", ok: "Publish" }))) return;
   const s = await saveDraft(true); if(!s.ok) return;
   const d = await apiPost({pin, code:mgCode, action:"publishDraft", baseV:editBaseV});
   if(!d.ok){ if(/^draft changed/.test(d.error || "")) staleDraft(); else toast("Couldn't publish: " + esc(d.error)); return; }
@@ -2315,13 +2540,13 @@ async function publishDraft(){
   toast("<b>Published.</b> The list is live for the client."); loadManage();
 }
 async function discardDraft(){
-  if(!confirm("Throw away the draft and go back to the live list?")) return;
+  if(!(await ask({ title: "Throw away the draft?", body: "You go back to the live list.", ok: "Throw away", danger: true }))) return;
   const d = await apiPost({pin, code:mgCode, action:"discardDraft", baseV:editBaseV});
   if(!d.ok && /^draft changed/.test(d.error || "")){ staleDraft(); return; }
   if(d.ok){ if(mgState) mgState.draftShots = null; editShots = null; editBaseV = null; document.getElementById("draftBadge").classList.add("hide"); await loadManage(); mtab("edit"); toast("Draft discarded — showing the live list."); }
   else toast("Couldn't: " + esc(d.error));
 }
-async function newMonth(){ if(!confirm("Start a new month? Ticks and redos clear (results stay). Do this after the month's reels are delivered.")) return; await act({action:"month"}, "<b>New month started.</b>"); }
+async function newMonth(){ if(!(await ask({ title: "Start a new month?", body: "Ticks and redos clear (results stay). Do this after the month's reels are delivered.", ok: "Start new month", danger: true }))) return; await act({action:"month"}, "<b>New month started.</b>"); }
 
 /* ═══════════════ shared ═══════════════ */
 function show(view){
@@ -2346,8 +2571,8 @@ async function waStudioLoad(){ const d = await apiPost({action:"waAdmin", pin, o
   if(d.ok){ waInfo = d; if(!waTpl && d.lastStatus) waTpl = d.lastStatus; } else waInfo = {error: d.error}; waStudioRender(); }
 async function waStudioDo(op, extra){
   if(waBusy) return;
-  if(op === "channels" && extra.on && !confirm("Turn WhatsApp sending on? Clients who are switched on in their Settings start getting messages, and you get your alerts on WhatsApp.")) return;
-  if(op === "submit" && !confirm("Send all " + (waInfo && waInfo.templates || 20) + " templates to Meta for approval?")) return;
+  if(op === "channels" && extra.on && !(await askC("Turn WhatsApp sending on? Clients who are switched on in their Settings start getting messages, and you get your alerts on WhatsApp."))) return;
+  if(op === "submit" && !(await askC("Send all " + (waInfo && waInfo.templates || 20) + " templates to Meta for approval?"))) return;
   const before = waInfo ? waInfo.sending : null;
   if(op === "channels" && waInfo){ waInfo = Object.assign({}, waInfo, {sending: !!extra.on}); }   // v4.27: the switch moves the moment you tap, and goes back if the server says no
   waBusy = op; waStudioRender();
@@ -2745,7 +2970,7 @@ async function saveRhythm(){ const b = document.getElementById("rhBill").value.t
   if(d.ok){ mgState = mgTake(d); rhDirty = false; calAt = 0; renderTools(); toast("<b>Rhythm saved.</b> The calendar has it."); }
   else toast(d.error === "unknown action" ? "Needs backend v2.7. Deploy it, then save again." : "Couldn't save: " + esc(d.error)); }
 /* v4.25: WhatsApp per client (backend 2.8.0 setWa). The events match WA.clientEvents in the backend. */
-const WA_EVENTS = [["welcome","Welcome, save our number"],["intake_reminder","Onboarding still waiting"],["shots_ready","New shots are in the app"],["film_day_eve","Film day tomorrow, 6pm"],["film_day","Film day morning, 7am"],["film_day_missed","Film day missed"],["filmed_no_clips","Ticked, nothing landed"],["clips_missing","Clip numbers missing"],["shot_landed","Safe to clear your card"],["redo","Redo needed"],["redo_waiting","Redo still waiting"],["consent_needed","Consent needed"]];
+const WA_EVENTS = [["welcome","Welcome, save our number"],["shots_ready","New shots are in the app"],["film_day_eve","Film day tomorrow, 6pm"],["film_day","Film day morning, 7am"],["film_day_missed","Film day missed"],["filmed_no_clips","Ticked, nothing landed"],["clips_missing","Clip numbers missing"],["shot_landed","Safe to clear your card"],["redo","Redo needed"],["redo_waiting","Redo still waiting"],["consent_needed","Consent needed"]];
 let waDirty = false, waOnDraft = false, waOffDraft = {};
 function waSetOn(v){ waOnDraft = !!v; waDirty = true; waPaint(); }
 function waPaint(){
@@ -2771,7 +2996,7 @@ async function saveWa(){
   const digits = to.replace(/\D/g, "");
   if(to && !(/^04\d{8}$/.test(digits) || /^614\d{8}$/.test(digits) || (digits.length >= 8 && digits.length <= 15))){ toast("That doesn't look like a phone number."); return; }
   if(waOnDraft && (!digits || !at || !how)){ toast("Before switching on: their number, the day they said yes and how."); return; }
-  if(waOnDraft && !(mgState.wa && mgState.wa.on) && !confirm("Switch on WhatsApp for " + mgState.name + "? They get the welcome message from 0494 798 319 (straight away between 7am and 9pm, otherwise 7am tomorrow).")) return;
+  if(waOnDraft && !(mgState.wa && mgState.wa.on) && !(await askC("Switch on WhatsApp for " + mgState.name + "? They get the welcome message from 0494 798 319 (straight away between 7am and 9pm, otherwise 7am tomorrow)."))) return;
   const off = Object.keys(waOffDraft).filter(k => waOffDraft[k]);
   const d = await apiPost({action:"setWa", pin, code:mgCode, to, name:document.getElementById("waName").value.trim(), optInAt:at, optInHow:how, on:waOnDraft, off});
   if(d.ok){ mgState = mgTake(d); waDirty = false; renderTools(); toast(d.wa && d.wa.on ? "<b>WhatsApp on</b> for " + esc(d.name) + "." : "<b>Saved.</b> WhatsApp is off for " + esc(d.name) + "."); }
@@ -2784,7 +3009,7 @@ let closingMonth = false;
 async function closeMonth(){
   if(closingMonth) return;
   const nm = mgState.name, cc = mgCode, left = (mgState.shots || []).filter((s, i) => !(mgState.by || {})[i]).length;
-  if(!confirm("Close " + monthName(mgState.month) + " for " + nm + "?\n\n" + (left ? left + " shot" + (left === 1 ? " isn't" : "s aren't") + " filmed yet.\n" : "") + "This clears ticks and redos and starts the next month. This month's SELECTS folder stays, its ratings and tags are saved next to the footage, and the SELECTS copies from 3 months back are cleared. It can't be undone.")) return;
+  if(!(await askC("Close " + monthName(mgState.month) + " for " + nm + "?\n\n" + (left ? left + " shot" + (left === 1 ? " isn't" : "s aren't") + " filmed yet.\n" : "") + "This clears ticks and redos and starts the next month. This month's SELECTS folder stays, its ratings and tags are saved next to the footage, and the SELECTS copies from 3 months back are cleared. It can't be undone.", true))) return;
   closingMonth = true; let d;
   try { d = await apiPost({action:"monthClose", pin, code:cc, results: mgState.results || []}); } finally { closingMonth = false; }
   if(!d.ok){ toast("Couldn't: "+esc(d.error)); return; }
@@ -2843,13 +3068,13 @@ function consentCtl(key, t){
   return `<button class="mact" onclick="event.stopPropagation();needConsent(${q(key)},${q(String(t || "").replace(/^\d{4}-\d{2}-\d{2} \d{4} — /, "").replace(/\.[A-Za-z0-9]{2,4}$/, ""))})">Needs consent</button>`;
 }
 async function needConsent(key, t){
-  const who = (prompt("Whose consent does this reel need? Their name, e.g. Luke Miller.") || "").trim(); if(!who) return;
+  const who = ((await askText({ title: "Whose consent does this reel need?", placeholder: "Their name, e.g. Luke Miller" })) || "").trim(); if(!who) return;
   await act({action:"consent", op:"need", key, who, t}, `<b>On hold.</b> Their Results tab says waiting on consent from ${esc(who)} until you record it.`);
 }
 async function recordConsent(cc, key){
-  const date = (prompt("Date consent was given (YYYY-MM-DD):", new Date().toLocaleDateString("en-CA")) || "").trim(); if(!date) return;
+  const date = ((await askText({ title: "When did they give consent?", body: "Year-month-day.", value: new Date().toLocaleDateString("en-CA") })) || "").trim(); if(!date) return;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){ toast("Use the date format 2026-10-02."); return; }
-  const note = (prompt("How did you get it? One line for the record, e.g. signed release, WhatsApp message.") || "").trim();
+  const note = ((await askText({ title: "How did you get it?", body: "One line for the record.", placeholder: "Signed release, WhatsApp message…" })) || "").trim();
   const d = await apiPost({pin, code:cc, action:"consent", op:"record", key, date, note});
   if(d.ok){ if(mgCode === cc && d.shots){ mgState = mgTake(d); renderManage(); } toast("<b>Consent recorded.</b> The hold is off and they can post it."); if(todayData) loadToday(); }
   else toast("Couldn't save: " + esc(d.error));
@@ -3059,10 +3284,10 @@ function renderEditorQueue(d){
 }
 
 document.getElementById("buildA").textContent = "v" + BUILD; document.getElementById("buildB").textContent = "v" + BUILD; document.getElementById("buildC").textContent = BUILD;
-if("serviceWorker" in navigator){ try { navigator.serviceWorker.register("/sw.js"); } catch(e){} }
+if("serviceWorker" in navigator && !NATIVE){ try { navigator.serviceWorker.register("/sw.js"); } catch(e){} }   // v4.33: the app ships its screens and updates itself
 /* auto-update: the SW serves the cached shell instantly, so a deploy normally lands on the SECOND open.
    Check the network copy's BUILD — if it's newer, reload once (the fresh shell is already in the SW cache by then). */
-setTimeout(async ()=>{ try {
+if(!NATIVE) setTimeout(async ()=>{ try {
   // unique ?nosw= query so the probe misses the SW cache (old SWs) / skips the SW entirely (v2+ SWs)
   const t = await (await fetch("/index.html?nosw=" + Date.now(), {cache:"no-store"})).text();
   const m = t.match(/const BUILD = "([^"]+)"/);
@@ -3228,6 +3453,6 @@ setTimeout(async ()=>{ try {
   document.body.appendChild(bar);
 })();
 
-boot();
+if(NATIVE){ document.body.classList.add("native"); natPreBoot().catch(e => console.log("preboot " + e)).then(boot).catch(e => { console.log("boot " + e); try { gate(code ? "app" : "gateCode"); } catch(e2){} }).then(() => { setTimeout(natLiveUpdate, 4000); }); } else boot();   /* the app always starts */
 </script>
 </html>

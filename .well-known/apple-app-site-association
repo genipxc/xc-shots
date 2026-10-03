@@ -1,0 +1,46 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "AWMH2SDCY5.co.xcmedia.shots"
+        ],
+        "components": [
+          {
+            "/": "/privacy*",
+            "exclude": true
+          },
+          {
+            "/": "/welcome*",
+            "exclude": true,
+            "comment": "contract and payment, web only"
+          },
+          {
+            "/": "/onboard*",
+            "exclude": true
+          },
+          {
+            "/": "/invoice*",
+            "exclude": true
+          },
+          {
+            "/": "/card*",
+            "exclude": true
+          },
+          {
+            "/": "/demo*",
+            "exclude": true
+          },
+          {
+            "/": "/editor*",
+            "exclude": true
+          },
+          {
+            "/": "/*",
+            "comment": "the app: client and studio links open XC Shots when it's installed"
+          }
+        ]
+      }
+    ]
+  }
+}

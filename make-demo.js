@@ -116,9 +116,11 @@ const DEMO = `
 })();
 `;
 
-const marker = "\nboot();\n</script>";
-if (!html.includes(marker)) { console.error("marker not found — index.html structure changed"); process.exit(1); }
-html = html.replace(marker, "\n" + DEMO + "\nboot();\n</script>");
+// v4.33: the start line became "if(NATIVE){ … } else boot();" — the demo stubs go in right before whichever start line is there
+const marker = "\nboot();\n</script>", m433 = "\nif(NATIVE){ document.body.classList.add(\"native\");";
+if (html.includes(marker)) html = html.replace(marker, "\n" + DEMO + "\nboot();\n</script>");
+else if (html.includes(m433)) html = html.replace(m433, "\n" + DEMO + m433);
+else { console.error("marker not found — index.html structure changed"); process.exit(1); }
 
 fs.writeFileSync(OUT, html);
 console.log("demo/index.html regenerated —", (html.length/1024).toFixed(1) + "KB");
