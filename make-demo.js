@@ -16,7 +16,7 @@ html = html
   .replace('href="manifest.webmanifest"', 'href="/manifest.webmanifest"')
   .replace('href="icon-192.png"', 'href="/icon-192.png"')
   .replace('href="apple-touch-icon.png"', 'href="/apple-touch-icon.png"')
-  .replace("<title>XC Shots</title>", "<title>XC Shots — Demo</title>");
+  .replace("<title>XC Studio</title>", "<title>XC Studio — Demo</title>");
 
 const DEMO = `
 /* ═══════════════ DEMO MODE (injected by make-demo.js — do not edit demo/index.html by hand) ═══════════════ */

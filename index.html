@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>XC Shots</title>
+<title>XC Studio</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800;900&family=Space+Mono:wght@400;700&display=swap">
 <style>
   :root{--bg:#0A0A0A;--panel:#141414;--panel2:#1B1B1B;--hair:#232323;--ink:#FFFFFF;--grey:#A3A09B;--dim:#6E6B66;--gold:#CDA85F;--goldB:#E9D3A0;--goldDim:rgba(205,168,95,.16);--warn:#C57B52;--ok:#8FBF8F}
@@ -550,14 +550,14 @@ body.native{overscroll-behavior-x:none}
 <!-- SPLASH: visible the instant HTML paints; hidden by the first gate() -->
 <div id="splash">
   <img src="/logo.png" alt="">
-  <div class="t">XC <span>Shots</span></div>
+  <div class="t">XC <span>Studio</span></div>
   <div class="sbar"><i></i></div>
   <p class="msg" id="splashMsg"></p>
 </div>
 
 <!-- GATE: code -->
 <div class="gate hide" id="gateCode">
-  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
+  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Studio</span></span></div>
   <div class="eyebrow">Your team's filming app</div>
   <h1>Enter your<br>studio code.</h1>
   <p class="sub">It's on the gold card in your staff room — or ask whoever runs your socials.</p>
@@ -600,7 +600,7 @@ body.native{overscroll-behavior-x:none}
 
 <!-- GATE: XC pin -->
 <div class="gate hide" id="gatePin">
-  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Shots</span></span></div>
+  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Studio</span></span></div>
   <div class="eyebrow">Studio side</div>
   <h1>Your PIN.</h1>
   <div class="codein"><input id="pinInput" type="password" placeholder="PIN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="PIN" onkeydown="if(event.key==='Enter')tryPin()"><button class="bigbtn" style="flex:none;padding:14px 20px" onclick="tryPin()">Enter</button></div>
@@ -612,7 +612,7 @@ body.native{overscroll-behavior-x:none}
 
 <div class="wrap hide" id="app">
   <div class="top">
-    <div class="brand"><img src="/logo.png" alt="" style="height:24px;width:auto"><div class="t">XC <span>Shots</span></div></div>
+    <div class="brand"><img src="/logo.png" alt="" style="height:24px;width:auto"><div class="t">XC <span>Studio</span></div></div>
     <div class="xcnav" role="tablist"><button id="nvToday" class="on" onclick="xcnav('today')">Today<span class="n hide" id="todayN"></span></button><button id="nvCal" onclick="xcnav('calendar')">Calendar<span class="n hide" id="calN" style="background:#E5484D;color:#fff"></span></button><button id="nvClients" onclick="xcnav('dash')">Clients</button><button id="nvAct" onclick="xcnav('activity')">Activity</button><button id="nvStudio" onclick="xcnav('studio')">Studio</button></div>
     <div class="clnav" role="tablist"><button id="cnShots" class="on" onclick="subtab('shots')">Shots</button><button id="cnResults" onclick="subtab('results')">Results<span class="n hide" id="cnResultsN"></span></button><button class="upbtn" onclick="openUpPick()">↑ Upload</button><button id="cnDocs" onclick="subtab('docs')">Docs</button><button id="cnYou" onclick="subtab('you')">You</button></div>
     <span class="sync live" id="sync">synced</span>
@@ -807,7 +807,7 @@ body.native{overscroll-behavior-x:none}
       <p class="msect">Phone setup — once, then forget it</p>
       <div class="settings"><h3>iPhone</h3><ul><li>Settings → Camera → Record Video → <b>4K at 30 fps</b></li><li>Settings → Camera → <b>Grid ON</b></li><li>In the camera: tap the subject, then <b>hold</b> until "AE/AF LOCK"</li></ul></div>
       <div class="settings"><h3>Android</h3><ul><li>Camera → Settings → Video → <b>4K (UHD) 30 fps</b></li><li>Camera → Settings → <b>Grid lines ON</b></li><li>Tap the subject, then the <b>lock</b> icon</li></ul></div>
-      <div class="settings"><h3>Uploading</h3><ul><li class="nat-only">Send clips from <b>↑ Upload</b>. They keep sending with the phone locked or other apps open. Just don't swipe XC Shots away until each one says <b>sent ✓</b></li><li class="web-only">Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li><li>Clips <b>disappear from the folder within a few minutes</b> — that's XC receiving them, not a failure</li><li>Upload first, <b>then tick</b> the shot</li><li><b>Never delete footage off the camera or phone until the app says it's safe.</b> Each shot says <b>All in, safe to clear your card</b> once every clip has reached XC. Until then it says Don't delete anything yet</li><li>If the Drive app says upload failed or storage full, message XC</li></ul></div>
+      <div class="settings"><h3>Uploading</h3><ul><li class="nat-only">Send clips from <b>↑ Upload</b>. They keep sending with the phone locked or other apps open. Just don't swipe XC Studio away until each one says <b>sent ✓</b></li><li class="web-only">Use the <b>Google Drive app</b>, not the browser — it keeps uploading in the background, even with the phone locked</li><li>Clips <b>disappear from the folder within a few minutes</b> — that's XC receiving them, not a failure</li><li>Upload first, <b>then tick</b> the shot</li><li><b>Never delete footage off the camera or phone until the app says it's safe.</b> Each shot says <b>All in, safe to clear your card</b> once every clip has reached XC. Until then it says Don't delete anything yet</li><li>If the Drive app says upload failed or storage full, message XC</li></ul></div>
       <p class="mantra">When in doubt:<br>slower, closer, stiller.</p>
     </div>
 
@@ -882,7 +882,7 @@ body.native{overscroll-behavior-x:none}
   <div class="eyebrow" id="updEyebrow">Sending to XC</div>
   <h2 id="updTitle">Sending your clips…</h2>
   <div class="keep web-only" id="updKeep"><b>Keep this screen open</b>, on Wi-Fi if you can. If the phone locks or you switch apps it pauses, and picks up where it stopped when you come back. <b>Don't delete anything</b> until a clip says sent ✓.</div>
-  <div class="keep nat-only" id="updKeepN"><b>You can lock the phone or use other apps.</b> Your iPhone keeps sending, faster on Wi-Fi and plugged in. Just don't swipe XC Shots away until every clip says sent ✓, and <b>don't delete anything</b> until then.</div>
+  <div class="keep nat-only" id="updKeepN"><b>You can lock the phone or use other apps.</b> Your iPhone keeps sending, faster on Wi-Fi and plugged in. Just don't swipe XC Studio away until every clip says sent ✓, and <b>don't delete anything</b> until then.</div>
   <div class="tot"><span id="updTot"></span><span id="updEta"></span></div>
   <div id="updList"></div>
   <div class="btns"><button class="bigbtn" id="updMore" onclick="updPick(updIdx)">+ Add more clips</button><button class="up nat-only" onclick="updPick(updIdx, 'files')">From Files</button><button class="up" id="updClose" onclick="updHide()">Hide</button></div>
@@ -1013,7 +1013,7 @@ if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !
     return Promise.resolve({}); } }; })();
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.33";
+const BUILD = "4.34";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1561,8 +1561,8 @@ function updRender(){
   const errs = open.filter(x => x.st === "error"), stuck = lost.length + errs.length;
   document.getElementById("updTitle").textContent = natPrep ? "Getting your clips ready…" : !open.length ? "All sent. XC has them." : updBusy ? "Sending your clips…" : stuck ? stuck + " clip" + (stuck === 1 ? "" : "s") + " still to send" : "Sending your clips…";
   document.getElementById("updKeep").style.display = open.length && !NATIVE ? "" : "none"; document.getElementById("updKeepN").style.display = (open.length || natPrep) && NATIVE ? "" : "none";
-  document.getElementById("updKeepN").innerHTML = natPrep ? "<b>Keep XC Shots open for a moment.</b> Your iPhone is getting the clips ready. Once each one says it's sending, you can lock the phone or use other apps."
-    : "<b>You can lock the phone or use other apps.</b> Your iPhone keeps sending, faster on Wi-Fi and plugged in. Just don't swipe XC Shots away until every clip says sent ✓, and <b>don't delete anything</b> until then.";
+  document.getElementById("updKeepN").innerHTML = natPrep ? "<b>Keep XC Studio open for a moment.</b> Your iPhone is getting the clips ready. Once each one says it's sending, you can lock the phone or use other apps."
+    : "<b>You can lock the phone or use other apps.</b> Your iPhone keeps sending, faster on Wi-Fi and plugged in. Just don't swipe XC Studio away until every clip says sent ✓, and <b>don't delete anything</b> until then.";
   document.getElementById("updTot").textContent = mine.length ? `${fmtB(sent)} of ${fmtB(tot)} · ${mine.filter(x => x.st === "done").length}/${mine.length} sent` : "";
   const secs = updBusy && updT0 ? (Date.now() - updT0) / 1000 : 0, rate = secs > 5 ? (sent - updB0) / secs : 0;
   document.getElementById("updEta").textContent = rate > 0 && tot > sent ? "about " + Math.ceil((tot - sent) / rate / 60) + " min left" : "";
@@ -1857,7 +1857,7 @@ async function natShareImage(dataUrl, name){
     const path = "share/" + Date.now() + "-" + name.replace(/[^\w.-]/g, "_");
     await natPlugin("Filesystem", "writeFile", { path, data: dataUrl.split(",")[1], directory: "CACHE", recursive: true });
     const u = await natPlugin("Filesystem", "getUri", { path, directory: "CACHE" });
-    await natPlugin("Share", "share", { files: [u.uri], title: "XC Shots" });
+    await natPlugin("Share", "share", { files: [u.uri], title: "XC Studio" });
   } catch(e){ if(!/cancel/i.test(String(e && (e.message || e)))) toast("Couldn't open the share sheet."); }
 }
 
@@ -2705,7 +2705,7 @@ function renderToday(){
 const fmtGB = b => (Number(b||0)/1e9).toFixed(Number(b||0) >= 1e10 ? 0 : 1) + " GB";
 function archiveHtml(T){
   const A = T.archive || {items:[]}; if(!A.items || !A.items.length) return "";
-  return stackHead("Ready for the T7 · " + fmtGB(A.bytes), A.items.length) + '<p class="sub" style="margin:-2px 0 12px">Footage more than 30 days past delivery. Copy the month folder to the T7, check it opens, then tap Moved it. XC Shots never deletes footage.</p><div class="tq">' + A.items.map(x=>
+  return stackHead("Ready for the T7 · " + fmtGB(A.bytes), A.items.length) + '<p class="sub" style="margin:-2px 0 12px">Footage more than 30 days past delivery. Copy the month folder to the T7, check it opens, then tap Moved it. XC Studio never deletes footage.</p><div class="tq">' + A.items.map(x=>
     `<div class="tcard"><div class="b"><h4>${esc(x.client)} — ${esc(monthName(x.month))}</h4><p class="m">${fmtGB(x.bytes)} · ${x.files} files · delivered ${esc(x.delivered)}</p>
      <div class="acts"><a class="mact ok" href="${esc(x.url)}" target="_blank" rel="noreferrer">Open folder ↗</a><button class="mact" onclick="archiveDone(${q(x.code)},${q(x.month)})">Moved it</button></div></div></div>`).join("") + "</div>";
 }
@@ -3098,7 +3098,7 @@ function briefText(S, i){
   L.push("", good.length ? `SELECTS IN TAKE ORDER (${good.length})` : "SELECTS: nothing rated Good yet");
   good.forEach(f => { const st = stepOf(f); L.push(`${st !== null ? "T" + pad(st + 1) : "T--"}  ${clean(f.name)}`); });
   const url = (S.selectsUrls || {})[i];
-  L.push("", url ? `Footage: ${url}` : "Footage: the selects folder isn't built yet. Hit Sync selects in XC Shots first.");
+  L.push("", url ? `Footage: ${url}` : "Footage: the selects folder isn't built yet. Hit Sync selects in XC Studio first.");
   if(url) L.push("Full script and take notes: 00 — SCRIPT.txt in that folder.");
   if(s.dont) L.push("", "AVOID", s.dont);
   return L.join("\n");
