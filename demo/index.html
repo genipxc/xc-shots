@@ -527,6 +527,23 @@
   .upd .bar{height:5px;margin-top:8px}.upd .bar i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .3s}.upd .f.done .bar i{background:var(--ok)}
   .upd .btns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
   .upboard .direct{margin:0 0 12px;padding:10px 12px;border:1px solid var(--gold);border-radius:10px}.upboard .direct.lost{border-color:#E0913A}.upboard .direct .tt{font-weight:800;font-size:14px;line-height:1.3}
+/* v4.35 studio code screen: the thesis line, and the code typed into a viewfinder (gold corners, a REC light while typing) */
+.gate .gthesis{font-size:46px;line-height:.96;letter-spacing:-.025em;font-weight:900;margin:0 0 16px}
+.gate .gthesis em{font-style:normal;color:var(--gold)}
+.vf{position:relative;display:block;margin-top:26px;padding:16px 18px 12px;background:linear-gradient(180deg,rgba(205,168,95,.06),rgba(205,168,95,0) 70%);cursor:text}
+.vfc{position:absolute;width:20px;height:20px;border-color:var(--gold);border-style:solid;border-width:0;opacity:.75;transition:opacity .2s,border-color .2s}
+.vfc.tl{top:0;left:0;border-top-width:2px;border-left-width:2px}.vfc.tr{top:0;right:0;border-top-width:2px;border-right-width:2px}
+.vfc.bl{bottom:0;left:0;border-bottom-width:2px;border-left-width:2px}.vfc.br{bottom:0;right:0;border-bottom-width:2px;border-right-width:2px}
+.vf:focus-within .vfc{opacity:1;border-color:var(--goldB)}
+.vfhead{display:flex;justify-content:space-between;align-items:center;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.vfrec{display:inline-flex;align-items:center;gap:6px;color:var(--gold);opacity:0;transition:opacity .2s}.vfrec i{width:6px;height:6px;border-radius:9px;background:var(--gold)}
+.vf:focus-within .vfrec{opacity:1}.vf:focus-within .vfrec i{animation:vfrec 1.4s ease-in-out infinite}
+@keyframes vfrec{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.vf:focus-within .vfrec i{animation:none}}
+.vf input{display:block;width:100%;box-sizing:border-box;appearance:none;background:transparent;border:0;outline:0;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:24px!important;letter-spacing:.24em;text-transform:uppercase;padding:12px 0 6px}
+.vf input::placeholder{color:#3A3834;letter-spacing:.24em}
+.gate .gobtn{display:block;flex:none;width:100%;margin-top:16px;padding:16px 20px;font-size:16px}
+.gate .ghelp{color:var(--grey);font-size:13.5px;margin:6px 0 0}
 /* v4.33 feels like an app (iPhone app and website alike): no tap flash, no long-press selecting a button, no zoom when typing,
    nothing under the camera or the home bar, toasts above the tab bar, the in-app confirm sheet */
 html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
@@ -555,17 +572,22 @@ body.native{overscroll-behavior-x:none}
   <p class="msg" id="splashMsg"></p>
 </div>
 
-<!-- GATE: code -->
+<!-- GATE: code (v4.35: the studio code goes into a viewfinder; the thesis is XC's own line) -->
 <div class="gate hide" id="gateCode">
   <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Studio</span></span></div>
-  <div class="eyebrow">Your team's filming app</div>
-  <h1>Enter your<br>studio code.</h1>
-  <p class="sub">It's on the gold card in your staff room — or ask whoever runs your socials.</p>
-  <div class="codein"><input id="codeInput" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Studio code" onkeydown="if(event.key==='Enter')tryCode()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="codeBtn" onclick="tryCode()">Enter</button></div>
+  <h1 class="gthesis">Film it.<br>Send it.<br><em>We cut it.</em></h1>
+  <p class="sub">Your studio code is on the card XC gave your team. Type it in to open this week's shots.</p>
+  <label class="vf" for="codeInput"><span class="vfc tl"></span><span class="vfc tr"></span><span class="vfc bl"></span><span class="vfc br"></span>
+    <span class="vfhead"><span>Studio code</span><span class="vfrec"><i></i>Rec</span></span>
+    <input id="codeInput" placeholder="ABCD1234" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Studio code" onkeydown="if(event.key==='Enter')tryCode()">
+  </label>
+  <button class="bigbtn gobtn" id="codeBtn" onclick="tryCode()">Open my shots</button>
   <p class="err" id="codeErr"></p>
-  <p class="gatefoot">XC Media · <button class="lnk" onclick="gate('gatePin')">XC sign-in</button> · <button class="lnk" onclick="ownerStart()">Owner sign-in</button> · <span id="buildA"></span></p>
+  <p class="ghelp">No code yet? Ask your manager, or message XC.</p>
+  <p class="gatefoot"><button class="lnk" onclick="ownerStart()">Owner sign-in</button> · <button class="lnk" onclick="gate('gatePin')">XC sign-in</button> · <span id="buildA"></span></p>
   <p class="diag" id="diagA"></p>
 </div>
+
 
 <!-- GATE: name -->
 <div class="gate hide" id="gateName">
@@ -712,6 +734,11 @@ body.native{overscroll-behavior-x:none}
       <p class="msect">Staff-room card</p>
       <p class="sub" style="margin-top:8px">A5, print and laminate. QR opens the app; the code's on the card.</p>
       <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="printCard()">Open printable card ↗</button></div>
+      <p class="msect">Works alone</p>
+      <p class="sub" style="margin-top:8px">For a one-person business. They sign in with the studio code only: no name list, no owner PIN, and they get the owner view (results, history, documents).</p>
+      <div class="addteam" style="max-width:420px"><input id="soloName" placeholder="Their name, e.g. Sam" onkeydown="if(event.key==='Enter')saveSolo(true)"><button onclick="saveSolo(true)">Turn on</button></div>
+      <p class="mono" id="soloState" style="margin-top:8px;font-size:10px;color:var(--dim)"></p>
+      <button class="up hide" id="soloOff" style="margin-top:8px" onclick="saveSolo(false)">Turn off works alone</button>
       <p class="msect">Owner access</p>
       <p class="sub" style="margin-top:8px">Give the business owner their own PIN — they see progress, results and history, and can manage their team. They can't flag redos or see other clients.</p>
       <div class="addteam" style="max-width:420px"><input id="ownerPinInput" placeholder="Set owner PIN…"><button onclick="saveOwnerPin()">Save</button></div>
@@ -1013,7 +1040,7 @@ if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !
     return Promise.resolve({}); } }; })();
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.34";
+const BUILD = "4.35";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1147,9 +1174,19 @@ async function tryCode(){
     if(d.error === "unknown action"){ const d2 = await apiGet({action:"state", code:v}); if(d2.ok){ code = v; LS.set("code", v); C = d2; buildNames(); gate("gateName"); } else err.textContent = "That's not it — check the gold card in the staff room, or ask your manager."; return; }
     err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "That's not it — check the gold card in the staff room, or ask your manager."; return;
   }
+  if(d.solo){ await soloEnter(v, d.solo.name); return; }   // v4.35: works alone: the code is the whole sign-in
   code = v; LS.set("code", v); C = d;   // partial (name+team) — full state loads on entry
   buildNames(); gate("gateName");
   loadClient();   // warm the full state in the background while they pick a name
+}
+/* v4.35 "works alone" (XC sets it per client in Manage › Settings): one person, one code. No name picker, no owner PIN:
+   the code opens the owner view straight away, signed in as their name. */
+async function soloEnter(c, name){
+  me = name; LS.set("me", name); LS.set("ownercode", c); LS.set("ownerpin", "solo"); LS.set("guided", "1"); LS.set("seenFilmMode", "1");
+  const d = await apiGet({ action: "state", code: c, owner: "solo" });
+  if(!d.ok || d.role < 1){ const err = document.getElementById("codeErr"); err.className = "err"; err.textContent = d.error === "network" ? "Couldn't reach XC's system. Check your signal and try again." : "That code didn't open. Check it with XC."; return; }
+  ownerEnter(d);
+  if(NATIVE) natWelcome();
 }
 function buildNames(){
   document.getElementById("nameEyebrow").textContent = C.name;
@@ -1422,10 +1459,9 @@ function fmRender(){
     const missing = s.steps.map((_,k)=>k).filter(k=>!t[k]);
     body.innerHTML = `<div class="fmdone">${missing.length
       ? `<h3>Almost — ${missing.length} take${missing.length===1?"":"s"} not ticked.</h3><p>Tap a number to jump back:</p><p class="fmmiss">${missing.map(k=>`<a role="button" tabindex="0" onclick="fmStep=${k};fmRender()">#${k+1}</a>`).join(" ")}</p>`
-      : `<h3>All ${N} takes done 🎉</h3><p>Now get the clips off your camera and into the folder:</p>`}
-      ${s.folder ? `<button class="bigbtn" style="display:block;width:100%;text-align:center;margin-top:14px" onclick="upload(${i})">Open this shot's folder ↗</button>` : ""}
+      : fmFinishHtml(i, s, N)}
+      ${missing.length && s.folder && !upDirectUi() ? `<button class="bigbtn" style="display:block;width:100%;text-align:center;margin-top:14px" onclick="upload(${i})">Open this shot's folder ↗</button>` : ""}
       <p class="fmup">${upStatHtml(i, s, !!C.by[i])}</p>
-      ${!missing.length && !C.by[i] ? `<button class="bigbtn" style="margin-top:10px;width:100%" onclick="tick(${i});closeFilm()">Mark shot as filmed ✓</button>` : ""}
     </div>`;
     tickBtn.style.visibility = "hidden";
   } else {
@@ -1438,6 +1474,18 @@ function fmRender(){
   document.getElementById("fmNext").disabled = fmStep >= N;
   document.getElementById("fmDots").innerHTML = s.steps.map((_,k)=>`<i class="${t[k]?"on":""}${k===fmStep?" cur":""}" onclick="fmStep=${k};fmRender()"></i>`).join("");
 }
+/* v4.35: every take ticked → the finish screen. One button marks the shot filmed and opens the sender for it. */
+function fmFinishHtml(i, s, N){
+  const left = C.shots.filter((x, k) => k !== i && x.w <= C.week && !C.by[k]).length;
+  const tail = left ? `${left} more shot${left === 1 ? "" : "s"} to film this week.` : "That's every shot for this week. Nice work.";
+  const send = upDirectUi() || s.folder;
+  return `<p class="eyebrow" style="margin:0 0 10px">All ${N} take${N === 1 ? "" : "s"} done</p>
+    <h3 style="font-size:24px;line-height:1.15;margin:0 0 8px">That's “${esc(s.n)}” filmed.</h3>
+    <p>Send the clips now while they're on your phone. ${esc(tail)}</p>
+    ${send ? `<button class="bigbtn" style="display:block;width:100%;text-align:center;margin-top:16px" onclick="fmFinishSend(${i})">${C.by[i] ? "Send the clips ↑" : "Mark filmed and send the clips ↑"}</button>` : ""}
+    ${!C.by[i] ? `<button class="up" style="display:block;width:100%;text-align:center;margin-top:10px" onclick="tick(${i});closeFilm()">Mark filmed, send later</button>` : `<button class="up" style="display:block;width:100%;text-align:center;margin-top:10px" onclick="closeFilm()">Back to my shots</button>`}`;
+}
+async function fmFinishSend(i){ const need = !C.by[i]; closeFilm(); upload(i); if(need) tick(i); }
 async function fmTickCur(){
   if(fmIdx === null) return;
   const i = fmIdx, k = fmStep;
@@ -1802,8 +1850,9 @@ function natHap(kind){ if(!NATIVE) return; (kind === "success" || kind === "warn
 const NAT_SECRET = { pin: 1, ownerpin: 1, editorpin: 1 }, NAT_KEEP = { code: 1, me: 1, ownercode: 1, guided: 1, seenFilmMode: 1, gapHide: 1, upq: 1 }, NAT_MEM = {};   // upq = clips still sending: a wiped page must still check on them
 if(NATIVE){
   const g = LS.get, s = LS.set;
-  LS.get = k => NAT_SECRET[k] ? (NAT_MEM[k] === undefined ? null : NAT_MEM[k]) : g(k);
+  LS.get = k => NAT_SECRET[k] ? (NAT_MEM[k] !== undefined ? NAT_MEM[k] : (g(k) === "solo" ? "solo" : null)) : g(k);
   LS.set = (k, v) => {
+    if(k === "ownerpin" && v === "solo"){ s(k, v); natPlugin("XCNative", "kcSet", { key: k, value: v }).catch(() => {}); return; }   // v4.35: works-alone marker, not a PIN
     if(NAT_SECRET[k]){ NAT_MEM[k] = v; try { localStorage.removeItem("xcs." + k); } catch(e){} natPlugin("XCNative", "kcSet", { key: k, value: v || "", bio: true }).catch(() => {}); return; }
     s(k, v); if(NAT_KEEP[k]) natPlugin("XCNative", "kcSet", { key: k, value: v || "" }).catch(() => {});
   };
@@ -1819,7 +1868,7 @@ async function natPreBoot(){
     for(const k of Object.keys(NAT_SECRET)){ let v = null; try { v = localStorage.getItem("xcs." + k); } catch(e){} if(v){ NAT_MEM[k] = v; localStorage.removeItem("xcs." + k); await natPlugin("XCNative", "kcSet", { key: k, value: v, bio: true }); } }
     if(!LS.get("code") && !LS.get("ownercode")){
       const r = await natPlugin("XCNative", "kcAll"); const it = (r && r.items) || {};
-      Object.keys(NAT_KEEP).forEach(k => { if(it[k]) try { localStorage.setItem("xcs." + k, it[k]); } catch(e){} });
+      Object.keys(NAT_KEEP).concat(["ownerpin"]).forEach(k => { if(it[k] && (k !== "ownerpin" || it[k] === "solo")) try { localStorage.setItem("xcs." + k, it[k]); } catch(e){} });
       code = LS.get("code"); me = LS.get("me");
     }
     if(!code){ const p = await natUnlock("pin", "Unlock the XC studio"); if(p) pin = p; }   // the studio: XC's phone
@@ -3004,6 +3053,13 @@ async function saveWa(){
 async function saveOwnerEmail(){ const v = document.getElementById("ownerEmailInput").value.trim(); const d = await apiPost({action:"setOwnerEmail", pin, code:mgCode, ownerEmail:v}); if(d.ok){ toast(v ? "<b>Owner email saved</b> — they get the month-wrap email at close." : "Owner email cleared."); mgState = mgTake(d); } else toast("Couldn't: "+esc(d.error)); }
 function addDoc(){ const l = document.getElementById("docLabel").value.trim(), u = document.getElementById("docUrl").value.trim(); if(!l || !/^https:\/\//.test(u)){ toast("Need a label and a full https:// link."); return; } editDocs.push({label:l, url:u}); document.getElementById("docLabel").value=""; document.getElementById("docUrl").value=""; renderTools(); }
 async function saveDocs(){ const d = await apiPost({action:"setDocs", pin, code:mgCode, docs:editDocs}); if(d.ok){ toast("<b>Documents saved.</b> The owner sees them now."); mgState = mgTake(d); editDocs = null; renderTools(); } else toast("Couldn't: "+esc(d.error)); }
+async function saveSolo(on){
+  const name = document.getElementById("soloName").value.trim();
+  if(on && !name){ toast("Type their name first. It goes on every shot they tick."); return; }
+  if(!on && !(await ask({ title: "Turn off works alone?", body: "They'll pick a name again, and the owner view needs the owner PIN.", ok: "Turn off" }))) return;
+  const d = await apiPost({ action: "setSolo", pin, code: mgCode, on, name });
+  if(d.ok){ mgState = mgTake(d); renderTools(); toast(on ? "<b>Works alone is on.</b> " + esc(name) + " signs in with the code only." : "Works alone is off."); } else toast("Couldn't save: " + esc(d.error));
+}
 async function saveOwnerPin(){ const v = document.getElementById("ownerPinInput").value.trim(); const d = await apiPost({action:"setOwnerPin", pin, code:mgCode, ownerPin:v}); if(d.ok){ toast(v ? "<b>Owner PIN set.</b> Give it to the owner with their code." : "Owner PIN cleared."); mgState = mgTake(d); renderManage(); } else toast("Couldn't: "+esc(d.error)); }
 let closingMonth = false;
 async function closeMonth(){
@@ -3029,6 +3085,9 @@ function renderTools(){
     ? Object.keys(INTAKE_LABELS).map(k=>`<div class="mrow"><div class="r"><span class="nm" style="flex:none;width:150px;color:var(--gold);font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase">${INTAKE_LABELS[k]}</span><span class="who" style="color:var(--ink);text-align:left;max-width:none;flex:1">${esc(iv.answers[k]||"—")}</span></div></div>`).join("")
     : '<p class="sub">Not filled in yet — text them the link above (needs backend v2.3).</p>';
   document.getElementById("ownerPinState").textContent = mgState.hasOwnerPin ? "OWNER PIN IS SET" : "NO OWNER PIN YET";
+  { const so = mgState.solo, sn = document.getElementById("soloName");
+    document.getElementById("soloState").textContent = so ? "ON · SIGNS IN AS " + String(so.name).toUpperCase() + " WITH THE CODE ONLY" : "OFF · THEY PICK A NAME, OWNERS USE A PIN";
+    document.getElementById("soloOff").classList.toggle("hide", !so); if(document.activeElement !== sn) sn.value = so ? so.name : ""; }
   const em = document.getElementById("ownerEmailInput"); if(document.activeElement !== em) em.value = mgState.ownerEmail || "";
   const pi = document.getElementById("portalInput"); if(pi && document.activeElement !== pi) pi.value = mgState.portalUrl || "";
   if(!rhDirty){
