@@ -527,23 +527,25 @@
   .upd .bar{height:5px;margin-top:8px}.upd .bar i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .3s}.upd .f.done .bar i{background:var(--ok)}
   .upd .btns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
   .upboard .direct{margin:0 0 12px;padding:10px 12px;border:1px solid var(--gold);border-radius:10px}.upboard .direct.lost{border-color:#E0913A}.upboard .direct .tt{font-weight:800;font-size:14px;line-height:1.3}
-/* v4.35 studio code screen: the thesis line, and the code typed into a viewfinder (gold corners, a REC light while typing) */
-.gate .gthesis{font-size:46px;line-height:.96;letter-spacing:-.025em;font-weight:900;margin:0 0 16px}
-.gate .gthesis em{font-style:normal;color:var(--gold)}
-.vf{position:relative;display:block;margin-top:26px;padding:16px 18px 12px;background:linear-gradient(180deg,rgba(205,168,95,.06),rgba(205,168,95,0) 70%);cursor:text}
-.vfc{position:absolute;width:20px;height:20px;border-color:var(--gold);border-style:solid;border-width:0;opacity:.75;transition:opacity .2s,border-color .2s}
-.vfc.tl{top:0;left:0;border-top-width:2px;border-left-width:2px}.vfc.tr{top:0;right:0;border-top-width:2px;border-right-width:2px}
-.vfc.bl{bottom:0;left:0;border-bottom-width:2px;border-left-width:2px}.vfc.br{bottom:0;right:0;border-bottom-width:2px;border-right-width:2px}
-.vf:focus-within .vfc{opacity:1;border-color:var(--goldB)}
-.vfhead{display:flex;justify-content:space-between;align-items:center;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
-.vfrec{display:inline-flex;align-items:center;gap:6px;color:var(--gold);opacity:0;transition:opacity .2s}.vfrec i{width:6px;height:6px;border-radius:9px;background:var(--gold)}
-.vf:focus-within .vfrec{opacity:1}.vf:focus-within .vfrec i{animation:vfrec 1.4s ease-in-out infinite}
-@keyframes vfrec{50%{opacity:.25}}
-@media (prefers-reduced-motion:reduce){.vf:focus-within .vfrec i{animation:none}}
-.vf input{display:block;width:100%;box-sizing:border-box;appearance:none;background:transparent;border:0;outline:0;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:24px!important;letter-spacing:.24em;text-transform:uppercase;padding:12px 0 6px}
-.vf input::placeholder{color:#3A3834;letter-spacing:.24em}
-.gate .gobtn{display:block;flex:none;width:100%;margin-top:16px;padding:16px 20px;font-size:16px}
-.gate .ghelp{color:var(--grey);font-size:13.5px;margin:6px 0 0}
+/* v4.35 studio code screen (XC's pick): centred welcome, what the studio does, and a tilted black XC card you type the code onto */
+#gateCode{text-align:center;align-items:center}
+.gate .gwel{font-size:36px;line-height:1.02;letter-spacing:-.025em;font-weight:900;margin:0 0 18px}
+.gfeat{list-style:none;padding:0;margin:0 auto;text-align:left;display:grid;gap:9px;max-width:300px}
+.gfeat li{position:relative;padding-left:24px;color:var(--grey);font-size:14.5px;line-height:1.35}
+.gfeat li::before{content:"";position:absolute;left:2px;top:.42em;width:9px;height:5px;border:solid var(--gold);border-width:0 0 2px 2px;transform:rotate(-45deg)}
+.gstage{perspective:900px;width:100%;margin:30px 0 26px}
+.gcard{display:flex;flex-direction:column;width:100%;aspect-ratio:1.6;border-radius:18px;padding:20px 22px;text-align:left;cursor:text;position:relative;overflow:hidden;
+  background:radial-gradient(120% 140% at 0% 0%,#2A2824 0%,#121110 55%,#0B0B0A 100%);border:1px solid #2E2B25;
+  transform:rotateX(14deg) rotateZ(-4deg);box-shadow:0 34px 60px rgba(0,0,0,.7),0 10px 30px rgba(205,168,95,.12),inset 0 1px 0 rgba(255,255,255,.06);transition:transform .35s ease}
+.gcard::after{content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(233,211,160,.10) 45%,transparent 60%)}
+.gcard:focus-within{transform:rotateX(6deg) rotateZ(-1.5deg);border-color:#4A4130}
+@media (prefers-reduced-motion:reduce){.gcard{transition:none}}
+.gct{display:flex;align-items:center;gap:8px;font:800 13px 'Schibsted Grotesk',sans-serif;letter-spacing:.14em;color:var(--gold)}.gct img{height:18px;width:auto}
+.gcl{margin-top:auto;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:#8C7A52}
+.gcard input{display:block;width:100%;box-sizing:border-box;appearance:none;background:transparent;border:0;border-bottom:1.5px solid rgba(205,168,95,.35);border-radius:0;outline:0;color:var(--goldB);font-family:'Space Mono',monospace;font-weight:700;font-size:24px!important;letter-spacing:.22em;text-transform:uppercase;padding:8px 0 6px;margin-top:4px}
+.gcard input::placeholder{color:#4A4436;letter-spacing:.22em}
+.gate .gobtn{display:block;flex:none;width:100%;margin-top:0;padding:16px 20px;font-size:16px}
+.gate .ghelp{color:var(--grey);font-size:13.5px;margin:6px 0 0;max-width:320px}
 /* v4.33 feels like an app (iPhone app and website alike): no tap flash, no long-press selecting a button, no zoom when typing,
    nothing under the camera or the home bar, toasts above the tab bar, the in-app confirm sheet */
 html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
@@ -572,18 +574,23 @@ body.native{overscroll-behavior-x:none}
   <p class="msg" id="splashMsg"></p>
 </div>
 
-<!-- GATE: code (v4.35: the studio code goes into a viewfinder; the thesis is XC's own line) -->
+<!-- GATE: code (v4.35, XC's pick 5 Oct: welcome, what the studio does, and the code typed onto a black XC card) -->
 <div class="gate hide" id="gateCode">
-  <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Studio</span></span></div>
-  <h1 class="gthesis">Film it.<br>Send it.<br><em>We cut it.</em></h1>
-  <p class="sub">Your studio code is on the card XC gave your team. Type it in to open this week's shots.</p>
-  <label class="vf" for="codeInput"><span class="vfc tl"></span><span class="vfc tr"></span><span class="vfc bl"></span><span class="vfc br"></span>
-    <span class="vfhead"><span>Studio code</span><span class="vfrec"><i></i>Rec</span></span>
+  <h1 class="gwel">Welcome to<br>the studio.</h1>
+  <ul class="gfeat">
+    <li>Your shots for the week, scripted for you</li>
+    <li>Film mode walks you through every take</li>
+    <li>Clips send from your phone, with a receipt for each one</li>
+    <li>Your reels and results, all in one place</li>
+  </ul>
+  <div class="gstage"><label class="gcard" for="codeInput">
+    <span class="gct"><img src="/logo.png" alt="">XC STUDIO</span>
+    <span class="gcl">Studio code</span>
     <input id="codeInput" placeholder="ABCD1234" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Studio code" onkeydown="if(event.key==='Enter')tryCode()">
-  </label>
+  </label></div>
   <button class="bigbtn gobtn" id="codeBtn" onclick="tryCode()">Open my shots</button>
   <p class="err" id="codeErr"></p>
-  <p class="ghelp">No code yet? Ask your manager, or message XC.</p>
+  <p class="ghelp">Your code is on the card XC gave your team. No card? Message XC.</p>
   <p class="gatefoot"><button class="lnk" onclick="ownerStart()">Owner sign-in</button> · <button class="lnk" onclick="gate('gatePin')">XC sign-in</button> · <span id="buildA"></span></p>
   <p class="diag" id="diagA"></p>
 </div>
