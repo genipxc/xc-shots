@@ -563,10 +563,27 @@ body.inapp .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .bigbtn.danger{background:var(--warn);border-color:var(--warn);color:#0A0A0A}
 body.native{overscroll-behavior-x:none}
 /* v4.31 the iPhone app */
+/* v4.37 PIN keypad: the iPhone passcode screen (dots, round keys, letters under the digits) */
+.pad{display:flex;flex-direction:column;align-items:center;margin:26px auto 0;width:100%;max-width:300px}
+.pdots{display:flex;gap:16px;height:16px;margin-bottom:30px}.pdots i{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--goldB);transition:background .12s}.pdots i.on{background:var(--goldB)}
+.pdots.bad{animation:pshake .38s}@keyframes pshake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.pkeys{display:grid;grid-template-columns:repeat(3,76px);gap:16px 24px}
+.pkeys button{width:76px;height:76px;border-radius:50%;border:0;background:rgba(255,255,255,.09);color:var(--ink);font:300 32px/1 -apple-system,"Schibsted Grotesk",sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;-webkit-tap-highlight-color:transparent;cursor:pointer;transition:background .15s}
+.pkeys button small{font:700 8.5px 'Space Mono',monospace;letter-spacing:.2em;color:var(--grey);height:9px}
+.pkeys button:active,.pkeys button.hit{background:rgba(255,255,255,.28);transition:none}
+.pkeys button.pfn{background:none;font:600 15px 'Schibsted Grotesk',sans-serif;color:var(--ink)}.pkeys button.pfn:active{background:none;opacity:.5}
+.pkeys button.pgo{background:var(--gold);color:#0A0A0A;font:800 15px 'Schibsted Grotesk',sans-serif}
+.pkeys .pnil{visibility:hidden}
+.ptext{display:none}.pad.txt .pkeys,.pad.txt .pdots{display:none}.pad.txt .ptext{display:flex;width:100%;margin-top:0}
+.plink{margin-top:18px;background:none;border:0;color:var(--dim);font:11px 'Space Mono',monospace;letter-spacing:.08em;text-decoration:underline;cursor:pointer}
+@media (max-height:700px){.pkeys{grid-template-columns:repeat(3,66px);gap:12px 22px}.pkeys button{width:66px;height:66px;font-size:28px}.pdots{margin-bottom:20px}}
+#lockv{position:fixed;inset:0;z-index:3000;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+#lockv.show{display:flex}#lockv img{width:64px}#lockv h2{margin:0;font-size:22px}#lockv .bigbtn{flex:none;width:100%;max-width:280px}
 .nat-only{display:none}body.native .nat-only{display:revert}body.native .web-only{display:none}
 </style>
 
 <!-- SPLASH: visible the instant HTML paints; hidden by the first gate() -->
+<div id="lockv" aria-live="polite"><img src="/logo.png" alt=""><h2>XC Studio is locked</h2><p class="sub" id="lockMsg">Unlock with Face ID to carry on.</p><button class="bigbtn" onclick="natAppUnlock()">Unlock</button></div>
 <div id="splash">
   <img src="/logo.png" alt="">
   <div class="t">XC <span>Studio</span></div>
@@ -622,8 +639,9 @@ body.native{overscroll-behavior-x:none}
   <h1>Your business,<br>your numbers.</h1>
   <p class="sub">Your studio code plus the owner PIN XC gave you.</p>
   <div class="codein" style="margin-top:22px"><input id="ownCode" placeholder="STUDIO CODE" autocomplete="off" autocapitalize="characters" aria-label="Studio code"></div>
-  <div class="codein" style="margin-top:10px"><input id="ownPin" type="password" placeholder="OWNER PIN" autocomplete="off" aria-label="Owner PIN" onkeydown="if(event.key==='Enter')tryOwner()"><button class="bigbtn" style="flex:none;padding:14px 20px" id="ownBtn" onclick="tryOwner()">Enter</button></div>
-  <p class="err" id="ownErr"></p>
+  <p class="mono" style="margin:22px 0 0;font-size:9.5px;letter-spacing:.22em;color:var(--dim);text-align:center">OWNER PIN</p>
+  <div class="pad" data-for="ownPin" data-go="tryOwner" style="margin-top:14px"></div>
+  <p class="err" id="ownErr" style="text-align:center"></p>
   <p class="gatefoot"><button class="lnk" onclick="gate('gateCode')">← Back to the team app</button></p>
 </div>
 
@@ -632,9 +650,8 @@ body.native{overscroll-behavior-x:none}
   <div class="glogo"><img src="/logo.png" alt="" style="height:30px;width:auto"><span style="font-weight:900;font-size:19px">XC <span style="color:var(--gold)">Studio</span></span></div>
   <div class="eyebrow">Studio side</div>
   <h1>Your PIN.</h1>
-  <div class="codein"><input id="pinInput" type="password" placeholder="PIN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="PIN" onkeydown="if(event.key==='Enter')tryPin()"><button class="bigbtn" style="flex:none;padding:14px 20px" onclick="tryPin()">Enter</button></div>
-  <p class="err" id="pinErr"></p>
-  <button class="up nat-only" style="margin-top:6px" onclick="natPinFaceId()">Unlock with Face ID</button>
+  <div class="pad" data-for="pinInput" data-go="tryPin"></div>
+  <p class="err" id="pinErr" style="text-align:center"></p>
   <p class="gatefoot"><button class="lnk" onclick="gate('gateCode')">← Back to the team app</button> · <span id="buildB"></span></p>
   <p class="diag" id="diagB"></p>
 </div>
@@ -693,6 +710,7 @@ body.native{overscroll-behavior-x:none}
     <p class="msect">Session</p>
     <div class="mlist" style="max-width:460px">
       <div class="mrow"><div class="r"><span class="nm">Refresh everything</span><button class="mact" onclick="loadToday();loadRoster();toast('Refreshing…')">Refresh</button></div></div>
+      <div class="mrow nat-only"><div class="r"><span class="nm">Lock with Face ID<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Asks for your face each time the app opens</span></span><button class="mact faceLockBtn" onclick="faceLockToggle()">Turn on</button></div></div>
       <div class="mrow"><div class="r"><span class="nm">Sign out of the studio side</span><button class="mact cancel" onclick="xcSignOut()">Sign out</button></div></div>
     </div>
     <p class="demonote" style="border:0;padding:0">App v<span id="buildC"></span></p>
@@ -741,6 +759,10 @@ body.native{overscroll-behavior-x:none}
       <p class="msect">Staff-room card</p>
       <p class="sub" style="margin-top:8px">A5, print and laminate. QR opens the app; the code's on the card.</p>
       <div class="sheetbtns" style="max-width:420px"><button class="bigbtn" onclick="printCard()">Open printable card ↗</button></div>
+      <p class="msect">Studio code and phones</p>
+      <p class="sub" style="margin-top:8px">The code they type, and every phone signed in. Signing a phone out keeps everyone else in. A new code stops the old one working for new phones; phones already in stay in.</p>
+      <div class="mlist" style="max-width:460px" id="mgSign"></div>
+      <div class="sheetbtns" style="max-width:420px"><button class="up" onclick="newCode()">Make a new studio code</button></div>
       <p class="msect">Works alone</p>
       <p class="sub" style="margin-top:8px">For a one-person business. They sign in with the studio code only: no name list, no owner PIN, and they get the owner view (results, history, documents).</p>
       <div class="addteam" style="max-width:420px"><input id="soloName" placeholder="Their name, e.g. Sam" onkeydown="if(event.key==='Enter')saveSolo(true)"><button onclick="saveSolo(true)">Turn on</button></div>
@@ -748,7 +770,7 @@ body.native{overscroll-behavior-x:none}
       <button class="up hide" id="soloOff" style="margin-top:8px" onclick="saveSolo(false)">Turn off works alone</button>
       <p class="msect">Owner access</p>
       <p class="sub" style="margin-top:8px">Give the business owner their own PIN — they see progress, results and history, and can manage their team. They can't flag redos or see other clients.</p>
-      <div class="addteam" style="max-width:420px"><input id="ownerPinInput" placeholder="Set owner PIN…"><button onclick="saveOwnerPin()">Save</button></div>
+      <div class="addteam" style="max-width:420px"><input id="ownerPinInput" placeholder="Set owner PIN (4 to 8 numbers)…" inputmode="numeric" pattern="[0-9]*"><button onclick="saveOwnerPin()">Save</button></div>
       <p class="mono" id="ownerPinState" style="margin-top:8px;font-size:10px;color:var(--dim)"></p>
       <div class="addteam" style="max-width:420px;margin-top:10px"><input id="ownerEmailInput" placeholder="Owner's email (gets the month-wrap email)…"><button onclick="saveOwnerEmail()">Save</button></div>
       <div id="mgIntakeWrap" class="hide"><p class="msect">Onboarding — what they told us</p>
@@ -863,6 +885,7 @@ body.native{overscroll-behavior-x:none}
       <div class="mlist">
         <div class="mrow"><div class="r"><span class="nm">Filming basics<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">The five rules · framings · phone setup</span></span><button class="mact" onclick="subtab('basics')">Open</button></div></div>
         <div class="mrow"><div class="r"><span class="nm">Owner area<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Team · history · trend</span></span><button class="mact" onclick="youOwner()">Open</button></div></div>
+        <div class="mrow nat-only"><div class="r"><span class="nm">Lock with Face ID<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Asks for your face each time the app opens</span></span><button class="mact faceLockBtn" onclick="faceLockToggle()">Turn on</button></div></div>
         <div class="mrow"><div class="r"><span class="nm">Use a different studio code</span><button class="mact cancel" onclick="resetDevice()">Switch</button></div></div>
         <div class="mrow"><div class="r"><span class="nm">Studio side<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">XC only</span></span><button class="mact cancel" onclick="gate('gatePin')">Enter</button></div></div>
       </div>
@@ -1041,13 +1064,19 @@ window.__xcSelf = /XCShotsTest/.test(navigator.userAgent) && /[?&]xcselftest=1/.
 if(window.__xcSelf){ const m = /[?&]xcode=([A-Z0-9]{4,16})/.exec(location.search); if(m){ try { localStorage.setItem("xcs.code", m[1]); if(!localStorage.getItem("xcs.me")) localStorage.setItem("xcs.me", "XC"); } catch(e){} } }   // test build: signed in as the test client
 window.__xcPut = /[?&]uidev=1/.test(location.search) && /[?&]put=1/.test(location.search);   // harness: send native test uploads to a local sink (:3464)
 if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !window.Capacitor) (function(){ const LS_ = {}, n0 = { n: 0 }; const L = ev => LS_["Uploader"] && LS_["Uploader"](ev);
-  window.Capacitor = { isNativePlatform: () => true, addListener: (p, e, cb) => { LS_[p] = cb; return { remove(){} }; }, nativePromise: (p, m, o) => {
+  const KC = JSON.parse(sessionStorage.getItem("__kc") || "{}"), kcw = () => sessionStorage.setItem("__kc", JSON.stringify(KC)); window.__face = sessionStorage.getItem("__noface") ? false : true; window.__fire = (p, e) => (LS_[p + "." + e] || []).forEach(f => f());   // v4.37: Keychain + Face ID + app pause/resume stand-ins
+  window.Capacitor = { isNativePlatform: () => true, addListener: (p, e, cb) => { LS_[p] = cb; (LS_[p + "." + e] = LS_[p + "." + e] || []).push(cb); return { remove(){} }; }, nativePromise: (p, m, o) => {
+    if(p === "XCNative"){ const k = (o.bio ? "bio." : "") + o.key;
+      if(m === "kcSet"){ if(o.value) KC[k] = o.value; else delete KC[k]; kcw(); return Promise.resolve({ ok: true }); }
+      if(m === "kcHas") return Promise.resolve({ has: k in KC }); if(m === "kcRemove"){ delete KC[k]; kcw(); return Promise.resolve(); }
+      if(m === "kcAll") return Promise.resolve({ items: Object.fromEntries(Object.entries(KC).filter(([a]) => !a.startsWith("bio."))) });
+      if(m === "kcGet") return Promise.resolve(!(k in KC) ? { value: null } : (!o.bio || window.__face) ? { value: KC[k] } : { value: null, error: "cancelled" }); }
     if(p === "FilePicker") return new Promise(res => { setTimeout(() => LS_["FilePicker"] && LS_["FilePicker"](), 200); setTimeout(() => res({ files: [{ name: "C3901.MP4", size: 812e6, mimeType: "video/mp4", path: "file:///cache/a/C3901.MP4" }, { name: "broken.mov", size: 10, mimeType: "video/quicktime", path: "file:///cache/b/broken.mov" }] }), 1500); });
     if(p === "Uploader" && m === "startUpload"){ const id = "u" + (++n0.n); let k = 0; const t = setInterval(() => { k += 20; L && L({ name: "uploading", id, payload: { percent: k } }); if(k >= 100){ clearInterval(t); L && L({ name: "completed", id, payload: { statusCode: 200 } }); } }, 400); return Promise.resolve({ id }); }
     return Promise.resolve({}); } }; })();
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.36";
+const BUILD = "4.37";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1087,25 +1116,32 @@ let pollT = null, inflight = 0;
 function syncUI(state){ const el = document.getElementById("sync"); el.className = "sync " + state; el.textContent = state==="live" ? "synced" : state==="busy" ? "syncing" : (navigator.onLine === false ? "offline" : "reconnecting"); }
 let lastErr = "";
 function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout after "+ms/1000+"s")), ms))]); }
+/* v4.37: every phone has its own key from XC's side (hello hands it out). It goes with every request for its client, so XC can sign
+   one phone out, and a new studio code never signs out the phones already in. */
+function phoneKey(){ return LS.get("pk") || ""; }
+function keyed(o){ if(o && o.code && !o.pk && phoneKey()) o.pk = phoneKey(); return o; }
+function devLabel(){ const ua = navigator.userAgent; return NATIVE ? "iPhone app" : /iPhone|iPad/.test(ua) ? "iPhone browser" : /Android/.test(ua) ? "Android" : "Computer"; }
+function seenSignedOut(d){ if(d && d.error === "signed out" && (code || LS.get("ownercode")) && !previewMode) setTimeout(signedOut, 0); return d; }
 async function apiGet(params){
-  inflight++; syncUI("busy");
+  inflight++; syncUI("busy"); params = keyed(Object.assign({}, params));
   try {
     const u = API + "?" + new URLSearchParams(params).toString();
     const r = await withTimeout(fetch(u, {method:"GET", redirect:"follow", cache:"no-store"}), 45000);
     const txt = await r.text();
     let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + " on " + (params && params.action) + " from " + String(r.url || "").replace(/^https:\/\//, "").slice(0, 50) + "): " + txt.slice(0,80)); }
-    syncUI("live"); lastErr = ""; return d;
+    syncUI("live"); lastErr = ""; return seenSignedOut(d);
   } catch(e){ syncUI("err"); lastErr = String(e && e.message || e); diag(lastErr); return {ok:false, error:"network"}; }
   finally { inflight--; }
 }
 async function apiPost(body){
+  body = keyed(Object.assign({}, body));
   if(typeof previewMode !== "undefined" && previewMode){ toast("👁 <b>Preview only</b> — taps don't save, and the client can't see you."); return {ok:false, error:"preview"}; }
   inflight++; syncUI("busy");
   try {
     const r = await withTimeout(fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)}), 45000);
     const txt = await r.text();
     let d; try { d = JSON.parse(txt); } catch(e){ throw new Error("server sent non-JSON (" + r.status + " on " + (body && body.action) + " from " + String(r.url || "").replace(/^https:\/\//, "").slice(0, 50) + "): " + txt.slice(0,80)); }
-    syncUI("live"); lastErr = ""; return d;
+    syncUI("live"); lastErr = ""; return seenSignedOut(d);
   } catch(e){ syncUI("err"); lastErr = String(e && e.message || e); diag(lastErr); return {ok:false, error:"network"}; }
   finally { inflight--; }
 }
@@ -1133,14 +1169,56 @@ function splashDone(){
   if(splashT1){ clearTimeout(splashT1); splashT1 = null; }
   if(splashT2){ clearTimeout(splashT2); splashT2 = null; }
 }
+/* v4.37: every PIN is typed on an iPhone-style keypad, so no keyboard jumps up. "Use letters" keeps any older PIN with letters working. */
+const PAD_ABC = ["", "", "ABC", "DEF", "GHI", "JKL", "MNO", "PQRS", "TUV", "WXYZ"];
+function padInit(){
+  document.querySelectorAll(".pad[data-for]").forEach(p => {
+    if(p.dataset.ready) return; p.dataset.ready = "1";
+    const id = p.dataset.for, go = p.dataset.go, k = n => `<button type="button" data-k="${n}" aria-label="${n}">${n}<small>${PAD_ABC[n]}</small></button>`;
+    p.innerHTML = `<div class="pdots" aria-hidden="true"></div>
+      <div class="pkeys">${[1,2,3,4,5,6,7,8,9].map(k).join("")}<button type="button" class="pfn" data-slot="l" data-k="face" aria-label="Unlock with Face ID">Face ID</button>${k(0)}<button type="button" class="pfn" data-k="del" aria-label="Delete">Delete</button></div>
+      <div class="codein ptext"><input id="${id}" type="password" placeholder="PIN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="PIN"><button class="bigbtn" style="flex:none;padding:14px 20px" type="button" data-k="go">Enter</button></div>
+      <button type="button" class="plink" data-k="txt">PIN has letters? Type it instead</button>`;
+    const inp = p.querySelector("input");
+    inp.addEventListener("keydown", e => { if(e.key === "Enter") window[go](); });
+    p.addEventListener("click", e => {
+      const b = e.target.closest("button[data-k]"); if(!b) return; const v = b.dataset.k;
+      if(v === "go") return window[go]();
+      if(v === "txt"){ const t = !p.classList.contains("txt"); p.classList.toggle("txt", t); b.textContent = t ? "Use the keypad" : "PIN has letters? Type it instead"; if(t) inp.focus(); return; }
+      if(v === "face") return natPinFaceId();
+      if(v === "del") inp.value = inp.value.slice(0, -1); else if(inp.value.length < 12){ inp.value += v; natHap("light"); }
+      padPaint(p);
+    });
+    padPaint(p);
+  });
+}
+function padPaint(p){
+  const inp = p.querySelector("input"), n = inp.value.length, face = p.querySelector('[data-slot="l"]'), del = p.querySelector('[data-k="del"]');
+  p.querySelector(".pdots").innerHTML = Array.from({ length: Math.max(4, n) }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("");
+  del.textContent = n ? "Delete" : ""; del.classList.toggle("pnil", !n);
+  face.classList.toggle("pnil", !(NATIVE && p.dataset.for === "pinInput"));   // Face ID key: XC's PIN in the app (owners get Face ID straight away once saved)
+  if(n >= 4){ face.classList.remove("pnil"); face.className = "pgo"; face.textContent = "OK"; face.dataset.k = "go"; face.setAttribute("aria-label", "Enter"); }
+  else if(face.dataset.k === "go"){ face.className = "pfn"; face.textContent = "Face ID"; face.dataset.k = "face"; face.setAttribute("aria-label", "Unlock with Face ID"); face.classList.toggle("pnil", !(NATIVE && p.dataset.for === "pinInput")); }
+}
+function padWrong(id){ const inp = document.getElementById(id); if(!inp) return; const p = inp.closest(".pad"); inp.value = ""; if(!p) return; padPaint(p); const d = p.querySelector(".pdots"); d.classList.remove("bad"); void d.offsetWidth; d.classList.add("bad"); natHap("warning"); }
+function padClear(id){ const inp = document.getElementById(id); if(inp){ inp.value = ""; const p = inp.closest(".pad"); if(p) padPaint(p); } }
+document.addEventListener("keydown", e => {   // a computer's keyboard types on the visible keypad too
+  if(e.target && e.target.matches && e.target.matches("input,textarea")) return;
+  const p = [...document.querySelectorAll(".pad[data-for]")].find(x => x.offsetParent !== null && !x.classList.contains("txt")); if(!p) return;
+  const inp = p.querySelector("input");
+  if(/^\d$/.test(e.key) && inp.value.length < 12) inp.value += e.key; else if(e.key === "Backspace") inp.value = inp.value.slice(0, -1); else if(e.key === "Enter"){ window[p.dataset.go](); return; } else return;
+  e.preventDefault(); padPaint(p);
+});
+const TOUCH = matchMedia("(pointer: coarse)").matches;   // phones: never pop the keyboard up by itself
 function gate(which){
   splashDone();
   if(which==="gateCode" || which==="gatePin" || which==="gateOwner") warm();
   ["gateCode","gateName","gateGuide","gatePin","gateOwner","app"].forEach(id => document.getElementById(id).classList.toggle("hide", id!==which));
   document.body.classList.toggle("inapp", which==="app");
   window.scrollTo({top:0});
-  if(which==="gateCode") setTimeout(()=>document.getElementById("codeInput").focus(), 60);
-  if(which==="gatePin") setTimeout(()=>document.getElementById("pinInput").focus(), 60);
+  padInit();
+  if(which==="gateCode" && !TOUCH) setTimeout(()=>document.getElementById("codeInput").focus(), 60);   // v4.37: on a phone the keyboard waits for a tap
+  if(which==="gatePin") padClear("pinInput");
 }
 async function boot(){
   if(FORCE_EDITOR){ enterEditorGate(); return; }
@@ -1148,6 +1226,7 @@ async function boot(){
   splashT1 = setTimeout(()=>{ const m = document.getElementById("splashMsg"); if(m) m.textContent = "Waking the server…"; }, 5000);
   splashT2 = setTimeout(()=>{ const m = document.getElementById("splashMsg"); if(m) m.textContent = "Still going — hang tight"; }, 14000);
   const isXC = FORCE_XC || location.hash === "#xc" || /[?&]xc(=|&|$)/.test(location.search);
+  if(!isXC && (code || LS.get("ownercode")) && !phoneKey()){ await keyUp(); if(!code && !LS.get("ownercode")){ gate("gateCode"); return; } }   // v4.37
   if(isXC || (pin && !code)){ if(pin){ await enterXC(); } else gate("gatePin"); return; }
   // returning owner: last-known state instantly, verify + refresh in the background
   if(code && LS.get("ownerpin") && LS.get("ownercode")){
@@ -1174,15 +1253,17 @@ async function tryCode(){
   btn.disabled = true; err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
   const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
   const t2 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Still going — hang tight, nearly there.'; }, 12000);
-  const d = await apiGet({action:"hello", code:v});
+  const d = await apiGet({action:"hello", code:v, dev:devLabel()});
   clearTimeout(t1); clearTimeout(t2); err.className = "err"; err.textContent = "";
   btn.disabled = false;
   if(!d.ok){
     if(d.error === "unknown action"){ const d2 = await apiGet({action:"state", code:v}); if(d2.ok){ code = v; LS.set("code", v); C = d2; buildNames(); gate("gateName"); } else err.textContent = "That's not it — check the gold card in the staff room, or ask your manager."; return; }
-    err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "That's not it — check the gold card in the staff room, or ask your manager."; return;
+    err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : d.error === "signed out" ? "That code has changed. Ask XC or your manager for the new one." : "That's not it — check the gold card in the staff room, or ask your manager."; return;
   }
-  if(d.solo){ await soloEnter(v, d.solo.name); return; }   // v4.35: works alone: the code is the whole sign-in
-  code = v; LS.set("code", v); C = d;   // partial (name+team) — full state loads on entry
+  if(d.pk) LS.set("pk", d.pk);   // v4.37: this phone's own key
+  const cc = d.code || v;   // v4.37: a studio code (RILEY-7K4PQ) signs in to the client's record code
+  if(d.solo){ await soloEnter(cc, d.solo.name); return; }   // v4.35: works alone: the code is the whole sign-in
+  code = cc; LS.set("code", cc); C = d;   // partial (name+team) — full state loads on entry
   buildNames(); gate("gateName");
   loadClient();   // warm the full state in the background while they pick a name
 }
@@ -1215,7 +1296,18 @@ function buildGuide(){
   else { pill.textContent="You're on a computer"; steps.innerHTML = st(1,"This app lives on phones — open the same link on your phone.")+st(2,"iPhone: Share → <b>Add to Home Screen</b>. Android: ⋮ → <b>Add to Home screen</b>."); }
 }
 function finishGuide(){ LS.set("guided","1"); LS.set("seenFilmMode", "1"); enterClient(); }   // v4.33: a first open isn't "what's new"
-function resetDevice(){ LS.set("code",null); LS.set("me",null); LS.set("ownercode",null); LS.set("ownerpin",null); dropCache("state"); dropCache("owner"); code=null; me=null; C=null; U=null; upOpen.clear(); stopWatchUploads(); stopPoll(); gate("gateCode"); }
+function signedOut(){
+  if(signedOut.busy) return; signedOut.busy = true;
+  resetDevice(); signedOut.busy = false;
+  const err = document.getElementById("codeErr"); err.className = "err"; err.textContent = "This phone was signed out. Ask XC or your manager for your studio code.";
+}
+/* v4.37: phones signed in before keys existed get theirs quietly on the next open, so a new studio code never signs them out */
+async function keyUp(typed){
+  const cc = typed || code || LS.get("ownercode"); if(!cc || phoneKey()) return;
+  const d = await apiGet({ action: "hello", code: cc, dev: devLabel() });
+  if(d.ok && d.pk){ LS.set("pk", d.pk); if(d.code && d.code !== cc){ if(code){ code = d.code; LS.set("code", d.code); } if(LS.get("ownercode")) LS.set("ownercode", d.code); } }
+}
+function resetDevice(){ LS.set("code",null); LS.set("me",null); LS.set("ownercode",null); LS.set("ownerpin",null); LS.set("pk",null); dropCache("state"); dropCache("owner"); code=null; me=null; C=null; U=null; upOpen.clear(); stopWatchUploads(); stopPoll(); gate("gateCode"); }
 
 /* ═══════════════ client side ═══════════════ */
 let writeSeq = 0;   // bumped on every write; stale polls that started earlier are discarded
@@ -1235,7 +1327,7 @@ async function loadClient(){
 let previewMode = false, prevSaved = null;
 async function previewClient(cc){
   toast('<span class="spin"></span>Opening their view…');
-  const d = await apiGet({action:"state", code: cc});   // code-only fetch — identical to what a team member gets, logs nothing
+  const d = await apiGet({action:"state", code: cc, pin, as: "team"});   // v4.37: XC's PIN, shown exactly as a team member sees it, logs nothing
   if(!d.ok){ toast("Couldn't load that client's view."); return; }
   prevSaved = { code, me, C, wasXC: document.body.classList.contains("xc") };
   previewMode = true; code = cc; me = ""; C = d;
@@ -1390,6 +1482,7 @@ function safeLine(i){
   const mineOpen = upd.some(x => x.code === code && x.idx === i && x.st !== "done");   // v4.31: clips this phone still has to send
   if(s && s.ok && C.by[i] && !mineOpen && s.app !== false) return `<span class="safe ok">All in, safe to clear your card · ${s.n} clip${s.n===1?"":"s"}</span>`;
   if(s && s.ok && C.by[i] && !mineOpen) return `<span class="safe no">${s.n} clip${s.n===1?"":"s"} in · check that matches your camera before you clear it</span>`;   // v4.32: Drive-app clips can't be counted against what was filmed
+  if(s && s.why === "held") return `<span class="safe no">Don't delete anything yet · XC is checking a file</span>`;   // v4.37
   return `<span class="safe no">Don't delete anything yet</span>`;
 }
 function toggleNames(i){ if(upOpen.has(i)) upOpen.delete(i); else upOpen.add(i); renderClient(); }
@@ -1588,7 +1681,7 @@ function updPick(i, from){
   updIdx = (typeof i === "number") ? i : null;
   const inp = document.createElement("input"); inp.type = "file"; inp.multiple = true; inp.accept = "video/*,image/*";
   inp.onchange = () => {
-    const files = [...(inp.files || [])]; if(!files.length) return;
+    const files = mediaOnly([...(inp.files || [])]); if(!files.length) return;
     files.forEach(f => {
       const k = updKey(f), was = upd.find(x => x.k === k && x.code === code && x.st !== "done");
       if(was){ was.file = f; if(was.st !== "sending") was.st = "queued"; if(was.idx === undefined) was.idx = updIdx; return; }   // same clip picked again: resume its session
@@ -1599,6 +1692,13 @@ function updPick(i, from){
   inp.click();
 }
 /* v4.31: tell XC's side about every picked clip at once, so a shot can't say safe to clear while some were never started */
+/* v4.37: XC's side only takes videos, photos and voice notes (and checks each file's first bytes when it lands) */
+const MEDIA_EXT = /\.(mov|mp4|m4v|hevc|heic|heif|hif|jpe?g|png|gif|webp|avif|dng|tiff?|cr2|cr3|crw|arw|nef|raf|orf|rw2|avi|mxf|mts|m2ts|ts|3gp|webm|mkv|insv|insp|lrv|lrf|braw|r3d|wav|m4a|mp3|aac|aif|aiff|caf|flac|ogg|opus)$/i;
+function mediaOnly(files){
+  const ok = files.filter(f => MEDIA_EXT.test(String(f.name || "").trim())), no = files.length - ok.length;
+  if(no) toast(`<b>${no} file${no === 1 ? "" : "s"} left out.</b> Only videos, photos and voice notes can be sent.`);
+  return ok;
+}
 async function updDeclare(){
   const by = {}; upd.filter(x => x.code === code && x.st === "queued" && !x.decl).forEach(x => { const k = x.idx === null || x.idx === undefined ? "u" : x.idx; (by[k] = by[k] || []).push(x); });
   for(const k of Object.keys(by)){
@@ -1729,7 +1829,7 @@ async function natPick(i, from){
                              : await natCall("FilePicker", "pickMedia", { limit: 0, readData: false, skipTranscoding: true }); }   // skipTranscoding: send the camera's own file, never a re-encode
   catch(e){ natPicking = natPrep = false; updRender(); if(!upd.some(x => x.code === code && x.st !== "done")) updHide(); if(!/cancel/i.test(String(e && (e.message || e)))) toast("Couldn't open your clips: " + esc(String(e && (e.message || e)).slice(0, 80))); return; }
   natPicking = natPrep = false;
-  const files = (r && r.files) || []; if(!files.length){ updRender(); if(!upd.some(x => x.code === code && x.st !== "done")) updHide(); return; }
+  const files = mediaOnly((r && r.files) || []); if(!files.length){ updRender(); if(!upd.some(x => x.code === code && x.st !== "done")) updHide(); return; }
   for(const f of files){
     if(!f.path || !(f.size > 0)) continue;
     const k = f.name + "|" + f.size, was = upd.find(x => x.k === k && x.code === code && x.st !== "done");
@@ -1854,7 +1954,7 @@ function natPlugin(p, m, o){ return NATIVE ? window.Capacitor.nativePromise(p, m
 function natHap(kind){ if(!NATIVE) return; (kind === "success" || kind === "warning" ? natPlugin("Haptics", "notification", { type: kind.toUpperCase() }) : natPlugin("Haptics", "impact", { style: kind === "heavy" ? "HEAVY" : "LIGHT" })).catch(() => {}); }
 
 /* sign-in: secrets in the Keychain behind Face ID, the rest mirrored so a cleared web storage doesn't sign anyone out */
-const NAT_SECRET = { pin: 1, ownerpin: 1, editorpin: 1 }, NAT_KEEP = { code: 1, me: 1, ownercode: 1, guided: 1, seenFilmMode: 1, gapHide: 1, upq: 1 }, NAT_MEM = {};   // upq = clips still sending: a wiped page must still check on them
+const NAT_SECRET = { pin: 1, ownerpin: 1, editorpin: 1 }, NAT_KEEP = { code: 1, me: 1, ownercode: 1, guided: 1, seenFilmMode: 1, gapHide: 1, upq: 1, pk: 1, faceLock: 1 }, NAT_MEM = {};   // upq = clips still sending: a wiped page must still check on them
 if(NATIVE){
   const g = LS.get, s = LS.set;
   LS.get = k => NAT_SECRET[k] ? (NAT_MEM[k] !== undefined ? NAT_MEM[k] : (g(k) === "solo" ? "solo" : null)) : g(k);
@@ -1878,9 +1978,47 @@ async function natPreBoot(){
       Object.keys(NAT_KEEP).concat(["ownerpin"]).forEach(k => { if(it[k] && (k !== "ownerpin" || it[k] === "solo")) try { localStorage.setItem("xcs." + k, it[k]); } catch(e){} });
       code = LS.get("code"); me = LS.get("me");
     }
+    if(faceLockOn()){ natCover(true); natLocked = true; while(!(await natAppUnlock())) await new Promise(r => { const b = document.querySelector("#lockv .bigbtn"); b.onclick = () => { b.onclick = () => natAppUnlock(); r(); }; }); }   // v4.37: the face first, then everything else
     if(!code){ const p = await natUnlock("pin", "Unlock the XC studio"); if(p) pin = p; }   // the studio: XC's phone
     else if(LS.get("ownercode")) await natUnlock("ownerpin", "Unlock the owner view");
   } catch(e){}
+  faceLockPaint();
+}
+/* v4.37: Face ID lock, for anyone, per phone (You › Lock with Face ID; Studio › Session). The switch itself lives in the Keychain
+   behind Face ID, so the app asks for a face on every open and after 2 minutes away. The screen is covered while the app is in the
+   background, so the app switcher never shows a client's shots. If the lock item is ever gone (a restored phone), the lock turns off
+   rather than shutting anyone out. */
+let natLocked = false, natAwayAt = 0;
+function faceLockOn(){ return NATIVE && LS.get("faceLock") === "1"; }
+function faceLockPaint(){ document.querySelectorAll(".faceLockBtn").forEach(b => { b.textContent = faceLockOn() ? "Turn off" : "Turn on"; b.classList.toggle("ok", !faceLockOn()); }); }
+async function faceLockToggle(){
+  if(faceLockOn()){
+    if(!(await natAppUnlock(true))) return;
+    LS.set("faceLock", null); natPlugin("XCNative", "kcRemove", { key: "applock", bio: true }).catch(() => {}); faceLockPaint(); toast("Face ID lock is off."); return;
+  }
+  try { await natPlugin("XCNative", "kcSet", { key: "applock", value: "1", bio: true }); } catch(e){ toast("This phone couldn't turn on the lock."); return; }
+  const r = await natPlugin("XCNative", "kcGet", { key: "applock", bio: true, reason: "Turn on the XC Studio lock" }).catch(() => null);
+  if(!r || r.value !== "1"){ natPlugin("XCNative", "kcRemove", { key: "applock", bio: true }).catch(() => {}); toast("Face ID didn't go through, so the lock stays off."); return; }
+  LS.set("faceLock", "1"); faceLockPaint(); natHap("success"); toast("<b>Face ID lock is on.</b> The app asks for your face each time it opens.");
+}
+function natCover(on){ document.getElementById("lockv").classList.toggle("show", !!on); }
+async function natAppUnlock(check){
+  if(!faceLockOn()) { natCover(false); natLocked = false; return true; }
+  const m = document.getElementById("lockMsg");
+  let has = true; try { has = (await natPlugin("XCNative", "kcHas", { key: "applock", bio: true })).has; } catch(e){}
+  if(!has){ LS.set("faceLock", null); natCover(false); natLocked = false; faceLockPaint(); return true; }
+  const r = await natPlugin("XCNative", "kcGet", { key: "applock", bio: true, reason: check ? "Turn off the XC Studio lock" : "Unlock XC Studio" }).catch(() => null);
+  if(r && r.value === "1"){ natLocked = false; natCover(false); return true; }
+  if(m) m.textContent = "Face ID didn't go through. Tap Unlock to try again.";
+  return false;
+}
+if(NATIVE){
+  try { window.Capacitor.addListener("App", "pause", () => { natAwayAt = Date.now(); if(faceLockOn() && !natPicking) natCover(true); }); } catch(e){}
+  try { window.Capacitor.addListener("App", "resume", () => {
+    if(!faceLockOn() || natPicking){ natCover(false); return; }
+    if(Date.now() - natAwayAt < 120000){ natCover(false); return; }   // back within 2 minutes: no face needed
+    natLocked = true; natCover(true); const m = document.getElementById("lockMsg"); if(m) m.textContent = "Unlock with Face ID to carry on."; natAppUnlock();
+  }); } catch(e){}
 }
 async function natPinFaceId(){ const p = await natUnlock("pin", "Unlock the XC studio"); if(!p) return; pin = p; await enterXC(); }
 function natSplashHide(){ if(!NATIVE || natSplashHide.done) return; natSplashHide.done = true; natPlugin("SplashScreen", "hide", { fadeOutDuration: 180 }).catch(() => {}); natPlugin("XCNative", "bootOk").catch(() => {}); }
@@ -2253,7 +2391,7 @@ async function tryPin(){
   const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
   const d = await apiGet({action:"roster", pin:v});
   clearTimeout(t1); err.className = "err";
-  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Not it — server rejected that PIN (check line 16 + new version)."; return; }
+  if(!d.ok){ if(d.error !== "network") padWrong("pinInput"); err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Wrong PIN. Try again."; return; }
   err.textContent = "";
   pin = v; LS.set("pin", v); roster = d; await enterXC();
 }
@@ -2302,7 +2440,7 @@ async function addClient(inputId){
   const d = await apiPost({action:"addClient", pin, name:n});
   if(!d.ok){ toast("Couldn't add: " + esc(d.error)); return; }
   inp.value = "";
-  toast(`<b>${esc(d.name)}</b> is live — code <b>${esc(d.code)}</b>.`);
+  toast(`<b>${esc(d.name)}</b> is live — studio code <b>${esc(d.join || d.code)}</b>.`);
   await loadRoster();
 }
 
@@ -2971,27 +3109,28 @@ function ownerStart(){
   gate("gateOwner");
   const oc = LS.get("ownercode") || (document.getElementById("codeInput").value || "").trim().toUpperCase();
   if(oc) document.getElementById("ownCode").value = oc;
-  setTimeout(()=>document.getElementById(oc ? "ownPin" : "ownCode").focus(), 60);
+  padClear("ownPin"); if(!oc && !TOUCH) setTimeout(()=>document.getElementById("ownCode").focus(), 60);
 }
 function ownerFromName(){   // from the name picker — the studio code is already known, only the PIN is left
   gate("gateOwner");
   const oc = code || LS.get("ownercode") || "";
   if(oc) document.getElementById("ownCode").value = oc;
-  setTimeout(()=>document.getElementById(oc ? "ownPin" : "ownCode").focus(), 60);
+  padClear("ownPin"); if(!oc && !TOUCH) setTimeout(()=>document.getElementById("ownCode").focus(), 60);
 }
 async function tryOwner(){
   const oc = document.getElementById("ownCode").value.trim().toUpperCase();
   const op = document.getElementById("ownPin").value.trim();
-  const err = document.getElementById("ownErr"); const btn = document.getElementById("ownBtn");
-  if(!oc || !op){ err.textContent = "Both boxes — code and PIN."; return; }
+  const err = document.getElementById("ownErr"); const btn = document.getElementById("ownBtn") || {};   /* v4.37: the keypad has no Enter button */
+  if(!oc || !op){ err.textContent = "Type the studio code and your PIN."; return; }
   btn.disabled = true; err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
   const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
   const d = await apiGet({action:"state", code:oc, owner:op});
   clearTimeout(t1); btn.disabled = false; err.className = "err";
   if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Code didn't match a client."; return; }
-  if(d.role < 1){ err.textContent = "PIN didn't match — check with XC."; return; }
+  if(d.role < 1){ padWrong("ownPin"); err.textContent = "Wrong PIN. Check it with XC."; return; }
   err.textContent = "";
-  LS.set("ownercode", oc); LS.set("ownerpin", op);
+  if(!phoneKey()) await keyUp(oc);   // v4.37: the owner's phone gets its key from the code they typed
+  LS.set("ownercode", d.code || oc); LS.set("ownerpin", op);
   ownerEnter(d);
 }
 function ownerEnter(d, quiet){
@@ -3014,7 +3153,7 @@ async function ownerLoad(){
 }
 
 /* ── tools tab ── */
-function printCard(){ window.open("/card/?name=" + encodeURIComponent(mgState.name) + "&code=" + encodeURIComponent(mgState.code), "_blank", "noopener"); }
+function printCard(){ window.open("/card/?name=" + encodeURIComponent(mgState.name) + "&code=" + encodeURIComponent(mgState.join || mgState.code), "_blank", "noopener"); }
 async function savePortal(){ const v = document.getElementById("portalInput").value.trim();
   if(v && !/^https:\/\//.test(v)){ toast("The link needs to start with https://"); return; }
   const d = await apiPost({action:"setPortal", pin, code:mgCode, url:v});
@@ -3060,6 +3199,25 @@ async function saveWa(){
 async function saveOwnerEmail(){ const v = document.getElementById("ownerEmailInput").value.trim(); const d = await apiPost({action:"setOwnerEmail", pin, code:mgCode, ownerEmail:v}); if(d.ok){ toast(v ? "<b>Owner email saved</b> — they get the month-wrap email at close." : "Owner email cleared."); mgState = mgTake(d); } else toast("Couldn't: "+esc(d.error)); }
 function addDoc(){ const l = document.getElementById("docLabel").value.trim(), u = document.getElementById("docUrl").value.trim(); if(!l || !/^https:\/\//.test(u)){ toast("Need a label and a full https:// link."); return; } editDocs.push({label:l, url:u}); document.getElementById("docLabel").value=""; document.getElementById("docUrl").value=""; renderTools(); }
 async function saveDocs(){ const d = await apiPost({action:"setDocs", pin, code:mgCode, docs:editDocs}); if(d.ok){ toast("<b>Documents saved.</b> The owner sees them now."); mgState = mgTake(d); editDocs = null; renderTools(); } else toast("Couldn't: "+esc(d.error)); }
+/* v4.37: studio code + the phones signed in */
+function renderSign(){
+  const host = document.getElementById("mgSign"); if(!host || !mgState) return;
+  const ph = mgState.phones || [], when = t => t ? new Date(t).toLocaleDateString("en-AU", { day: "numeric", month: "short" }) : "";
+  host.innerHTML = `<div class="mrow"><div class="r"><span class="nm">Studio code<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${mgState.strong ? "Strong code" : "Old short code · make a new one to lock it down"}</span></span><span class="mono" style="color:var(--goldB);font-size:15px;letter-spacing:.12em">${esc(mgState.join || mgState.code)}</span></div></div>`
+    + (ph.length ? ph.map(x => `<div class="mrow"><div class="r"><span class="nm">${esc(x.n || "Not named yet")} · ${esc(x.d)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Signed in ${when(x.at)} · last used ${when(x.seen)}</span></span><button class="mact cancel" onclick="phoneRemove(${q(x.id)},${q((x.n ? x.n + "'s " : "") + x.d)})">Sign out</button></div></div>`).join("")
+      : `<div class="mrow"><div class="r"><span class="nm" style="color:var(--dim)">No phones signed in since this update. They show up the next time each phone opens the app.</span></div></div>`);
+}
+async function newCode(){
+  const nm = mgState.name;
+  if(!(await ask({ title: "Make a new studio code for " + nm + "?", body: "The old code stops working for new phones. Phones already signed in stay in. Send the new code to anyone who still needs to sign in, and print a new staff card.", ok: "Make new code" }))) return;
+  const d = await apiPost({ action: "newCode", pin, code: mgCode });
+  if(d.ok){ mgState = mgTake(d); renderTools(); toast("<b>New studio code: " + esc(d.join) + "</b>"); } else toast("Couldn't: " + esc(d.error));
+}
+async function phoneRemove(id, label){
+  if(!(await ask({ title: "Sign out " + label + "?", body: "That phone goes back to the code screen. Everyone else stays signed in." + (mgState.strong ? "" : " A new studio code is made too, so the old short code can't sign it straight back in."), ok: "Sign out", danger: true }))) return;
+  const d = await apiPost({ action: "phoneRemove", pin, code: mgCode, id });
+  if(d.ok){ mgState = mgTake(d); renderTools(); toast("<b>Signed out.</b>" + (d.join ? " Studio code: " + esc(d.join) : "")); } else toast("Couldn't: " + esc(d.error));
+}
 async function saveSolo(on){
   const name = document.getElementById("soloName").value.trim();
   if(on && !name){ toast("Type their name first. It goes on every shot they tick."); return; }
@@ -3067,7 +3225,7 @@ async function saveSolo(on){
   const d = await apiPost({ action: "setSolo", pin, code: mgCode, on, name });
   if(d.ok){ mgState = mgTake(d); renderTools(); toast(on ? "<b>Works alone is on.</b> " + esc(name) + " signs in with the code only." : "Works alone is off."); } else toast("Couldn't save: " + esc(d.error));
 }
-async function saveOwnerPin(){ const v = document.getElementById("ownerPinInput").value.trim(); const d = await apiPost({action:"setOwnerPin", pin, code:mgCode, ownerPin:v}); if(d.ok){ toast(v ? "<b>Owner PIN set.</b> Give it to the owner with their code." : "Owner PIN cleared."); mgState = mgTake(d); renderManage(); } else toast("Couldn't: "+esc(d.error)); }
+async function saveOwnerPin(){ const v = document.getElementById("ownerPinInput").value.trim(); if(v && !/^\d{4,8}$/.test(v)){ toast("Owner PINs are 4 to 8 numbers, so they fit the keypad."); return; } const d = await apiPost({action:"setOwnerPin", pin, code:mgCode, ownerPin:v}); if(d.ok){ toast(v ? "<b>Owner PIN set.</b> Give it to the owner with their code." : "Owner PIN cleared."); mgState = mgTake(d); renderManage(); } else toast("Couldn't: "+esc(d.error)); }
 let closingMonth = false;
 async function closeMonth(){
   if(closingMonth) return;
@@ -3086,12 +3244,13 @@ const INTAKE_LABELS = {biz:"Business + suburb", ig:"Socials", offer:"Money-maker
 function renderTools(){
   if(!mgState) return;
   document.getElementById("mgIntakeWrap").classList.remove("hide");
-  document.getElementById("mgIntakeLink").textContent = "app.xcmedia.co/onboard/?code=" + mgState.code;
+  document.getElementById("mgIntakeLink").textContent = "app.xcmedia.co/onboard/?code=" + (mgState.join || mgState.code);
   const iv = mgState.intake;
   document.getElementById("mgIntake").innerHTML = (iv && iv.answers)
     ? Object.keys(INTAKE_LABELS).map(k=>`<div class="mrow"><div class="r"><span class="nm" style="flex:none;width:150px;color:var(--gold);font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase">${INTAKE_LABELS[k]}</span><span class="who" style="color:var(--ink);text-align:left;max-width:none;flex:1">${esc(iv.answers[k]||"—")}</span></div></div>`).join("")
     : '<p class="sub">Not filled in yet — text them the link above (needs backend v2.3).</p>';
   document.getElementById("ownerPinState").textContent = mgState.hasOwnerPin ? "OWNER PIN IS SET" : "NO OWNER PIN YET";
+  renderSign();
   { const so = mgState.solo, sn = document.getElementById("soloName");
     document.getElementById("soloState").textContent = so ? "ON · SIGNS IN AS " + String(so.name).toUpperCase() + " WITH THE CODE ONLY" : "OFF · THEY PICK A NAME, OWNERS USE A PIN";
     document.getElementById("soloOff").classList.toggle("hide", !so); if(document.activeElement !== sn) sn.value = so ? so.name : ""; }
@@ -3328,7 +3487,7 @@ function enterEditorGate(){
     if(!v){ err.textContent = "Type your PIN."; return; }
     err.textContent = "Checking…";
     const d = await apiGet({action:"editor", pin:v});
-    if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server." : "Not it."; return; }
+    if(!d.ok){ if(d.error !== "network") padWrong("pinInput"); err.textContent = d.error==="network" ? "Couldn't reach the server." : "Wrong PIN. Try again."; return; }
     LS.set("editorpin", v); renderEditorQueue(d);
   };
   const saved = LS.get("editorpin");
