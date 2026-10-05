@@ -1047,7 +1047,7 @@ if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !
     return Promise.resolve({}); } }; })();
 /* ═══════════════ config ═══════════════ */
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.35";
+const BUILD = "4.36";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -3052,7 +3052,7 @@ async function saveWa(){
   const digits = to.replace(/\D/g, "");
   if(to && !(/^04\d{8}$/.test(digits) || /^614\d{8}$/.test(digits) || (digits.length >= 8 && digits.length <= 15))){ toast("That doesn't look like a phone number."); return; }
   if(waOnDraft && (!digits || !at || !how)){ toast("Before switching on: their number, the day they said yes and how."); return; }
-  if(waOnDraft && !(mgState.wa && mgState.wa.on) && !(await askC("Switch on WhatsApp for " + mgState.name + "? They get the welcome message from 0494 798 319 (straight away between 7am and 9pm, otherwise 7am tomorrow)."))) return;
+  if(waOnDraft && !(mgState.wa && mgState.wa.on) && !(await askC("Switch on WhatsApp for " + mgState.name + "? " + ((typeof waOffDraft !== "undefined" && waOffDraft && waOffDraft.welcome) ? "No welcome message, because it's unticked. The ticked updates start from now." : "They get the welcome message from 0494 798 319 (straight away between 7am and 9pm, otherwise 7am tomorrow).")))) return;
   const off = Object.keys(waOffDraft).filter(k => waOffDraft[k]);
   const d = await apiPost({action:"setWa", pin, code:mgCode, to, name:document.getElementById("waName").value.trim(), optInAt:at, optInHow:how, on:waOnDraft, off});
   if(d.ok){ mgState = mgTake(d); waDirty = false; renderTools(); toast(d.wa && d.wa.on ? "<b>WhatsApp on</b> for " + esc(d.name) + "." : "<b>Saved.</b> WhatsApp is off for " + esc(d.name) + "."); }
