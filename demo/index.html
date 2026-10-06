@@ -563,6 +563,22 @@ body.inapp .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .bigbtn.danger{background:var(--warn);border-color:var(--warn);color:#0A0A0A}
 body.native{overscroll-behavior-x:none}
 /* v4.31 the iPhone app */
+/* v4.39 loading: grey boxes in the shape of what's coming, with a slow gold shimmer, so nothing ever looks frozen */
+.sk{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:16px;margin-bottom:10px}
+.sk::after,.skh::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(233,211,160,.07),transparent);animation:skx 1.5s ease-in-out infinite}
+@keyframes skx{to{transform:translateX(100%)}}
+.sk i{display:block;height:11px;border-radius:6px;background:#202020;margin-top:10px}.sk i:first-child{margin-top:0}
+.sk i.t{height:16px;width:58%;background:#252525}.sk i.s{width:34%}.sk i.m{width:82%}.sk i.l{width:100%}.sk i.bar{height:5px;margin-top:16px;width:100%;background:#1c1c1c}
+.sk .pill{display:inline-block;width:86px;height:26px;border-radius:99px;background:#202020;margin-top:12px}
+.skh{position:relative;overflow:hidden;display:inline-block;width:min(78%,420px);height:.85em;border-radius:10px;background:#1b1b1b;vertical-align:middle}
+.skgrid{display:flex;flex-direction:column}body.xc .skgrid.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}body.xc .skgrid.cards .sk{margin:0}
+@media (prefers-reduced-motion: reduce){.sk::after,.skh::after{animation:none}}
+body.cload #shotsView>:not(#shotList),body.cload #client .sub,body.cload #client .subtabs{display:none}   /* v4.39: nothing stale shows while a client's shots load */
+button.busy,.mact.busy,.bigbtn.busy{position:relative;color:transparent !important;pointer-events:none}
+button.busy::after,.mact.busy::after,.bigbtn.busy::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border:2px solid rgba(205,168,95,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+.bigbtn.busy{opacity:1 !important}.bigbtn.busy::after{border-color:rgba(10,10,10,.25);border-top-color:#0A0A0A}
+.pad.busy .pdots i{animation:pthink 1s ease-in-out infinite}.pad.busy .pdots i:nth-child(2){animation-delay:.12s}.pad.busy .pdots i:nth-child(3){animation-delay:.24s}.pad.busy .pdots i:nth-child(4){animation-delay:.36s}.pad.busy .pkeys{opacity:.45;pointer-events:none}
+@keyframes pthink{50%{transform:translateY(-6px);background:var(--gold)}}
 /* v4.37 PIN keypad: the iPhone passcode screen (dots, round keys, letters under the digits) */
 .pad{display:flex;flex-direction:column;align-items:center;margin:26px auto 0;width:100%;max-width:300px}
 .pdots{display:flex;gap:16px;height:16px;margin-bottom:30px}.pdots i{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--goldB);transition:background .12s}.pdots i.on{background:var(--goldB)}
@@ -668,24 +684,24 @@ body.native{overscroll-behavior-x:none}
   <section id="today" class="hide">
     <div class="calseg" role="tablist"><button class="on">Queue</button><button onclick="xcnav('calendar')">Calendar<span class="n hide" id="calSegN"></span></button></div>
     <div class="eyebrow" id="todayEyebrow">Today</div>
-    <h1 id="todayHead">Loading…</h1>
-    <div id="todayBody"></div>
+    <h1 id="todayHead"><span class="skh"></span></h1>
+    <div id="todayBody"><div class="skgrid cards"><div class="sk"><i class="s"></i><i class="m"></i><i class="l"></i></div><div class="sk"><i class="s"></i><i class="m"></i><i class="l"></i></div><div class="sk"><i class="s"></i><i class="m"></i><i class="l"></i></div></div></div>
   </section>
 
   <!-- XC: studio calendar (v4.16) — what do I owe, to whom, by when -->
   <section id="calendar" class="hide">
     <div class="calseg" role="tablist"><button onclick="xcnav('today')">Queue</button><button class="on">Calendar</button></div>
     <div class="eyebrow" id="calEyebrow">Studio calendar</div>
-    <h1 id="calHead">Loading…</h1>
-    <div id="calBody"></div>
+    <h1 id="calHead"><span class="skh"></span></h1>
+    <div id="calBody"><div class="skgrid"><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div></div></div>
   </section>
 
   <!-- XC: roster -->
   <section id="dash" class="hide">
     <div class="eyebrow" id="dashEyebrow">Your roster</div>
-    <h1 id="dashHead">Loading…</h1>
+    <h1 id="dashHead"><span class="skh"></span></h1>
     <p class="sub">Tap a client to manage them.</p>
-    <div class="clients" id="roster"></div>
+    <div class="clients" id="roster"><div class="skgrid cards"><div class="sk"><i class="t"></i><i class="s"></i><i class="bar"></i></div><div class="sk"><i class="t"></i><i class="s"></i><i class="bar"></i></div><div class="sk"><i class="t"></i><i class="s"></i><i class="bar"></i></div></div></div>
     <div class="addteam" style="margin-top:18px"><input id="newClient" placeholder="New client name…" onkeydown="if(event.key==='Enter')addClient()"><button onclick="addClient()">Add client</button></div>
     <p class="demonote"><b>ADD CLIENT —</b> creates their drop folder + 12 shot folders + a studio code in one go. <br><a onclick="xcSignOut()" role="button" tabindex="0">Sign out of the studio side</a></p>
   </section>
@@ -693,8 +709,8 @@ body.native{overscroll-behavior-x:none}
   <!-- XC: activity feed -->
   <section id="activity" class="hide">
     <div class="eyebrow" id="actEyebrow">Activity</div>
-    <h1 id="actHead">Loading…</h1>
-    <div id="actBody"></div>
+    <h1 id="actHead"><span class="skh"></span></h1>
+    <div id="actBody"><div class="skgrid"><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div></div></div>
   </section>
 
   <!-- XC: studio tools -->
@@ -706,7 +722,7 @@ body.native{overscroll-behavior-x:none}
     <p class="demonote" style="border:0;padding:0"><b>ADD CLIENT —</b> creates their drop folder + 12 shot folders + a studio code in one go.</p>
     <p class="msect">WhatsApp — automatic messages</p>
     <p class="sub" style="margin-top:8px">From the XC Media number, 0494 798 319, through Chakra. Clients are switched on one by one in their Settings.</p>
-    <div class="mlist" id="waStudio" style="max-width:560px"><p class="sub">Loading…</p></div>
+    <div class="mlist" id="waStudio" style="max-width:560px"><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div></div>
     <p class="msect">Session</p>
     <div class="mlist" style="max-width:460px">
       <div class="mrow"><div class="r"><span class="nm">Refresh everything</span><button class="mact" onclick="loadToday();loadRoster();toast('Refreshing…')">Refresh</button></div></div>
@@ -828,7 +844,7 @@ body.native{overscroll-behavior-x:none}
   <!-- CLIENT -->
   <section id="client" class="hide">
     <div class="eyebrow" id="clientEyebrow"></div>
-    <h1 id="clientHead">Loading…</h1>
+    <h1 id="clientHead"><span class="skh"></span></h1>
     <p class="sub">Tap any shot for a simple how-to. Anyone on the team can film and tick it off.</p>
     <p class="me">You're <b id="meName">—</b> · <a onclick="repick()" role="button" tabindex="0">not you?</a></p>
     <div class="subtabs"><button id="stShots" class="on" onclick="subtab('shots')">This month</button><button id="stResults" onclick="subtab('results')">Results</button><button id="stBasics" onclick="subtab('basics')">Basics</button><button id="stOwner" class="hide" onclick="subtab('owner')">Owner</button></div>
@@ -1080,7 +1096,7 @@ if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !
 /* ═══════════════ config ═══════════════ */
 try { const k1 = localStorage.getItem("xcs.pk"), c1 = localStorage.getItem("xcs.code") || localStorage.getItem("xcs.ownercode"); if(k1){ if(c1 && !/-/.test(c1)){ const m = JSON.parse(localStorage.getItem("xcs.pks") || "{}"); m[c1.toUpperCase()] = k1; localStorage.setItem("xcs.pks", JSON.stringify(m)); } localStorage.removeItem("xcs.pk"); } } catch(e){}   // v4.38: 4.37 kept one key
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.38";
+const BUILD = "4.39";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1150,6 +1166,10 @@ async function apiGet(params){
 async function apiPost(body){
   body = keyed(Object.assign({}, body));
   if(typeof previewMode !== "undefined" && previewMode){ toast("👁 <b>Preview only</b> — taps don't save, and the client can't see you."); return {ok:false, error:"preview"}; }
+  const bb = busyStart();   // v4.39
+  try { return await apiPostRun(body); } finally { if(bb) bb.classList.remove("busy"); }
+}
+async function apiPostRun(body){
   inflight++; syncUI("busy");
   try {
     const r = await withTimeout(fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body)}), 45000);
@@ -1183,6 +1203,19 @@ function splashDone(){
   if(splashT1){ clearTimeout(splashT1); splashT1 = null; }
   if(splashT2){ clearTimeout(splashT2); splashT2 = null; }
 }
+/* v4.39: placeholder boxes shaped like what's loading. shot = a shot card, card = a roster card, row = a list row, feed = a queue item */
+function SK(kind, n){
+  const one = { shot: '<div class="sk"><i class="s"></i><i class="t"></i><i class="m"></i><span class="pill"></span></div>',
+                card: '<div class="sk"><i class="t"></i><i class="s"></i><i class="bar"></i></div>',
+                row:  '<div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div>',
+                feed: '<div class="sk"><i class="s"></i><i class="m"></i><i class="l"></i></div>' }[kind] || "";
+  return `<div class="skgrid${kind === "card" || kind === "feed" ? " cards" : ""}" aria-busy="true" aria-label="Loading">${one.repeat(n || 4)}</div>`;
+}
+const SKH = '<span class="skh" aria-label="Loading"></span>';
+/* v4.39: a button that starts a save shows a spinner on itself until the answer is back */
+let busyBtn = null, busyAt = 0;
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("button,.mact,.bigbtn"); if(b){ busyBtn = b; busyAt = Date.now(); } }, true);
+function busyStart(){ if(!busyBtn || Date.now() - busyAt > 800 || busyBtn.classList.contains("busy") || busyBtn.closest(".pad")) return null; const b = busyBtn; busyBtn = null; b.classList.add("busy"); return b; }
 /* v4.37: every PIN is typed on an iPhone-style keypad, so no keyboard jumps up. "Use letters" keeps any older PIN with letters working. */
 const PAD_ABC = ["", "", "ABC", "DEF", "GHI", "JKL", "MNO", "PQRS", "TUV", "WXYZ"];
 function padInit(){
@@ -1207,7 +1240,7 @@ function padInit(){
     padPaint(p);
   });
 }
-async function padGo(p){ if(p.dataset.busy) return; p.dataset.busy = "1"; try { await window[p.dataset.go](); } finally { delete p.dataset.busy; } }   // v4.38: one try at a time
+async function padGo(p){ if(p.dataset.busy) return; p.dataset.busy = "1"; p.classList.add("busy"); try { await window[p.dataset.go](); } finally { delete p.dataset.busy; p.classList.remove("busy"); } }   // v4.39: the dots bounce while it checks   // v4.38: one try at a time
 let natHasPin = false;   // v4.38: the Face ID key shows only when XC's PIN is saved on this phone
 function natPinCheck(){ if(natPinCheck.done || !NATIVE) return; natPinCheck.done = true; natPlugin("XCNative", "kcHas", { key: "pin", bio: true }).then(r => { natHasPin = !!(r && r.has); document.querySelectorAll(".pad[data-for]").forEach(padPaint); }).catch(() => {}); }   // called from padInit: NATIVE is defined further down
 function padPaint(p){
@@ -1269,12 +1302,12 @@ async function tryCode(){
   const v = document.getElementById("codeInput").value.trim().toUpperCase();
   const err = document.getElementById("codeErr"); const btn = document.getElementById("codeBtn");
   if(!v){ err.textContent = "Type your studio code first."; return; }
-  btn.disabled = true; err.className = "err busy"; err.innerHTML = '<span class="spin"></span>Checking…';
-  const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
-  const t2 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Still going — hang tight, nearly there.'; }, 12000);
+  btn.disabled = true; btn.classList.add("busy"); err.className = "err busy"; err.innerHTML = 'Checking your code…';
+  const t1 = setTimeout(()=>{ err.innerHTML = 'Waking the server. The first open of the day is the slow one…'; }, 4000);
+  const t2 = setTimeout(()=>{ err.innerHTML = 'Still going, nearly there.'; }, 12000);
   const d = await apiGet({action:"hello", code:v, dev:devLabel()});
   clearTimeout(t1); clearTimeout(t2); err.className = "err"; err.textContent = "";
-  btn.disabled = false;
+  btn.disabled = false; btn.classList.remove("busy");
   if(!d.ok){
     if(d.error === "unknown action"){ const d2 = await apiGet({action:"state", code:v}); if(d2.ok){ code = v; LS.set("code", v); C = d2; buildNames(); gate("gateName"); } else err.textContent = "That's not it — check the gold card in the staff room, or ask your manager."; return; }
     err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : d.error === "signed out" ? "That code has changed. Ask XC or your manager for the new one." : /busy/.test(d.error || "") ? "XC's system is busy. Tap Open again in a moment." : "That's not it — check the gold card in the staff room, or ask your manager."; return;
@@ -1290,8 +1323,9 @@ async function tryCode(){
    the code opens the owner view straight away, signed in as their name. */
 async function soloEnter(c, name){
   me = name; LS.set("me", name); LS.set("ownercode", c); LS.set("ownerpin", "solo"); LS.set("guided", "1"); LS.set("seenFilmMode", "1");
+  skelClient(name);   // v4.39: the shots screen appears at once, as placeholders, while it loads
   const d = await apiGet({ action: "state", code: c, owner: "solo" });
-  if(!d.ok || d.role < 1){ const err = document.getElementById("codeErr"); err.className = "err"; err.textContent = d.error === "network" ? "Couldn't reach XC's system. Check your signal and try again." : "That code didn't open. Check it with XC."; return; }
+  if(!d.ok || d.role < 1){ gate("gateCode"); const err = document.getElementById("codeErr"); err.className = "err"; err.textContent = d.error === "network" ? "Couldn't reach XC's system. Check your signal and try again." : "That code didn't open. Check it with XC."; return; }
   ownerEnter(d);
   if(NATIVE) natWelcome();
 }
@@ -1367,11 +1401,21 @@ function exitPreview(){
   gate("app"); show("dash"); loadRoster();
   window.scrollTo({top:0});
 }
+/* v4.39: the client screen as placeholders: the headline, the upload board and five shot cards */
+function skelClient(name){
+  gate("app"); show("client"); document.body.classList.remove("xc");
+  document.getElementById("meName").textContent = name || me || "—";
+  document.getElementById("clientEyebrow").innerHTML = '<span class="skh" style="width:180px;height:10px"></span>';
+  document.getElementById("clientHead").innerHTML = SKH;
+  document.getElementById("shotList").innerHTML = '<div class="sk" style="padding:18px"><i class="s"></i><i class="t" style="height:26px;width:40%"></i><i class="bar"></i></div>' + SK("shot", 4);
+  document.body.classList.add("cload");
+  const ub = document.getElementById("upBoard"); if(ub) ub.classList.add("hide");
+}
 function enterClient(){
   updLoad(); natInit();   // v4.28: clips that were still sending when the app last closed · v4.31: the iPhone app checks on them
   gate("app"); show("client"); document.body.classList.remove("xc");
   document.getElementById("meName").textContent = me || "—";
-  if(!C || !C.shots){ document.getElementById("clientHead").innerHTML = '<span class="spin"></span>Loading your shots…'; loadClient().then(()=>loadUploads()); }
+  if(!C || !C.shots){ skelClient(); loadClient().then(()=>loadUploads()); }
   else { renderClient(); loadUploads(); }
   startPoll(loadClient);
 }
@@ -1381,6 +1425,7 @@ document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState=
 
 function renderClient(){
   if(!C || !C.shots) return;
+  document.body.classList.remove("cload");   // v4.39
   document.getElementById("stOwner").classList.toggle("hide", !(C.role >= 1));
   document.getElementById("stResults").classList.toggle("dot", !C.portalUrl && (C.approved||[]).some(f=>!(C.feedback||{})[f.id]));   // reels awaiting a verdict (not once reviews live in Timeliner)
   const unrev = C.portalUrl ? 0 : (C.approved||[]).filter(f=>!(C.feedback||{})[f.id]).length;
@@ -2482,10 +2527,11 @@ async function openManage(c){
   document.getElementById("dash").classList.add("hide"); document.getElementById("today").classList.add("hide"); document.getElementById("calendar").classList.add("hide"); document.getElementById("manage").classList.remove("hide");
   ["nvToday","nvCal","nvAct","nvStudio","xbToday","xbAct","xbStudio"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove("on"); });
   ["nvClients","xbClients"].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add("on"); });
-  document.getElementById("mgName").textContent = "Loading…"; window.scrollTo({top:0});
+  document.getElementById("mgName").innerHTML = SKH; window.scrollTo({top:0});
   const cs = readCache("mg:"+c), cd = readCache("deliv:"+c);   // v4.18: paint the last-known state instantly, refresh behind it (same as Today)
   mgState = (cs && cs.code === c) ? cs : null; mgDeliv = (cs && cs.code === c && cd) ? cd : null;
   if(mgState) renderManage();
+  else { document.getElementById("mgEyebrow").innerHTML = '<span class="skh" style="width:160px;height:10px"></span>'; document.getElementById("mgShots").innerHTML = SK("row", 6); ["mgNeeds", "mgUnsorted"].forEach(id => { const el = document.getElementById(id); if(el){ el.innerHTML = ""; if(id === "mgNeeds") el.classList.add("hide"); } }); }   // v4.39: another client's shots never show while this one loads
   await loadManage(); if(mgCode === c && !document.getElementById("manage").classList.contains("hide")) startPoll(loadManage);   // v4.31: XC may have left already
 }
 function closeManage(){ if(mgFrom === "calendar"){ mgFrom = null; mgCode = null; calAt = 0; xcnav("calendar"); return; } document.getElementById("manage").classList.add("hide"); document.getElementById("dash").classList.remove("hide"); mgCode = null; startPoll(loadRoster); loadRoster(); }
@@ -2547,7 +2593,7 @@ function renderManage(){
   // late-init: state arrived after the user already opened Shot list / Results mid-load
   if(!editShots && !document.getElementById("mvEdit").classList.contains("hide")) { const dr = S.draftShots && S.draftShots.length; editShots = JSON.parse(JSON.stringify(dr ? S.draftShots : S.shots)); editBaseV = S.draftV === undefined ? null : S.draftV; document.getElementById("draftBadge").classList.toggle("hide", !dr); renderEdit(); }
   if(!editResults && !document.getElementById("mvResults").classList.contains("hide")) { editResults = JSON.parse(JSON.stringify(S.results||[])); renderResultsEdit(); }
-  document.getElementById("mgEyebrow").textContent = `${monthName(S.month)} · code ${S.code}`;
+  document.getElementById("mgEyebrow").textContent = `${monthName(S.month)} · code ${S.join || S.code}`;
   document.getElementById("mgName").textContent = S.name;
   document.getElementById("mgCode").textContent = S.code;
   document.getElementById("driveUrl").value = S.drive || "";
@@ -2959,7 +3005,7 @@ function stackHead(t, n, extra){ return `<div class="stack"><div class="stackhea
 /* ── ACTIVITY feed — everything that happened, one stream ── */
 function renderActivity(){
   const T = todayData, head = document.getElementById("actHead"), body = document.getElementById("actBody");
-  if(!T){ head.innerHTML = '<span class="spin"></span>Loading…'; return; }
+  if(!T){ head.innerHTML = SKH; body.innerHTML = SK("row", 4); return; }
   document.getElementById("actEyebrow").textContent = `${monthName(T.month)} · Week ${T.week} · Activity`;
   const rows = [];
   (T.feedback||[]).forEach(x=>rows.push({ic:x.v==="love"?"♥":"✎", t:`<b>${esc(x.client)}</b> ${x.v==="love"?"loved a reel":"asked for a refinement"}`, m:`${esc(x.by||"")}${x.note?" — "+esc(x.note):""}`, act:`<button class="mact ok" onclick="ackFb(${q(x.code)},${q(x.fileId)})">Got it</button><button class="mact cancel" onclick="openPreview(${q(x.fileId)},'Reel','')">Watch</button>`}));
