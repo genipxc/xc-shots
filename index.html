@@ -624,6 +624,184 @@ html:has(.sheet.show) body,html:has(.fmode.show) body{overflow:hidden}   /* v4.4
 body:has(.fmode.show) .toast,body:has(.upd.show) .toast{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .seeit{padding:10px 6px;margin:-10px -6px 0 2px}.gatefoot .lnk{padding:10px 4px}
 .fmdots{gap:2px}.fmdots i{width:22px;height:22px;background:none;border:0;position:relative}.fmdots i::after{content:"";position:absolute;left:6px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--panel2);border:1px solid var(--hair)}.fmdots i.on::after{background:var(--gold);border-color:var(--gold)}.fmdots i.cur{outline:0}.fmdots i.cur::after{outline:2px solid var(--goldB);outline-offset:1px}.fmdots i.on{background:none}   /* v4.40: 22px targets */
+/* ═══ v4.41: swipe rows, Undo bar, badges, pull to refresh, offline bar, search, keys, Review feed, hold sheet, ring + streak,
+   celebration, tour, teleprompter. Black, white and gold only (warn = the existing redo colour). ═══ */
+.sw{position:relative;border-radius:14px;touch-action:pan-y}
+.sw>.swf{position:relative;z-index:1}
+.sw.on>.swf{will-change:transform}
+.sw.on,.sw.gone{overflow:hidden}
+.sw.on,.sw.on *{-webkit-user-select:none;user-select:none}
+.sw img,[data-clip] img{-webkit-user-drag:none}
+.swbg{position:absolute;inset:0;border-radius:inherit;overflow:hidden;opacity:0;display:flex;align-items:stretch;z-index:0;background:var(--panel2);pointer-events:none}
+.sw.on .swbg{opacity:1}
+.swa{display:none;flex:1;align-items:center;gap:9px;padding:0 22px;font:800 13px 'Schibsted Grotesk',sans-serif;letter-spacing:-.005em;transition:background .14s,color .14s}
+.swa.r{justify-content:flex-start}.swa.l{justify-content:flex-end}
+.sw.toR .swa.r,.sw.toL .swa.l{display:flex}
+.swa svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;transform:scale(calc(.62 + .38 * var(--swp,0)));transition:transform .14s cubic-bezier(.3,1.4,.5,1)}
+.swa.t-gold{background:rgba(205,168,95,.16);color:var(--goldB)}.swa.t-warn{background:rgba(197,123,82,.16);color:#E8A27C}.swa.t-ink{background:#1F1F1F;color:var(--ink)}
+.sw.arm .swa.t-gold{background:var(--gold);color:#0A0A0A}.sw.arm .swa.t-warn{background:var(--warn);color:#0A0A0A}.sw.arm .swa.t-ink{background:#F2EFE9;color:#0A0A0A}
+.sw.arm .swa svg{transform:scale(1.14)}
+.sw.gone{transition:height .2s cubic-bezier(.22,1,.36,1),opacity .16s;opacity:0}
+.sw.kfoc{outline:2px solid var(--goldB);outline-offset:3px}
+.swh{display:none}
+@media (hover:hover) and (pointer:fine){
+  .swh{position:absolute;top:8px;right:8px;z-index:3;display:flex;gap:6px;opacity:0;transform:translateY(-2px);transition:opacity .15s,transform .15s;pointer-events:none}
+  .sw:hover .swh,.sw.kfoc .swh,.sw:focus-within .swh{opacity:1;transform:none;pointer-events:auto}
+  .sw.on .swh{opacity:0}
+  .swhb{appearance:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair);background:rgba(20,20,20,.94);color:var(--grey);font:700 9px 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:99px;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .swhb svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .swhb.t-gold:hover{border-color:var(--gold);color:var(--goldB)}.swhb.t-warn:hover{border-color:var(--warn);color:#E8A27C}.swhb.t-ink:hover{border-color:#fff;color:#fff}
+}
+#updList .sw{margin-top:10px}#updList .sw>.f{margin-top:0}
+/* the Undo bar */
+.undobar{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);z-index:96;display:flex;align-items:center;gap:12px;background:#1B1B1B;border:1px solid var(--hair);border-radius:14px;padding:10px 10px 10px 16px;width:min(420px,calc(100vw - 32px));box-shadow:0 14px 36px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .18s,transform .28s cubic-bezier(.22,1,.36,1);overflow:hidden}
+body.inapp .undobar{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+@media (min-width:1080px){body.inapp .undobar{bottom:28px}}
+.undobar.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.undobar .ubm{flex:1;min-width:0;font-size:13.5px;line-height:1.4;color:var(--ink)}.undobar .ubm b{color:var(--goldB)}
+.undobar .ubu{appearance:none;border:0;background:none;color:var(--gold);font:800 14px 'Schibsted Grotesk',sans-serif;padding:10px 12px;cursor:pointer;border-radius:10px;flex:none}
+.undobar .ubu:active{background:rgba(205,168,95,.12)}
+.undobar .ubt{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--gold);transform-origin:left;opacity:.85}
+.undobar.show .ubt{animation:ubt var(--ubms,5s) linear forwards}
+@keyframes ubt{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+body.ub .toast.show{transform:translate(-50%,-64px)}
+@media (min-width:900px){body.xc.ub .toast.show{transform:translate(0,-64px)}}
+/* badges */
+.tbmid{position:relative}.tbmid .tbn{top:-2px;right:6px;border:2px solid #0D0D0D;height:19px;min-width:19px}
+.tbn.dot{min-width:9px;width:9px;height:9px;padding:0;top:3px;right:calc(50% - 15px);font-size:0}
+.xcnav .n.dot,.clnav .n.dot{min-width:7px;width:7px;height:7px;padding:0;font-size:0;vertical-align:middle}
+/* pull to refresh */
+html:has(body.inapp){overscroll-behavior-y:none}
+.ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:34;width:38px;height:38px;margin-left:-19px;border-radius:50%;background:var(--panel2);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(-30px) scale(.7);pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.ptr svg{width:22px;height:22px;overflow:visible}.ptr circle{fill:none;stroke:var(--gold);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:57;stroke-dashoffset:57;transform:rotate(-90deg);transform-origin:12px 12px}
+.ptr.arm{border-color:var(--gold)}.ptr.spin svg{animation:spin .8s linear infinite}.ptr.spin circle{stroke-dashoffset:38 !important}
+@media (min-width:1080px){.ptr{display:none}}
+/* offline bar */
+.offbar{position:fixed;left:0;right:0;top:0;z-index:97;padding:calc(env(safe-area-inset-top,0px) + 6px) 16px 7px;background:#16130E;border-bottom:1px solid rgba(205,168,95,.35);color:var(--goldB);font:700 9.5px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;text-align:center;transform:translateY(-100%);transition:transform .3s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.offbar.show{transform:none}.offbar i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#E0913A;margin-right:8px;vertical-align:1px}
+.offbar.back{background:#0F150F;color:var(--ok);border-color:rgba(143,191,143,.35)}.offbar.back i{background:var(--ok)}
+body.isoff .top{padding-top:calc(40px + env(safe-area-inset-top,0px))}
+/* "You're all caught up" + unread */
+.caught{margin:44px auto 8px;text-align:center;max-width:320px}
+.caught .cring{width:60px;height:60px;display:block;margin:0 auto 16px}
+.caught .cring circle{fill:none;stroke:var(--gold);stroke-width:1.6}.caught .cring path{fill:none;stroke:var(--goldB);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.caught .sml{color:var(--grey);font-size:13.5px;line-height:1.5}
+.acthd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}.acthd .msect{margin-bottom:0}.acthd .mact{margin-bottom:-2px}
+.mrow.actrow{position:relative}.mrow.unread{border-color:rgba(205,168,95,.4);background:#17150F}
+.udot{position:absolute;left:5px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--gold);z-index:1}
+.mrow.unread>.r{padding-left:5px}
+.rdsub{font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.pinmk{display:inline-flex;margin-right:7px;color:var(--gold);vertical-align:-1px}.pinmk svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linejoin:round}
+.mrow.flash{border-color:var(--gold);box-shadow:0 0 0 3px rgba(205,168,95,.22);transition:box-shadow .3s}
+/* search */
+.srbtn{appearance:none;margin-left:auto;margin-right:8px;border:1px solid var(--hair);background:var(--panel);color:var(--grey);width:34px;height:34px;border-radius:99px;display:none;align-items:center;justify-content:center;cursor:pointer;flex:none;align-self:center;padding:0}
+body.inapp .srbtn{display:inline-flex}body.ed .srbtn{display:none !important}
+.srbtn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}.srbtn span,.srbtn kbd{display:none}
+@media (min-width:1080px){
+  body.inapp .srbtn{align-self:stretch;width:auto;height:42px;border-radius:10px;justify-content:flex-start;gap:10px;padding:0 14px;margin:0}
+  .srbtn span{display:inline;font:700 11px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase}.srbtn kbd{display:inline;margin-left:auto;font:700 10px 'Space Mono',monospace;color:var(--dim);border:1px solid var(--hair);border-radius:6px;padding:2px 6px}
+  .srbtn:hover{border-color:var(--gold);color:var(--goldB)}
+}
+.srch{position:fixed;inset:0;z-index:92;background:rgba(6,6,6,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:none;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 12px)}
+.srch.show{display:flex}
+@media (min-width:900px){.srch{padding-top:12vh}}
+.srbox{width:100%;max-width:620px;display:flex;flex-direction:column;min-height:0;flex:1}
+.srin{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:4px 5px 4px 14px;flex:none}
+.srin svg{width:18px;height:18px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;flex:none}
+.srin input{flex:1;min-width:0;appearance:none;border:0;background:transparent;color:var(--ink);font:600 16px 'Schibsted Grotesk',sans-serif;padding:12px 0;outline:none}
+.srin .x{width:36px;height:36px}
+.srres{margin-top:10px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.srg{font:700 9.5px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:16px 6px 6px}
+.sri{display:flex;align-items:center;gap:12px;width:100%;appearance:none;text-align:left;background:transparent;border:0;border-radius:12px;padding:10px;color:var(--ink);font-family:inherit;cursor:pointer}
+.sri:hover,.sri.on{background:var(--panel)}
+.sri .ic{width:32px;height:32px;border-radius:9px;background:var(--panel2);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;flex:none;color:var(--gold)}
+.sri .ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sri .tx{flex:1;min-width:0}.sri .l{display:block;font-weight:700;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sri .s{display:block;font:400 10px 'Space Mono',monospace;letter-spacing:.05em;color:var(--dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sri mark{background:none;color:var(--goldB)}
+.srnone{color:var(--grey);font-size:13.5px;text-align:center;margin-top:44px}
+/* keyboard sheet */
+.keys{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;margin-top:16px;align-items:center}
+.keys kbd{font:700 11px 'Space Mono',monospace;color:var(--goldB);background:var(--panel);border:1px solid var(--hair);border-radius:7px;padding:4px 8px;white-space:nowrap;justify-self:start}
+.keys span{color:var(--grey);font-size:13.5px;line-height:1.4}.keys h4{grid-column:1/-1;font:700 9.5px 'Space Mono',monospace;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-top:12px}
+/* Review feed */
+.pcol{position:relative}
+.pgest{position:fixed;z-index:61;pointer-events:none}
+.pgest i{position:absolute;pointer-events:auto;touch-action:none;background:transparent;cursor:grab}
+.pgest i[data-p="t"]{left:0;top:0;width:100%;height:36%}.pgest i[data-p="b"]{left:0;top:64%;width:100%;height:calc(36% - 54px)}
+.pgest i[data-p="l"]{left:0;top:36%;width:24%;height:28%}.pgest i[data-p="r"]{right:0;top:36%;width:24%;height:28%}
+.pstamp{position:absolute;top:22px;z-index:2;padding:6px 12px;border:2px solid;border-radius:10px;font:900 15px 'Schibsted Grotesk',sans-serif;letter-spacing:.02em;text-transform:uppercase;opacity:0;pointer-events:none;background:rgba(0,0,0,.55)}
+.pstamp.k{left:calc(50% - min(28vh,46vw) + 14px);color:var(--gold);border-color:var(--gold);transform:rotate(-8deg)}
+.pstamp.n{right:calc(50% - min(28vh,46vw) + 14px);color:var(--warn);border-color:var(--warn);transform:rotate(8deg)}
+.pcol.pin{animation:pinA .34s cubic-bezier(.22,1,.36,1)}.pcol.pinup{animation:pinB .34s cubic-bezier(.22,1,.36,1)}
+@keyframes pinA{from{transform:translateY(54px);opacity:0}to{transform:none;opacity:1}}@keyframes pinB{from{transform:translateY(-54px);opacity:0}to{transform:none;opacity:1}}
+.phint{display:block;text-align:center;padding:2px 16px 0;font:700 9px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}.phint:empty{display:none}
+.pburst{position:fixed;z-index:63;width:92px;height:92px;margin:-46px 0 0 -46px;pointer-events:none;animation:pburst .72s cubic-bezier(.22,1,.36,1) forwards}
+.pburst svg{width:100%;height:100%;fill:var(--gold);filter:drop-shadow(0 6px 18px rgba(205,168,95,.45))}
+@keyframes pburst{0%{transform:scale(.3);opacity:0}25%{transform:scale(1.12);opacity:1}60%{transform:scale(1);opacity:1}100%{transform:scale(1.04) translateY(-26px);opacity:0}}
+/* hold a clip */
+[data-clip]{-webkit-touch-callout:none}
+.pacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pacts:empty{display:none}.pacts .mact{padding:10px 14px;font-size:10px}
+/* streak + ring */
+.prog{position:relative}.prog .wk,.prog .row{padding-right:70px}
+.pring{position:absolute;top:13px;right:13px;width:60px;height:60px}
+.pring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.pring circle{fill:none;stroke-width:4}.pring .bg{stroke:var(--panel2)}.pring .fg{stroke:var(--gold);stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.22,1,.36,1)}
+.pring.full .fg{stroke:var(--goldB)}
+.pring .tx{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 14px 'Space Mono',monospace;color:var(--goldB);line-height:1;font-variant-numeric:tabular-nums}
+.pring .tx small{font-size:7.5px;letter-spacing:.14em;color:var(--dim);margin-top:4px;text-transform:uppercase}
+.streak{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;line-height:1.4}
+.streak svg{width:16px;height:16px;stroke:var(--gold);fill:rgba(205,168,95,.18);stroke-width:1.8;stroke-linejoin:round;flex:none}
+.streak b{color:var(--goldB);font-weight:800}.streak span{color:var(--grey)}.streak.hide{display:none}
+/* can't this week */
+.cantchip{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#0A0A0A;background:#F2EFE9;border-radius:99px;padding:3px 8px}
+.card.cant{border-color:#3A3A3A}.card.cant h3{color:var(--grey)}
+.cantwhy{display:block;margin-top:7px;color:var(--grey);font-size:12px;line-height:1.45}
+/* celebration */
+.cele{position:fixed;inset:0;z-index:86;background:rgba(5,5,5,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:24px}
+.cele.show{display:flex}
+.celecard{position:relative;text-align:center;max-width:340px;width:100%}
+.celering{width:132px;height:132px;margin:0 auto 22px;display:block;overflow:visible}
+.celering circle{fill:none;stroke:var(--gold);stroke-width:4;stroke-linecap:round;stroke-dasharray:377;stroke-dashoffset:377;transform:rotate(-90deg);transform-origin:66px 66px;animation:celeR 1.1s .15s cubic-bezier(.22,1,.36,1) forwards}
+.celering path{fill:none;stroke:var(--goldB);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:70;stroke-dashoffset:70;animation:celeC .45s 1.05s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes celeR{to{stroke-dashoffset:0}}@keyframes celeC{to{stroke-dashoffset:0}}
+.cele .eyebrow,.cele p.eyebrow{margin-bottom:8px;color:var(--gold);margin-top:0}.cele h2{font-weight:900;font-size:34px;letter-spacing:-.02em;line-height:1.05}.cele p{color:var(--grey);margin-top:10px;line-height:1.5;font-size:14.5px}
+.cele .bigbtn{margin-top:24px;width:100%}
+.cdot{position:absolute;left:50%;top:66px;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--gold);opacity:0;animation:cdot 1.25s cubic-bezier(.22,1,.36,1) forwards;pointer-events:none}.cdot.w{background:#fff;width:4px;height:4px}
+@keyframes cdot{0%{opacity:0;transform:translate(0,0) scale(.4)}12%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1)}}
+/* first-open tour */
+.tour{position:fixed;inset:0;z-index:84;background:var(--bg);display:none;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 18px) 0 calc(env(safe-area-inset-bottom,0px) + 18px)}
+.tour.show{display:flex}
+.tourtrk{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}.tourtrk::-webkit-scrollbar{display:none}
+.tcd{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:0 28px}
+.tcd>div{max-width:420px;width:100%}
+.tcd .art{width:112px;height:112px;margin-bottom:30px;display:block}
+.tcd .art *{fill:none;stroke:var(--gold);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.tcd .art .f{fill:rgba(205,168,95,.14)}.tcd .art .b{stroke:var(--goldB)}
+.tcd h2{font-weight:900;font-size:32px;letter-spacing:-.02em;line-height:1.04;text-wrap:balance;margin-top:8px}
+.tcd p.d{color:var(--grey);font-size:15px;line-height:1.55;margin-top:12px}
+.tourbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:14px;max-width:520px;width:100%;margin:0 auto}
+.tourdots{display:flex;gap:7px}.tourdots i{width:7px;height:7px;border-radius:99px;background:var(--hair);transition:width .25s,background .25s}.tourdots i.on{width:22px;background:var(--gold)}
+.tourskip{background:none;border:0;color:var(--dim);font:700 10px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;padding:12px 4px;cursor:pointer;min-width:60px;text-align:left}
+.tour .bigbtn{flex:0 0 auto;min-width:132px}
+/* teleprompter */
+.fmprompt{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:16px;appearance:none;border:1px solid var(--gold);background:transparent;color:var(--goldB);font:800 14px 'Schibsted Grotesk',sans-serif;border-radius:12px;padding:13px;cursor:pointer}
+.fmprompt svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linejoin:round}.fmprompt:active{background:rgba(205,168,95,.1)}
+.prompt{position:fixed;inset:0;z-index:78;background:#000;display:none;flex-direction:column}
+.prompt.show{display:flex}
+.prtop{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 12px) 18px 8px}
+.prt{font:700 9.5px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}.prs{font-weight:800;font-size:15px;margin-top:3px}
+.prompt .x{width:42px;height:42px;font-size:17px;color:var(--ink);border-color:var(--gold);background:var(--panel2)}
+.prview{flex:1;overflow:hidden;position:relative;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.prview::before,.prview::after{content:"";position:absolute;left:0;right:0;z-index:2;pointer-events:none}
+.prview::before{top:0;height:24%;background:linear-gradient(#000 20%,rgba(0,0,0,0))}.prview::after{bottom:0;height:30%;background:linear-gradient(rgba(0,0,0,0),#000 85%)}
+.prline{position:absolute;left:14px;right:14px;top:32%;border-top:1px solid rgba(205,168,95,.55);z-index:3;pointer-events:none}
+.prline::before{content:"";position:absolute;left:-2px;top:-5px;border:5px solid transparent;border-left:7px solid var(--gold)}
+.prtext{position:absolute;left:0;right:0;top:0;padding:0 30px;font-weight:800;font-size:clamp(30px,8.6vw,54px);line-height:1.34;letter-spacing:-.012em;white-space:pre-wrap;will-change:transform;max-width:900px;margin:0 auto}
+.prcount{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font:900 132px 'Schibsted Grotesk',sans-serif;color:var(--gold);z-index:4;background:rgba(0,0,0,.55)}
+.prbar{display:flex;gap:10px;align-items:center;justify-content:center;padding:12px 18px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.prbar .mact{padding:12px 12px;font-size:10px}.prbar .bigbtn{flex:1 1 auto;max-width:170px;min-width:0;padding:14px 10px}
+.prspd{font:700 11px 'Space Mono',monospace;color:var(--goldB);min-width:42px;text-align:center}
+@media (prefers-reduced-motion: reduce){.sw.gone{transition:none}.pcol.pin,.pcol.pinup{animation:none}}
 </style>
 
 <!-- SPLASH: visible the instant HTML paints; hidden by the first gate() -->
@@ -703,8 +881,9 @@ body:has(.fmode.show) .toast,body:has(.upd.show) .toast{bottom:calc(110px + env(
 <div class="wrap hide" id="app">
   <div class="top">
     <div class="brand"><img src="/logo.png" alt="" style="height:24px;width:auto"><div class="t">XC <span>Studio</span></div></div>
-    <div class="xcnav" role="tablist"><button id="nvToday" class="on" onclick="xcnav('today')">Today<span class="n hide" id="todayN"></span></button><button id="nvCal" onclick="xcnav('calendar')">Calendar<span class="n hide" id="calN" style="background:#E5484D;color:#fff"></span></button><button id="nvClients" onclick="xcnav('dash')">Clients</button><button id="nvAct" onclick="xcnav('activity')">Activity</button><button id="nvStudio" onclick="xcnav('studio')">Studio</button></div>
-    <div class="clnav" role="tablist"><button id="cnShots" class="on" onclick="subtab('shots')">Shots</button><button id="cnResults" onclick="subtab('results')">Results<span class="n hide" id="cnResultsN"></span></button><button class="upbtn" onclick="openUpPick()">↑ Upload</button><button id="cnDocs" onclick="subtab('docs')">Docs</button><button id="cnYou" onclick="subtab('you')">You</button></div>
+    <div class="xcnav" role="tablist"><button id="nvToday" class="on" onclick="xcnav('today')">Today<span class="n hide" id="todayN"></span></button><button id="nvCal" onclick="xcnav('calendar')">Calendar<span class="n hide" id="calN" style="background:#E5484D;color:#fff"></span></button><button id="nvClients" onclick="xcnav('dash')">Clients</button><button id="nvAct" onclick="xcnav('activity')">Activity<span class="n hide" id="actN"></span></button><button id="nvStudio" onclick="xcnav('studio')">Studio</button></div>
+    <div class="clnav" role="tablist"><button id="cnShots" class="on" onclick="subtab('shots')">Shots<span class="n hide" id="cnShotsN"></span></button><button id="cnResults" onclick="subtab('results')">Results<span class="n hide" id="cnResultsN"></span></button><button class="upbtn" onclick="openUpPick()">↑ Upload</button><button id="cnDocs" onclick="subtab('docs')">Docs</button><button id="cnYou" onclick="subtab('you')">You</button></div>
+    <button class="srbtn" id="srchBtn" type="button" onclick="srchOpen()" aria-label="Search" title="Search (/ or ⌘K)"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span>Search</span><kbd>⌘K</kbd></button>
     <span class="sync live" id="sync">synced</span>
   </div>
 
@@ -751,6 +930,9 @@ body:has(.fmode.show) .toast,body:has(.upd.show) .toast{bottom:calc(110px + env(
     <p class="msect">WhatsApp — automatic messages</p>
     <p class="sub" style="margin-top:8px">From the XC Media number, 0494 798 319, through Chakra. Clients are switched on one by one in their Settings.</p>
     <div class="mlist" id="waStudio" style="max-width:560px"><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div><div class="sk" style="padding:13px"><i class="m"></i><i class="s"></i></div></div>
+    <p class="msect">Recently deleted</p>
+    <p class="sub" style="margin-top:8px">Anything a swipe hid in the last 30 days, with Bring back. A swipe never deletes footage.</p>
+    <div class="mlist" id="rdStudio" style="max-width:560px"></div>
     <p class="msect">Session</p>
     <div class="mlist" style="max-width:460px">
       <div class="mrow"><div class="r"><span class="nm">Refresh everything</span><button class="mact" onclick="xcRefresh()">Refresh</button></div></div>
@@ -943,14 +1125,18 @@ body:has(.fmode.show) .toast,body:has(.upd.show) .toast{bottom:calc(110px + env(
         <div class="mrow"><div class="r"><span class="nm">Use a different studio code</span><button class="mact cancel" onclick="resetAsk()">Switch</button></div></div>
         <div class="mrow xconly"><div class="r"><span class="nm">Studio side<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">XC only</span></span><button class="mact cancel" onclick="gate('gatePin')">Enter</button></div></div>
       </div>
+      <p class="msect">Recently deleted</p>
+      <div class="mlist" id="rdClient"></div>
     </div>
 
     <div id="shotsView">
       <div class="prog">
+        <div class="pring" id="pRing" role="img"></div>
         <span class="wk" id="wkLabel">This week</span>
         <div class="row"><span class="n" id="wkN">— / —</span><span class="lab">This week's shots</span></div>
         <div class="bar"><i id="wkBar" style="width:0%"></i></div>
         <p class="pace" id="paceLine"></p>
+        <p class="streak hide" id="streakLine"></p>
         <div class="month"><span id="moN">Month: —</span><span id="wkEnd"></span></div>
       </div>
       <div class="upboard hide" id="upBoard"></div>
@@ -964,12 +1150,12 @@ body:has(.fmode.show) .toast,body:has(.upd.show) .toast{bottom:calc(110px + env(
 <nav class="tabbar" id="xcbar" aria-label="Studio menu">
   <button id="xbToday" class="tbtab on" onclick="xcnav('today')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h14V9.5"/></svg><span>Today</span><i class="tbn hide" id="xbTodayN"></i></button>
   <button id="xbClients" class="tbtab" onclick="xcnav('dash')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.4 2.8-5 5.5-5s4.9 1.6 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 15.2c2.3.2 4 1.6 4.5 4.3"/></svg><span>Clients</span></button>
-  <button class="tbmid" onclick="barReview()" aria-label="Review clips"><span class="c"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span></button>
+  <button class="tbmid" onclick="barReview()" aria-label="Review clips"><span class="c"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span><i class="tbn hide" id="xbRevN"></i></button>
   <button id="xbAct" class="tbtab" onclick="xcnav('activity')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9C1.3 8.6 3.5 5.5 6.8 5.5c2 0 3.6 1.1 5.2 3 1.6-1.9 3.2-3 5.2-3 3.3 0 5.5 3.1 4.1 6.5-1.8 4.3-9.3 9-9.3 9z"/></svg><span>Activity</span><i class="tbn hide" id="xbActN"></i></button>
   <button id="xbStudio" class="tbtab" onclick="xcnav('studio')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.6"/><path d="M19 12c0-.5 0-1-.1-1.4l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.4-1.4L13.7 2h-3.4l-.4 2.6c-.9.3-1.7.8-2.4 1.4l-2.4-1-2 3.4 2 1.6a7.8 7.8 0 0 0 0 2.8l-2 1.6 2 3.4 2.4-1c.7.6 1.5 1.1 2.4 1.4l.4 2.6h3.4l.4-2.6c.9-.3 1.7-.8 2.4-1.4l2.4 1 2-3.4-2-1.6c.1-.4.1-.9.1-1.4z"/></svg><span>Studio</span></button>
 </nav>
 <nav class="tabbar" id="clbar" aria-label="Menu">
-  <button id="cbShots" class="tbtab on" onclick="subtab('shots')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M8 3v3M16 3v3M7.5 12l3 3 6-6"/></svg><span>Shots</span></button>
+  <button id="cbShots" class="tbtab on" onclick="subtab('shots')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M8 3v3M16 3v3M7.5 12l3 3 6-6"/></svg><span>Shots</span><i class="tbn hide" id="cbShotsN"></i></button>
   <button id="cbResults" class="tbtab" onclick="subtab('results')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg><span>Results</span><i class="tbn hide" id="cbResultsN"></i></button>
   <button class="tbmid" onclick="openUpPick()" aria-label="Upload footage"><span class="c"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5"/><path d="M4.5 16.5V19h15v-2.5"/></svg></span></button>
   <button id="cbDocs" class="tbtab" onclick="subtab('docs')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l4.5 4.5v12.5h-11.5z"/><path d="M14 3.5V8h4.5M9.5 13h5.5M9.5 16.5h5.5"/></svg><span>Docs</span></button>
@@ -1112,6 +1298,61 @@ body:has(.fmode.show) .toast,body:has(.upd.show) .toast{bottom:calc(110px + env(
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<!-- v4.41: the Undo bar, pull to refresh, the offline bar -->
+<div class="undobar" id="undobar" role="status" aria-live="polite"></div>
+<div class="ptr" id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></div>
+<div class="offbar" id="offbar" role="status" aria-live="polite"></div>
+
+<!-- v4.41 SEARCH -->
+<div class="srch" id="srch" role="dialog" aria-modal="true" aria-label="Search"><div class="srbox">
+  <div class="srin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="srQ" placeholder="Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search"><button class="x" onclick="srchClose()" aria-label="Close">✕</button></div>
+  <div class="srres" id="srRes"></div>
+</div></div>
+
+<!-- v4.41 KEYBOARD SHORTCUTS -->
+<div class="veil" id="kveil" onclick="keysClose()"></div>
+<div class="sheet" id="ksheet" role="dialog" aria-modal="true" aria-labelledby="kTitle">
+  <div class="grab"></div>
+  <div class="shead"><h2 id="kTitle">Keyboard shortcuts</h2><button class="x" onclick="keysClose()" aria-label="Close">✕</button></div>
+  <div class="keys" id="kList"></div>
+</div>
+
+<!-- v4.41 FIRST-OPEN TOUR (clients) -->
+<div class="tour" id="tour" role="dialog" aria-modal="true" aria-label="Welcome to XC Studio">
+  <div class="tourtrk" id="tourTrk">
+    <div class="tcd"><div>
+      <svg class="art" viewBox="0 0 112 112" aria-hidden="true"><rect class="f" x="18" y="22" width="76" height="70" rx="12"/><path d="M36 14v14M76 14v14"/><path class="b" d="M34 50h44M34 62h30M34 74h36"/><circle class="b" cx="84" cy="80" r="12"/><path class="b" d="M78.5 80l4 4 7-8"/></svg>
+      <p class="eyebrow">1 of 3</p><h2>Your shots, written for you.</h2>
+      <p class="d">Each week's shots are here with exactly what to say. Tap one and film mode walks you through it, one take at a time.</p>
+    </div></div>
+    <div class="tcd"><div>
+      <svg class="art" viewBox="0 0 112 112" aria-hidden="true"><rect class="f" x="14" y="38" width="84" height="36" rx="10"/><path d="M30 56h52"/><path class="b" d="M88 28l10 10-10 10M24 64L14 74l10 10"/></svg>
+      <p class="eyebrow">2 of 3</p><h2>Swipe to tick it off.</h2>
+      <p class="d">Swipe a shot right once it's filmed. Can't get to one this week? Swipe it left and XC knows. Every swipe has an Undo.</p>
+    </div></div>
+    <div class="tcd"><div>
+      <svg class="art" viewBox="0 0 112 112" aria-hidden="true"><path class="f" d="M22 66h68v20a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8z"/><path class="b" d="M56 70V22M40 38l16-16 16 16"/></svg>
+      <p class="eyebrow">3 of 3</p><h2>Send from here.</h2>
+      <p class="d">Clips go straight to XC from the app, and each one says sent ✓ when it lands. Don't delete anything until the shot says XC has them.</p>
+    </div></div>
+  </div>
+  <div class="tourbar"><button class="tourskip" onclick="tourDone()">Skip</button><div class="tourdots" id="tourDots"><i class="on"></i><i></i><i></i></div><button class="bigbtn" id="tourNext" onclick="tourNext()">Next</button></div>
+</div>
+
+<!-- v4.41 MONTH FILMED -->
+<div class="cele" id="cele" role="dialog" aria-modal="true" aria-labelledby="celeT"><div class="celecard" id="celeCard">
+  <svg class="celering" viewBox="0 0 132 132" aria-hidden="true"><circle cx="66" cy="66" r="60"/><path d="M44 68l15 15 30-33"/></svg>
+  <p class="eyebrow">Month filmed</p><h2 id="celeT">That's every shot.</h2><p id="celeP"></p>
+  <button class="bigbtn" onclick="celeClose()">Nice</button>
+</div></div>
+
+<!-- v4.41 TELEPROMPTER (website and older app builds) -->
+<div class="prompt" id="prompt" role="dialog" aria-modal="true" aria-label="Script">
+  <div class="prtop"><div><p class="prt">Read it while you film</p><p class="prs" id="prTitle"></p></div><button class="x" onclick="promptClose()" aria-label="Close">✕</button></div>
+  <div class="prview" id="prView"><i class="prline"></i><div class="prtext" id="prText"></div><div class="prcount" id="prCount"></div></div>
+  <div class="prbar"><button class="mact" onclick="prSpeed(-1)">Slower</button><span class="prspd" id="prSpd">1.0×</span><button class="bigbtn" id="prGo" onclick="prToggle()">Start</button><button class="mact" onclick="prSpeed(1)">Faster</button></div>
+</div>
+
 <script>
 /* v4.31 harness only (?uidev=1&nat=1): a stand-in for the iPhone app's bridge, so the native upload path can be clicked through in a browser */
 window.__xcSelf = /XCShotsTest/.test(navigator.userAgent) && /[?&]xcselftest=1/.test(location.search);   // v4.33: test builds only (mode.cjs test)   // iPhone app test build only: sends files placed in Library/NoCloud/xc-test by the Mac (no picker)
@@ -1125,14 +1366,19 @@ if(window.__devHost && /[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(l
       if(m === "kcSet"){ if(o.value) KC[k] = o.value; else delete KC[k]; kcw(); return Promise.resolve({ ok: true }); }
       if(m === "kcHas") return Promise.resolve({ has: k in KC }); if(m === "kcRemove"){ delete KC[k]; kcw(); return Promise.resolve(); }
       if(m === "kcAll") return Promise.resolve({ items: Object.fromEntries(Object.entries(KC).filter(([a]) => !a.startsWith("bio."))) });
-      if(m === "kcGet") return Promise.resolve(!(k in KC) ? { value: null } : (!o.bio || window.__face) ? { value: KC[k] } : { value: null, error: "cancelled" }); }
+      if(m === "kcGet") return Promise.resolve(!(k in KC) ? { value: null } : (!o.bio || window.__face) ? { value: KC[k] } : { value: null, error: "cancelled" });
+      if(m === "prompter") return new Promise(res => setTimeout(() => res(window.__prCancel ? { cancelled: true } : { files: [{ name: "PROMPT_0001.MOV", size: 2.4e8, mimeType: "video/quicktime", path: "file:///cache/p/PROMPT_0001.MOV" }] }), 600));   // v4.41 stand-ins
+      if(m === "pendingEvents"){ const ev = window.__devEvents || []; window.__devEvents = []; return Promise.resolve({ events: ev }); }
+      if(m === "pushRegister") return Promise.resolve({ granted: false, reason: "no-firebase" });
+      if(m === "notifStatus") return Promise.resolve({ status: "ask" });
+      if(/^set(Badge|Widget|Shortcuts)$/.test(m)){ (window.__natCalls = window.__natCalls || []).push([m, o]); return Promise.resolve({ ok: true }); } }
     if(p === "FilePicker") return new Promise(res => { setTimeout(() => LS_["FilePicker"] && LS_["FilePicker"](), 200); setTimeout(() => res({ files: [{ name: "C3901.MP4", size: 812e6, mimeType: "video/mp4", path: "file:///cache/a/C3901.MP4" }, { name: "broken.mov", size: 10, mimeType: "video/quicktime", path: "file:///cache/b/broken.mov" }] }), 1500); });
     if(p === "Uploader" && m === "startUpload"){ const id = "u" + (++n0.n); let k = 0; const t = setInterval(() => { k += 20; L && L({ name: "uploading", id, payload: { percent: k } }); if(k >= 100){ clearInterval(t); L && L({ name: "completed", id, payload: { statusCode: 200 } }); } }, 400); return Promise.resolve({ id }); }
     return Promise.resolve({}); } }; })();
 /* ═══════════════ config ═══════════════ */
 try { const k1 = localStorage.getItem("xcs.pk"), c1 = localStorage.getItem("xcs.code") || localStorage.getItem("xcs.ownercode"); if(k1){ if(c1 && !/-/.test(c1)){ const m = JSON.parse(localStorage.getItem("xcs.pks") || "{}"); m[c1.toUpperCase()] = k1; localStorage.setItem("xcs.pks", JSON.stringify(m)); } localStorage.removeItem("xcs.pk"); } } catch(e){}   // v4.38: 4.37 kept one key
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.40.1";
+const BUILD = "4.41";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1317,6 +1563,7 @@ function gate(which){
   if(which==="gateCode" || which==="gatePin" || which==="gateOwner") warm();
   ["gateCode","gateName","gateGuide","gatePin","gateOwner","app"].forEach(id => document.getElementById(id).classList.toggle("hide", id!==which));
   document.body.classList.toggle("inapp", which==="app");
+  if(which !== "app"){ try { ubEnd(true); natSignedOut41(); } catch(e){} }   // v4.41: a signed-out phone shows no number, widget or quick actions
   window.scrollTo({top:0});
   padInit();
   if(which==="gateCode" && !TOUCH) setTimeout(()=>document.getElementById("codeInput").focus(), 60);   // v4.37: on a phone the keyboard waits for a tap
@@ -1350,7 +1597,7 @@ async function boot(){
   if(!C && code && me){ startPoll(loadClient); return; }   // v4.40: no signal or busy: stay on the loading screen and keep trying (loadClient shows the line)
   if(!C){ gate("gateCode"); return; }
   if(!me || C.team.indexOf(me) === -1){ document.body.classList.remove("cload"); buildNames(); gate("gateName"); return; }
-  if(!LS.get("guided") && NATIVE){ LS.set("guided", "1"); LS.set("seenFilmMode", "1"); enterClient(); natWelcome(); return; }
+  if(!LS.get("guided") && NATIVE){ LS.set("guided", "1"); LS.set("seenFilmMode", "1"); LS.set("tourDue", "1"); enterClient(); tourAfter(natWelcome); return; }
   if(!LS.get("guided")){ buildGuide(); gate("gateGuide"); return; }
   enterClient();
 }
@@ -1382,8 +1629,8 @@ async function soloEnter(c, name){
   skelClient(name);   // v4.39: the shots screen appears at once, as placeholders, while it loads
   const d = await apiGet({ action: "state", code: c, owner: "solo" });
   if(!d.ok || d.role < 1){ gate("gateCode"); const err = document.getElementById("codeErr"); err.className = "err"; err.textContent = d.error === "network" ? "Couldn't reach XC's system. Check your signal and try again." : "That code didn't open. Check it with XC."; return; }
-  ownerEnter(d);
-  if(NATIVE) natWelcome();
+  LS.set("tourDue", "1"); ownerEnter(d);
+  tourAfter(() => { if(NATIVE) natWelcome(); });   // v4.41: the tour first
 }
 function buildNames(){
   if(!C || !C.team){ document.getElementById("nameEyebrow").textContent = "Your team"; document.getElementById("nameGrid").innerHTML = '<p class="sub">Loading your team… <button class="mact ok" onclick="buildNames()">Try again</button></p>'; if(code) loadClient().then(() => { if(C && C.team) buildNames(); }); return; }   // v4.40
@@ -1392,7 +1639,7 @@ function buildNames(){
 }
 function pickName(n){
   me = n; LS.set("me", n);
-  if(!LS.get("guided") && NATIVE){ LS.set("guided", "1"); LS.set("seenFilmMode", "1"); enterClient(); natWelcome(); return; }   // v4.33: the app is already on the home screen; new people get the welcome, not "what's new"
+  if(!LS.get("guided") && NATIVE){ LS.set("guided", "1"); LS.set("seenFilmMode", "1"); LS.set("tourDue", "1"); enterClient(); tourAfter(natWelcome); return; }   // v4.33: the app is already on the home screen; new people get the welcome, not "what's new"
   if(!LS.get("guided")){ document.getElementById("guideHi").textContent = `Good to meet you, ${n}`; buildGuide(); gate("gateGuide"); }
   else enterClient();
 }
@@ -1520,6 +1767,7 @@ function wkDates(c){
 }
 function renderClient(){
   if(!C || !C.shots) return;
+  if(swDefer("shotList", renderClient)) return;   // v4.41: never rebuild under a finger
   { const a = document.querySelector('#client .me a[onclick="repick()"]'); if(a) a.style.display = LS.get("ownerpin") === "solo" ? "none" : ""; }   // v4.40: one person, nobody to switch to
   document.body.classList.toggle("updirect", upDirectUi());   // v4.40: upload instructions match how this phone sends
   document.body.classList.remove("cload");   // v4.39
@@ -1542,10 +1790,11 @@ function renderClient(){
     host.appendChild(head);
     const box = document.createElement("div"); box.className="shots"; host.appendChild(box);
     idxs.forEach(([s,i])=>{
-      const isDone = !!C.by[i], isRedo = !!C.redo[i], rcv = !!C.received[i];
+      const isDone = !!C.by[i], isRedo = !!C.redo[i], rcv = !!C.received[i], cantI = !isDone && C.cant ? C.cant[i] : null;
       const el = document.createElement("div");
-      el.className = "card" + (isDone?" done":"") + (dryMins(i)?" dry":"") + (isRedo?" redo":"") + (s.w>WK && !isRedo?" future":"");
+      el.className = "card" + (isDone?" done":"") + (dryMins(i)?" dry":"") + (isRedo?" redo":"") + (s.w>WK && !isRedo?" future":"") + (cantI ? " cant" : "");
       el.setAttribute("role","button"); el.tabIndex = 0;
+      el.dataset.sw = "shot"; el.dataset.i = i;   // v4.41: swipe right = filmed it, left = can't this week
       el.onclick = ()=>openFilm(i); el.onkeydown = e=>{ if(e.key==="Enter") openFilm(i); };
       el.innerHTML = `
         <span class="tick${isDone?" on":""}" role="checkbox" aria-checked="${isDone}" aria-label="Mark filmed" tabindex="0"
@@ -1553,7 +1802,8 @@ function renderClient(){
           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7.5L5.5 11L12 3.5" fill="none" stroke="#0A0A0A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span class="body"><h3>${esc(s.n)}</h3><span class="how">${esc(s.h)}</span>
           ${isRedo ? `<span class="reason"><b>XC asked for a redo:</b> ${esc(C.reasons[i]||"")}</span>` : ""}
-          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}<span class="minfo">${TLAB[s.t]||"Mid"} · ${esc(s.d)}</span><span class="chip open" style="border-color:var(--gold);color:var(--goldB)" role="button" tabindex="0" onclick="event.stopPropagation();openFilm(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openFilm(${i})}">🎬 Film mode</span><span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();openSheet(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openSheet(${i})}">How-to</span>
+          ${cantI ? `<span class="cantwhy">You told XC you can&#39;t film it this week${cantI.why ? ": " + esc(cantI.why) : "."}</span>` : ""}
+          <span class="meta">${isRedo?'<span class="redochip">Redo</span>':''}${cantI?'<span class="cantchip">Can&#39;t this week</span>':''}<span class="minfo">${TLAB[s.t]||"Mid"} · ${esc(s.d)}</span><span class="chip open" style="border-color:var(--gold);color:var(--goldB)" role="button" tabindex="0" onclick="event.stopPropagation();openFilm(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openFilm(${i})}">🎬 Film mode</span><span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();openSheet(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();openSheet(${i})}">How-to</span>
             ${(()=>{const tk=(s.steps||[]).filter((_,sk)=>((C.stepTicks||{})[i]||{})[sk]).length; return tk&&!isDone?`<span class="chip">${tk}/${s.steps.length} takes ✓</span>`:"";})()}
             <span class="chip open" role="button" tabindex="0" onclick="event.stopPropagation();upload(${i})" onkeydown="if(event.key==='Enter'){event.stopPropagation();upload(${i})}">${upLbl()}</span>
             </span>
@@ -1566,12 +1816,14 @@ function renderClient(){
       box.appendChild(el);
     });
   }
+  swScan(host);   // v4.41
   // pacing
   const wkIdx = shots.map((s,i)=>[s,i]).filter(([s])=>s.w===WK).map(([,i])=>i);
   const wkDone = wkIdx.filter(i=>C.by[i]).length, wkTotal = wkIdx.length, n = Object.keys(C.by).length;
   document.getElementById("wkN").textContent = `${wkDone} / ${wkTotal}`;
   document.getElementById("wkBar").style.width = (wkTotal ? Math.round(wkDone/wkTotal*100) : 0) + "%";
   document.getElementById("moN").textContent = `Month: ${n} of ${shots.length}`;
+  ringPaint(shots.filter((x, k) => C.by[k]).length, shots.length); streakPaint();   // v4.41
   const left = wkTotal - wkDone, pace = document.getElementById("paceLine"), head = document.getElementById("clientHead");
   const wd = wkDates(C), endL = wd ? wd.end : "", nextL = wd ? wd.next : "";   // v4.40
   document.getElementById("wkEnd").textContent = endL ? "Ends " + endL : "";
@@ -1585,9 +1837,9 @@ function renderClient(){
   if(sheetIdx !== null) syncSheetBtn();
   try { renderUpBoard(); } catch(e){ console.log("upboard " + e); }   // v4.40: one bad row never stops the shots screen
   renderResults();
-  // one-time film-mode intro (clients only, once per device, never in ghost preview)
-  if(!previewMode && !document.body.classList.contains("xc") && C.shots.length && !LS.get("seenFilmMode"))
-    document.getElementById("newsbox").classList.add("show");
+  // v4.41: a first open gets the 3-card tour (it replaces the one-time film-mode popup); never in ghost preview
+  if(!previewMode && !document.body.classList.contains("xc") && C.shots.length && (!LS.get("seenFilmMode") || LS.get("tourDue")) && !LS.get("tour")) tourShow();
+  celeMaybe(); badgesPaint(); natBoot41();
 }
 function newsClose(){ LS.set("seenFilmMode", "1"); document.getElementById("newsbox").classList.remove("show"); }
 function newsTry(){ newsClose(); if(!C) return; const i = C.shots.findIndex((s,k)=>!C.by[k]); openFilm(i < 0 ? 0 : i); }
@@ -1739,7 +1991,7 @@ function fmRender(){
     tickBtn.style.visibility = ""; document.getElementById("fmRule").style.visibility = "";
     const on = !!t[fmStep];
     tickBtn.textContent = on ? "✓ Ticked, next" : "✓ Done, next";
-    body.innerHTML = `<div class="fmcard${on?" on":""}">${refMedia((s.refs||[])[fmStep])}<p class="fmtext">${fmtStep(s.steps[fmStep])}</p></div>`;
+    body.innerHTML = `<div class="fmcard${on?" on":""}">${refMedia((s.refs||[])[fmStep])}<p class="fmtext">${fmtStep(s.steps[fmStep])}</p>${quietStep(s.steps[fmStep]) ? "" : `<button class="fmprompt" type="button" onclick="fmPrompt()">${swIcon("cam")}Film with the script</button>`}</div>`;
   }
   document.getElementById("fmPrev").disabled = fmStep <= 0;
   document.getElementById("fmNext").disabled = fmStep >= N;
@@ -1895,6 +2147,7 @@ function updHide(){ document.getElementById("upd").classList.remove("show"); ren
 function fmtB(b){ if(!(b > 0)) return "0 MB"; return b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : Math.max(0.1, b / 1e6).toFixed(b >= 1e7 ? 0 : 1) + " MB"; }   // v4.40: nothing sent says 0
 function updRender(){
   const el = document.getElementById("updList"); if(!el) return;
+  if(swDefer("updList", updRender)) return;   // v4.41: never rebuild under a finger
   const at = x => x.st === "done" ? x.size : Math.min(x.size, (x.off || 0) + (x.fly || 0));
   const mine = upd.filter(x => x.code === code), tot = mine.reduce((a, x) => a + x.size, 0), sent = mine.reduce((a, x) => a + at(x), 0);
   const open = mine.filter(x => x.st !== "done"), lost = mine.filter(x => x.st === "lost" && !x.file);
@@ -1911,15 +2164,16 @@ function updRender(){
   const secs = updBusy && updT0 ? (Date.now() - updT0) / 1000 : 0, rate = secs > 5 ? (sent - updB0) / secs : 0;
   document.getElementById("updEta").textContent = rate > 0 && tot > sent ? "about " + Math.ceil((tot - sent) / rate / 60) + " min left" : "";
   document.getElementById("updClose").textContent = open.length ? "Hide" : "Done";
-  el.innerHTML = mine.map(x => {
+  el.innerHTML = mine.filter(x => x.hold !== "rm").map(x => {
     const pct = Math.floor(100 * at(x) / x.size), shot = x.idx === null || x.idx === undefined ? "general folder" : ((C && C.shots[x.idx]) ? C.shots[x.idx].n : "shot " + (x.idx + 1));
     const cls = x.st === "done" ? "done" : x.st === "error" ? "err" : (x.st === "lost" && !x.file) ? "lost" : "";
     const stx = x.st === "done" ? "Sent ✓ · XC has it" : x.st === "checking" ? "Arrived · confirming with XC" : x.st === "queued" && x.netWait ? "No signal · carries on when you're back online" : x.st === "error" ? clipErr(x.err, x.nat && x.path && !x.stop) : (x.st === "lost" && !x.file) ? (x.nat ? "Didn't finish · pick it again to send it" : "Didn't finish · pick it again to carry on from " + pct + "%") : x.st === "queued" && x.nat && x.wifiWait ? "Waiting for Wi-Fi" : x.st === "queued" && x.nat && x.wait ? "Connection dropped · trying again shortly" : x.st === "sending" && x.nat ? (pct >= 100 ? "Checking XC has it…" : (x.fly ? "Sending · " + pct + "%" : "Handed to your iPhone · sending")) : x.st === "sending" ? (x.wait ? "Connection dropped · trying again in " + x.wait + " s" : pct >= 100 ? "Checking XC has it…" : "Sending · " + pct + "%") : "Waiting";
     const acts = x.st === "checking" && x.checkSince && Date.now() - x.checkSince > 86400000 ? `<div class="facts"><span class="sub" style="font-size:12px">Still not confirmed after a day. Message XC before deleting it.</span><button class="mact cancel" onclick="updDrop(${q(x.k)})">Take it off this list</button></div>`
       : x.st === "queued" && x.wifiWait ? `<div class="facts"><button class="mact ok" onclick="natSendNow()">Send now on mobile data</button></div>`
       : (x.st === "error" || (x.st === "lost" && !x.file)) ? `<div class="facts">${x.nat && x.path && !x.stop ? `<button class="mact ok" onclick="natRetryFailed()">Try again</button>` : ""}<button class="mact cancel" onclick="updDrop(${q(x.k)})">Not sending this one</button></div>` : "";   // v4.40
-    return `<div class="f ${cls}"><div class="n"><span>${esc(x.name)}</span><span>${fmtB(x.size)}</span></div><div class="s">${esc(stx)} · ${esc(shot)}</div><div class="bar"><i style="width:${x.st === "error" ? 0 : pct}%"></i></div>${acts}</div>`;   // v4.40: a failed clip never shows a full bar
+    return `<div class="f ${cls}" data-sw="upq" data-k="${esc(x.k)}"><div class="n"><span>${esc(x.name)}</span><span>${fmtB(x.size)}</span></div><div class="s">${esc(stx)} · ${esc(shot)}</div><div class="bar"><i style="width:${x.st === "error" ? 0 : pct}%"></i></div>${acts}</div>`;   // v4.40: a failed clip never shows a full bar
   }).join("");
+  swScan(el);   // v4.41: swipe left = remove before it sends, right = retry now
 }
 /* v4.40: an error in plain words for a toast (escaped). XC still sees a specific reason when there is one. */
 function errTxt(e){
@@ -2000,7 +2254,7 @@ async function updRun(){
   if(updBusy) return; updBusy = true; updT0 = Date.now(); updB0 = upd.reduce((a, x) => a + (x.st === "done" ? x.size : (x.off || 0)), 0);
   await updWake(true);
   try {
-    for(;;){ const x = upd.find(y => y.code === code && y.st === "queued" && y.file); if(!x) break; await updOne(x); updRender(); }
+    for(;;){ const x = upd.find(y => y.code === code && y.st === "queued" && y.file && !y.hold); if(!x) break; await updOne(x); updRender(); }
   } finally { updBusy = false; await updWake(false); updSave(); updRender(); loadUploads(true); if(!updOpenN()) toast("✓ <b>All sent.</b> XC has every clip you just sent."); }
 }
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && upd.some(x => x.code === code && x.file && !x.nat && (x.st === "queued" || x.st === "sending" || x.st === "lost"))){ upd.forEach(x => { if(x.file && x.st === "lost") x.st = "queued"; }); updWake(true); updRun(); } });
@@ -2060,6 +2314,11 @@ async function natPick(i, from){
   try { r = from === "files" ? await natCall("FilePicker", "pickFiles", { types: ["video/*", "image/*", "audio/*"], limit: 0, readData: false })
                              : await natCall("FilePicker", "pickMedia", { limit: 0, readData: false, skipTranscoding: true }); }   // skipTranscoding: send the camera's own file, never a re-encode
   catch(e){ natPicking = natPrep = false; if(natLockAfterPick) natLockNow(); updRender(); if(!upd.some(x => x.code === code && x.st !== "done")) updHide(); if(!/cancel/i.test(String(e && (e.message || e)))) toast("Couldn't open your clips. Try again, or pick them from Files."); return; }
+  return natPicked(r, i);
+}
+/* v4.41: what the picker hands back, and what the app's teleprompter hands back (the same shape), go into one send path */
+async function natPicked(r, i, opts){
+  updIdx = (typeof i === "number") ? i : null;
   natPicking = natPrep = false; if(natLockAfterPick) natLockNow();   // v4.40
   const bad = (r && r.failed) || []; if(bad.length) toast(`<b>${bad.length} clip${bad.length === 1 ? "" : "s"} couldn't be read.</b> ${/space/i.test(JSON.stringify(bad)) ? "Your iPhone is nearly full. Free some space and pick them again." : "If they're in iCloud, open them in Photos first so they download, then pick them again."}`);   // v4.40
   const files = mediaOnly((r && r.files) || []); if(!files.length){ updRender(); if(!upd.some(x => x.code === code && x.st !== "done")) updHide(); return; }
@@ -2072,7 +2331,7 @@ async function natPick(i, from){
     if(was){ if(was.path && was.path !== path) natTidy(was.path, was.rel); Object.assign(was, { path, rel, nat: true, st: "queued", natTry: 0, uri: null, natId: null, driveId: null, arrived: false, final: null, stop: false, m: was.m || (C && C.month) }); continue; }
     upd.push({ k, code, idx: updIdx, name: f.name, size: f.size, type: f.mimeType || "video/mp4", path, rel, nat: true, st: "queued", off: 0, m: (C && C.month) || undefined });
   }
-  updSave(); updShow(); await updDeclare();
+  updSave(); if(!(opts && opts.quiet)) updShow(); await updDeclare();
   // v4.33: big clips on mobile data cost the client money: ask, and hold them for Wi-Fi if they'd rather
   const qd = upd.filter(x => x.code === code && x.nat && x.st === "queued"), tot = qd.reduce((a, x) => a + x.size, 0);
   if(natNetType === "cellular" && tot > 3e8 && !(await ask({ title: "You're on mobile data", body: "That's " + fmtB(tot) + " to send. Send it now, or wait until you're on Wi-Fi?", ok: "Send now", cancel: "Wait for Wi-Fi" }))){
@@ -2085,7 +2344,7 @@ async function natPick(i, from){
    every one is given to iOS in a tight loop, so 50 clips leave the app in seconds, not minutes. Until every clip is with iOS the
    screen says to keep the app open. "busy" or no signal is a wait, never a failure. */
 function natRetryable(d){ return !d || d.error === "network" || d.error === "busy" || /lock|timed? ?out|too many|try again/i.test(String(d.error || "")); }
-function natQueued(){ return upd.filter(y => y.code === code && y.nat && y.st === "queued" && !y.wait && !y.wifiWait && !y.netWait && y.path); }
+function natQueued(){ return upd.filter(y => y.code === code && y.nat && y.st === "queued" && !y.wait && !y.wifiWait && !y.netWait && !y.hold && y.path); }
 async function natRun(){
   if(updBusy) return; updBusy = true; updT0 = Date.now(); updB0 = 0;
   try {
@@ -2125,7 +2384,7 @@ async function natHandOff(x){
   try {
     updSaveNow();   // v4.40: saved (still "queued", with its copy) before iOS has it, so a crash in between re-sends rather than strands it
     let fp = x.path; if(x.rel){ try { fp = ((await natCall("Filesystem", "getUri", { path: x.rel, directory: "LIBRARY_NO_CLOUD" })) || {}).uri || x.path; } catch(e){} }   // v4.40: the app's folder can move on an update
-    const r = await natCall("Uploader", "startUpload", { filePath: fp, serverUrl: x.uri, method: "PUT", uploadType: "binary", mimeType: x.type, headers: { "Content-Type": x.type }, maxRetries: 0 });
+    const r = await natCall("Uploader", "startUpload", { filePath: fp, serverUrl: x.uri, method: "PUT", uploadType: "binary", mimeType: x.type, headers: { "Content-Type": x.type }, maxRetries: 0, label: natLabel(x) });
     x.natId = r.id; x.natAt = Date.now(); x.st = "sending"; console.log("nat: handed " + x.name + " to iOS as " + r.id + " final=" + x.final);
   } catch(e){ x.st = "error"; x.err = "this phone couldn't start sending it"; console.log("nat: startUpload " + (e && (e.message || e))); }
   updSaveNow();
@@ -2143,7 +2402,8 @@ let natNetT = null;
 function natNetWaitSoon(){ if(natNetT) return; natNetT = setTimeout(() => { natNetT = null; upd.forEach(x => { if(x.netWait) x.netWait = false; }); natRun(); }, 30000); }
 /* v4.40: tell the iPhone how many clips the app still owes, so its "Clips sent" notice never says "all" while some are still here */
 function natOwed(){ if(!NATIVE) return; const mine = upd.filter(x => x.nat), failed = mine.filter(x => x.st === "error" || x.st === "lost").length, owed = mine.filter(x => x.st !== "done" && x.st !== "error" && x.st !== "lost").length;
-  natPlugin("XCNative", "setOwed", { owed, total: mine.length, failed }).catch(() => {}); }   // v4.40: "all sent" only when nothing failed
+  const cur = mine.find(x => x.st !== "done" && x.st !== "error" && x.st !== "lost");   // v4.41: the Live Activity's label
+  natPlugin("XCNative", "setOwed", { owed, total: mine.length, failed, label: cur ? natLabel(cur) : undefined }).catch(() => {}); }   // v4.40: "all sent" only when nothing failed
 function natEvent(ev){
   ev = ev && ev.name ? ev : (ev && ev.data) || {};
   const x = upd.find(y => y.nat && y.natId && y.natId === ev.id); if(!x) return;
@@ -2202,7 +2462,7 @@ async function natKeep(path){
 }
 function natTidy(path, rel){ if(rel){ natCall("Filesystem", "deleteFile", { path: rel, directory: "LIBRARY_NO_CLOUD" }).catch(() => { if(path) natCall("Filesystem", "deleteFile", { path }).catch(() => {}); }); return; } if(path) natCall("Filesystem", "deleteFile", { path }).catch(() => {}); }
 function natRel(uri){ const m = String(uri || "").split("/xc-up/")[1]; return m ? "xc-up/" + decodeURIComponent(m) : undefined; }   // the picker's copy in the app's cache, never the camera roll
-function natAllDone(){ if(!upd.some(x => x.code === code && x.st !== "done")){ loadUploads(true); toast("✓ <b>All sent.</b> XC has every clip you just sent."); } }
+function natAllDone(){ if(!upd.some(x => x.code === code && x.st !== "done")){ loadUploads(true); setTimeout(pushMaybeAsk, 2500); toast("✓ <b>All sent.</b> XC has every clip you just sent."); } }
 /* every open: iOS may have finished (or dropped) clips while the app was closed, and nobody told the page. Ask the backend first
    (the receipt), then ask iOS which uploads it's really still running. Quiet isn't stopped (no signal, Low Power Mode), so only a
    clip iOS no longer has is checked once more and then sent again. */
@@ -2400,19 +2660,18 @@ if(NATIVE){
   document.addEventListener("touchend", () => {
     if(sh){ const s = sh; sh = null; s.style.transition = ""; s.style.transform = "";
       if(dy > 90){ const v = s.previousElementSibling; if(v && v.classList.contains("veil")) v.click(); } }
-    if(window.scrollY < -70) natPullRefresh();
   });
 }
 let natPulling = false;
-async function natPullRefresh(){
-  if(natPulling) return; natPulling = true; natHap("light"); toast('<span class="spin"></span>Refreshing…');   // v4.40: something on screen, not just a buzz
+async function natPullRefresh(quiet){
+  if(natPulling) return; natPulling = true; if(!quiet){ natHap("light"); toast('<span class="spin"></span>Refreshing…'); }   // v4.40: something on screen, not just a buzz
   const vis = id => { const el = document.getElementById(id); return el && !el.classList.contains("hide"); };
   try {
     if(vis("client")){ if(LS.get("ownerpin") && LS.get("ownercode")) await ownerLoad(); else await loadClient(); loadUploads(true); natCheck(); }
-    else if(vis("today")) await loadToday();
+    else if(vis("today") || vis("activity")){ prefsLoad(true); await loadToday(); }
     else if(vis("manage")) await loadManage();
     else if(vis("calendar")) await loadCal();
-    else if(vis("dash")) await loadRoster();
+    else if(vis("dash")){ prefsLoad(true); await loadRoster(); }
   } catch(e){}
   natPulling = false;
 }
@@ -2525,6 +2784,8 @@ function subtab(which){
   for(const k in map){ document.getElementById(map[k][0]).classList.toggle("hide", which!==k); if(map[k][1]) document.getElementById(map[k][1]).classList.toggle("on", which===k); }
   if(which==="owner") renderOwner();
   if(which==="docs") renderDocsList();
+  if(which==="you") renderRecent();   // v4.41
+  if(which==="owner") setTimeout(() => { if(!document.getElementById("ownerView").classList.contains("hide")) LS.set("seenAct." + String(code || "").toUpperCase(), new Date().toISOString()); }, 2500);   // v4.41: the owner's dots clear once looked at
   if(which==="you"){ const solo = LS.get("ownerpin") === "solo"; document.getElementById("youWho").innerHTML = "You're <b>" + esc(me || "—") + "</b>" + (C && C.name ? " at " + esc(C.name) : ""); document.getElementById("youSwitch").classList.toggle("hide", solo); }   // v4.40
   document.body.classList.toggle("ntab", which !== "shots");   // v4.40: each tab its own heading
   document.getElementById("tabHead").textContent = { results: "Your results.", docs: "Your documents.", you: "You.", basics: "Filming basics.", owner: "Owner area." }[which] || "";
@@ -2591,7 +2852,7 @@ function renderOwner(){
   const act = (C.activity||[]).slice().reverse().slice(0,12);   // backend v2.3+; hidden until it exists
   document.getElementById("ovActWrap").classList.toggle("hide", !act.length);
   document.getElementById("ovActivity").innerHTML = act.map(a=>
-    `<div class="mrow"><div class="r"><span class="nm" style="font-weight:500">${esc(a.who)} <span style="color:var(--grey)">${esc(a.what)}</span></span><span class="who">${ago(a.at)}</span></div></div>`).join("");
+    `<div class="mrow actrow${ownNew(a) ? " unread" : ""}">${ownNew(a) ? '<i class="udot" aria-label="New"></i>' : ""}<div class="r"><span class="nm" style="font-weight:500">${esc(a.who)} <span style="color:var(--grey)">${esc(a.what)}</span></span><span class="who">${ago(a.at)}</span></div></div>`).join("");
 }
 function ago(iso){
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -2648,6 +2909,7 @@ async function reelFeedback(fileId, verdict){
   else toast("Couldn't send: "+errTxt(d.error));
 }
 function openPreview(id, title, note){
+  { const pa = document.getElementById("pActs"); if(pa) pa.innerHTML = ""; }   // v4.41: actions only when opened by a hold
   document.getElementById("pTitle").textContent = title; document.getElementById("pNote").textContent = note || "";
   document.getElementById("pFrame").src = "https://drive.google.com/file/d/" + id + "/preview";
   document.getElementById("pveil").classList.add("show"); document.getElementById("psheet").classList.add("show");
@@ -2755,7 +3017,7 @@ function pinRejected(){ if(pinRejected.busy) return; pinRejected.busy = true; se
   pin = null; LS.set("pin", null); roster = null; dropCache("roster"); dropCache("today"); dropCache("cal"); stopPoll(); natHasPin = false; gate("gatePin"); padClear("pinInput");
   const e = document.getElementById("pinErr"); if(e){ e.className = "err"; e.textContent = "Your saved PIN didn't work. Type it again."; } }
 function pinLocked(d){ stopPoll(); gate("gatePin"); const e = document.getElementById("pinErr"); if(e){ e.className = "err"; e.textContent = "Too many wrong tries on this studio. Wait " + Math.max(1, Math.round(((d && d.retryAfter) || 900) / 60)) + " minutes, then try again."; } }
-function xcSignOut(){ pin = null; LS.set("pin", null); roster = null; try { Object.keys(localStorage).filter(k => /^xcs\.cache\.(mg:|deliv:|cal|roster|today)/.test(k)).forEach(k => localStorage.removeItem(k)); } catch(e){} natHasPin = false; xcSeen(); stopPoll(); document.body.classList.remove("xc"); try { history.replaceState(null, "", location.pathname); } catch(e){} gate("gateCode"); }   // v4.40: every client's studio data goes too
+function xcSignOut(){ try { ubEnd(true); prefsFlush(); } catch(e){} P41 = prefsNorm(null); pin = null; LS.set("pin", null); roster = null; try { Object.keys(localStorage).filter(k => /^xcs\.cache\.(mg:|deliv:|cal|roster|today|prefs)|^xcs\.rd\.review|^xcs\.prefs\.local/.test(k)).forEach(k => localStorage.removeItem(k)); } catch(e){} natHasPin = false; xcSeen(); stopPoll(); document.body.classList.remove("xc"); try { history.replaceState(null, "", location.pathname); } catch(e){} gate("gateCode"); }   // v4.40: every client's studio data goes too
 async function enterXC(){
   natLockDefault();   // v4.40
   gate("app"); document.body.classList.add("xc"); try { history.replaceState(null, "", location.pathname + "?xc"); } catch(e){}
@@ -2768,6 +3030,7 @@ async function enterXC(){
   loadRoster();
   const cc = readCache("cal"); if(cc){ calData = cc; calBadge(); }   // v4.16: the overdue badge is there from the first screen
   loadCal(true);
+  prefsLoad(true); natBoot41();   // v4.41
 }
 async function loadRoster(){
   if(!pin) return;
@@ -2782,18 +3045,21 @@ async function loadRoster(){
 }
 function renderRoster(){
   if(!roster) return;
+  if(swDefer("roster", renderRoster)) return;   // v4.41: never rebuild under a finger
   document.getElementById("dashEyebrow").textContent = `${monthName(roster.month)} · Week ${roster.week} · Your roster`;
   const quiet = roster.clients.filter(c=>c.quietDays!==null && c.quietDays>=3).length;
   document.getElementById("dashHead").textContent = roster.clients.length ? `${roster.clients.length} client${roster.clients.length===1?"":"s"} filming.${quiet?` ${quiet} gone quiet.`:""}` : "No clients yet.";
-  document.getElementById("roster").innerHTML = roster.clients.map(c=>{
-    const pct = c.total ? Math.round(c.done/c.total*100) : 0;
+  const pins = P41.pins || [], list = roster.clients.slice().sort((a, b) => { const pa = pins.indexOf(a.code), pb = pins.indexOf(b.code); return ((pa < 0) - (pb < 0)) || (pa >= 0 ? pa - pb : 0); });   // v4.41: pinned clients first
+  document.getElementById("roster").innerHTML = list.map(c=>{
+    const pct = c.total ? Math.round(c.done/c.total*100) : 0, pinned = pins.indexOf(c.code) !== -1;
     const st = c.quietDays!==null && c.quietDays>=3 ? `<span class="st behind">${c.quietDays} days quiet</span>` : (c.wkDone>=c.wkTotal && c.wkTotal ? '<span class="st ok">Week done</span>' : '<span class="st ok">On track</span>');
     const nudge = c.quietDays!==null && c.quietDays>=3 ? `<span class="nudgebtn" role="button" tabindex="0" onclick="event.stopPropagation();nudge()">Nudge ↗</span>` : "";
-    return `<button class="cl" onclick="openManage(${q(c.code)})"><div class="r1"><h3>${esc(c.name)}</h3><span style="display:flex;gap:8px;align-items:center">${nudge}<span class="nudgebtn" role="button" tabindex="0" title="See exactly what they see — they can't tell" onclick="event.stopPropagation();previewClient(${q(c.code)})" onkeydown="if(event.key==='Enter'){event.stopPropagation();previewClient(${q(c.code)})}">👁</span>${st}</span></div>
-      <div class="r2"><span>${c.done} of ${c.total} this month</span>${c.redos?`<span style="color:var(--warn)">${c.redos} redo out</span>`:""}${c.deliveriesPending?`<span style="color:var(--goldB)">${c.deliveriesPending} to review</span>`:""}<span>week: ${c.wkDone} of ${c.wkTotal}</span></div>
+    return `<button class="cl"${swAttr("roster", c.code, c.name, c.code)} onclick="openManage(${q(c.code)})"><div class="r1"><h3>${pinned ? `<span class="pinmk" aria-label="Pinned">${swIcon("pin")}</span>` : ""}${esc(c.name)}</h3><span style="display:flex;gap:8px;align-items:center">${nudge}<span class="nudgebtn" role="button" tabindex="0" title="See exactly what they see — they can't tell" onclick="event.stopPropagation();previewClient(${q(c.code)})" onkeydown="if(event.key==='Enter'){event.stopPropagation();previewClient(${q(c.code)})}">👁</span>${st}</span></div>
+      <div class="r2"><span>${c.done} of ${c.total} this month</span>${c.redos?`<span style="color:var(--warn)">${c.redos} redo out</span>`:""}${c.deliveriesPending?`<span style="color:var(--goldB)">${c.deliveriesPending} to review</span>`:""}<span>week: ${c.wkDone} of ${c.wkTotal}</span>${c.cant ? `<span>${c.cant} can&#39;t this week</span>` : ""}${c.streak && c.streak.weeks > 1 ? `<span style="color:var(--goldB)">${c.streak.weeks} weeks in a row</span>` : ""}</div>
       ${spark(c.weeks)}
       <div class="bar"><i style="width:${pct}%"></i></div></button>`;
   }).join("");
+  swScan(document.getElementById("roster"));
 }
 function nudge(){ location.href = "sms:&body=" + encodeURIComponent("Hey, this week's shots are still open. Three quick ones whenever suits. All good if it's a mad week."); }   // v4.40: a real message, XC picks who and hits send
 async function addClient(inputId){
@@ -2863,7 +3129,7 @@ function renderSelects(){
     const cov = steps.map((st,i)=>{ const talk = /^☐ TAKE/.test(st); const ok = covered.has(i); if(talk && !ok) missing.push(i); return `<span class="cv ${ok?"ok":(talk?"miss":"br")}" title="${esc(st.slice(0,70))}">${i+1}</span>`; }).join("");
     html += `<div class="selshot"><div class="r"><span class="nm"><b>${esc(sh.n)}</b> · ${good.length} select${good.length===1?"":"s"}</span>${missing.length?`<button class="mact" onclick="askPickups(${k},[${missing.join(",")}])">Request ${missing.length} pickup${missing.length===1?"":"s"}</button>`:'<span class="who ok">every talking take covered ✓</span>'}</div>
       <div class="cov">${cov}</div>
-      <div class="files">${good.map(f=>`<div class="sel"><a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${stepOf(f)!==null?"T"+(stepOf(f)+1)+" · ":""}${esc(clean(f.name))}</span></a><button class="mact cancel" title="Bin it" onclick="setVerdict(${q(f.id)},'bin')">✕ bin</button></div>`).join("")}</div></div>`;
+      <div class="files">${good.map(f=>`<div class="sel"><a class="file"${clipAttr({code:S.code, id:f.id, name:f.name, idx:Number(k), kind:"fresh", shot:sh.n, client:S.name})} onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${stepOf(f)!==null?"T"+(stepOf(f)+1)+" · ":""}${esc(clean(f.name))}</span></a><button class="mact cancel" title="Bin it" onclick="setVerdict(${q(f.id)},'bin')">✕ bin</button></div>`).join("")}</div></div>`;
   });
   if(binned.length) html += `<details class="binbox"><summary>Binned — ${binned.length} clip${binned.length===1?"":"s"} you won't use (kept in Drive, hidden from everything)</summary><div class="files">${binned.map(f=>`<div class="sel"><a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy">`:'<span class="th"></span>'}<span class="fn">${esc(clean(f.name))}</span></a><button class="mact" onclick="setVerdict(${q(f.id)},'none')">Restore</button></div>`).join("")}</div></details>`;
   host.innerHTML = html ? `<p class="msect">Selects — every clip you called Good, in take order. Gold = take covered, red = talking take with no keeper.</p><div class="sheetbtns" style="margin:0 0 12px"><button class="bigbtn" onclick="syncSelects()">📁 Sync selects to Drive folder ↗</button></div><p class="sub" style="margin:-4px 0 14px">Builds a <b>✅ SELECTS</b> folder in the client's footage vault, one sub-folder per shot, with every Good clip inside — open it in Drive for desktop and drag straight into DaVinci, or send the link to your editor.</p>${html}` : `<p class="msect">Selects</p><p class="sub">Nothing marked Good yet — hit ▶ Review and the keepers pool here.</p>`;
@@ -2911,7 +3177,7 @@ function renderManage(){
     const fgh = fg.length ? `<div class="flags">${fg.map(f=>`<span class="flag ${f.sev}"><i></i>${esc(f.text)}</span>`).join("")}</div>` : "";
     const who = isRedo ? '<span class="who out">redo out</span>' : isDone ? `<span class="who${fl.length?"":" todo"}">✓ ${esc(by[i])}${fl.length?"":" · no file yet"}</span>` : (fl.length ? '<span class="who">file in · not ticked</span>' : `<span class="who todo">wk ${s.w} · to-do</span>`);
     const act = isDone ? `<button class="mact" onclick="openFlag(${i})">Flag redo</button>` : isRedo ? `<button class="mact cancel" onclick="cancelRedo(${i})">Cancel</button>` : (fl.length ? `<button class="mact ok" onclick="xcTick(${i})">Mark filmed</button>` : "");
-    const fh = fl.length ? `<div class="files">${fl.map(f=>`<a class="file" onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${esc(f.name.replace(/ — /," "))}</span></a>`).join("")}</div>` : "";
+    const fh = fl.length ? `<div class="files">${fl.map(f=>`<a class="file"${clipAttr({code:S.code, id:f.id, name:f.name, idx:i, kind:"fresh", shot:s.n, client:S.name})} onclick="openPreview(${q(f.id)},${q(f.name)},'')" role="button" tabindex="0">${f.thumb?`<img class="th" src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="th"></span>'}<span class="fn">${esc(f.name.replace(/ — /," "))}</span></a>`).join("")}</div>` : "";
     const rv = fl.length ? `<button class="mact ok" style="border-color:var(--gold);color:var(--goldB)" onclick="openPlayerFor(${i})">▶ Review ${fl.length}</button>` : "";
     return `<div class="mrow${isRedo?" redo":""}${fl.length?" hasclips":""}${sev==="red"||sev==="orange"?" att-"+sev:""}"><div class="r"${fl.length?` style="cursor:pointer" onclick="openPlayerFor(${i})"`:""}><span class="nm">${i+1}. ${esc(s.n)}</span>${who}${rv}<span onclick="event.stopPropagation()">${act}</span></div>${fgh}${fl.length ? shotActs(S, i) : ""}${fh}</div>`;
   }).join("");
@@ -3128,7 +3394,7 @@ function xcnav(view){
   else if(view==="dash"){ loadRoster(); startPoll(loadRoster); }
   else if(view==="calendar"){ renderCal(); loadCal(); startPoll(loadCal); }
   else stopPoll();
-  if(view==="studio") waStudioLoad();   // v4.26
+  if(view==="studio"){ waStudioLoad(); renderRecent(); }   // v4.26 · v4.41: Recently deleted
 }
 /* v4.26: WhatsApp setup from the Studio screen (backend 2.8.1 waAdmin). Keys never come back to the app, only whether each is set. */
 let waInfo = null, waTpl = null, waSub = null, waBusy = "";
@@ -3176,7 +3442,7 @@ function waStudioRender(){
     <div class="mrow"><div class="r"><span class="nm">Timers</span></div><p class="sub" style="margin:6px 0 0">${esc((I.triggers || []).filter((h,i,a)=>a.indexOf(h)===i).join(", ") || "none")} · repaired automatically</p></div>`;
 }
 function barReview(){
-  const T = todayData, n = T ? (T.deliveries.length + T.fresh.length) : 0;
+  const T = todayView(todayData, P41), n = T ? (T.deliveries.length + T.fresh.length) : 0;
   if(!n){ toast("Nothing to review right now — new clips light this up the moment they land."); if(pin) loadToday(); return; }
   openPlayer();
 }
@@ -3201,11 +3467,11 @@ let noCache = false;
 let staleAt = 0;
 function xcStale(d){ if(!d || d.ok || d.error === "network" || d.error === "pin" || d.error === "locked") return; syncUI("err"); const el = document.getElementById("sync"); if(el) el.textContent = "not refreshed";
   if(Date.now() - staleAt > 300000){ staleAt = Date.now(); toast("Couldn't refresh: " + errTxt(d.error) + " Showing the last copy that loaded."); } }
-async function xcRefresh(){ noCache = true; toast("Refreshing…"); try { await Promise.all([loadToday(), loadRoster(), loadCal(true)]); } finally { noCache = false; } }
+async function xcRefresh(){ noCache = true; toast("Refreshing…"); try { await Promise.all([loadToday(), loadRoster(), loadCal(true), prefsLoad(true)]); } finally { noCache = false; } }
 async function loadToday(){
   if(!pin) return;   // v4.40: never poll with no PIN (each one counted as a wrong guess)
   const d = await apiGet({action:"today", pin}); xcStale(d);
-  if(d.ok){ todayData = d; writeCache("today", d); renderToday(); }
+  if(d.ok){ todayData = d; writeCache("today", d); renderToday(); prefsLoad(); }
   else if(d.error === "pin"){ stopPoll(); pinRejected(); }
   else if(d.error === "locked"){ stopPoll(); pinLocked(d); }
   else if(d.error === "unknown action"){
@@ -3219,65 +3485,69 @@ async function loadToday(){
   }
 }
 function renderToday(){
-  const T = todayData; if(!T) return;
+  if(!todayData) return;
+  if(swDefer("todayBody", renderToday)) return;   // v4.41: never rebuild under a finger
+  const T = todayView(todayData, P41);   // v4.41: minus what XC marked done, snoozed or cleared
   document.getElementById("todayEyebrow").textContent = `${monthName(T.month)} · Week ${T.week} · Today`;
-  const total = T.counts.deliveries + T.counts.fresh + T.counts.quiet + T.counts.redos + (T.counts.feedback || 0) + (T.counts.consent || 0) + (T.counts.health || 0);
-  const badge = document.getElementById("todayN");
-  badge.classList.toggle("hide", !total); badge.textContent = total;
-  const xb = document.getElementById("xbTodayN"); xb.classList.toggle("hide", !total); xb.textContent = total;
-  const fb = T.counts.feedback || 0;
-  const ab = document.getElementById("xbActN"); ab.classList.toggle("hide", !fb); ab.textContent = fb;
+  const total = badgeXC(T, P41).today;   // v4.41: held files and can't-this-week count too (the server's count), after what XC hid
+  badgesPaint();   // v4.41: Today, Review and Activity badges, and the app icon
   if(!document.getElementById("activity").classList.contains("hide")) renderActivity();
   const head = document.getElementById("todayHead");
   const body = document.getElementById("todayBody");
   if(!total){
-    head.textContent = "Nothing needs you.";
-    body.innerHTML = '<div class="zero"><div class="big">All clear.</div><div class="sml">Go film something — or go home.</div></div>' + archiveHtml(T) + vitalsHtml(T);
+    head.textContent = "You're all caught up.";
+    body.innerHTML = caughtUp("Nothing needs you. New clips light this up the moment they land.") + archiveHtml(T) + vitalsHtml(T);
     return;
   }
   head.textContent = `${total} thing${total===1?"":"s"} need${total===1?"s":""} you.`;
   let h = "";
   const HI = (T.health && T.health.issues) || [];   // v4.23: the last health check's problems lead the page
   const HELD = T.held || [];   // v4.40: files set aside by the file check (server 2.9.2)
-  if(HELD.length) h += stackHead("Set aside: check these", HELD.length) + '<div class="tq">' + HELD.map(x => `<div class="tcard warn"><div class="b"><h4>${esc(x.client)}</h4><p class="ln">${esc([].concat(x.names || []).join(", ").slice(0, 160))}</p><div class="acts"><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
+  if(HELD.length) h += stackHead("Set aside: check these", HELD.length) + '<div class="tq">' + HELD.map(x => `<div class="tcard warn"${swAttr("today", todayId("held", x), x.client + " · files set aside", x.code, "held")}><div class="b"><h4>${esc(x.client)}</h4><p class="ln">${esc([].concat(x.names || []).join(", ").slice(0, 160))}</p><div class="acts"><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
   if(HI.length) h += stackHead("System — needs a look", HI.length, `<button class="mact" style="margin-left:6px" onclick="runHealth()">↻ Check now</button>`) + '<div class="tq">' + HI.map(x=>
-      `<div class="tcard ${/^(sweep_stale|sweep_error|trigger_missing|drop_stuck|filmed_no_clips|backup_failed)$/.test(x.event)?"red":"warn"}"><div class="b"><h4>${esc(x.title)}</h4>${(x.lines||[]).map(l=>`<p class="ln">${esc(l)}</p>`).join("")}
+      `<div class="tcard ${/^(sweep_stale|sweep_error|trigger_missing|drop_stuck|filmed_no_clips|backup_failed)$/.test(x.event)?"red":"warn"}"${swAttr("today", todayId("health", x), x.title, x.client, "health")}><div class="b"><h4>${esc(x.title)}</h4>${(x.lines||[]).map(l=>`<p class="ln">${esc(l)}</p>`).join("")}
        <div class="acts">${x.url?`<a class="mact" href="${esc(x.url)}" target="_blank" rel="noreferrer">Open ↗</a>`:""}${x.client?`<button class="mact cancel" onclick="openManage(${q(x.client)})">Open client</button>`:""}</div></div></div>`).join("") + "</div>";
   const reviewables = T.deliveries.length + T.fresh.length;
   if(reviewables) h += `<div class="sheetbtns" style="max-width:420px;margin-top:16px"><button class="bigbtn" onclick="openPlayer()">▶ Review all ${reviewables} clip${reviewables===1?"":"s"}</button></div>`;
   if(T.deliveries.length){
     h += stackHead("To review — from the editor", T.deliveries.length) + '<div class="tq">' + T.deliveries.map((x,k)=>
-      `<div class="tcard">${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th" onclick="openPreview('+q(x.file.id)+','+q(x.file.name)+',\'\')"></span>'}
+      `<div class="tcard"${swAttr("today", todayId("deliv", x), x.client + " · a reel to review", x.code, "deliv")}${clipAttr({code:x.code, id:x.file.id, name:x.file.name, kind:"delivery", client:x.client})}>${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th" onclick="openPreview('+q(x.file.id)+','+q(x.file.name)+',\'\')"></span>'}
        <div class="b"><h4>${esc(x.client)}</h4><p class="m">${esc(x.file.name)}</p>
        <div class="acts"><button class="mact ok" onclick="tqApprove(${q(x.code)},${q(x.file.id)})">Approve</button><button class="mact" onclick="mgCode=${q(x.code)};openBack(${q(x.file.id)},${q(x.file.name)})">Send back</button></div></div></div>`).join("") + "</div>";
   }
   if(T.fresh.length){
     h += stackHead("Fresh footage in", T.fresh.length, `<button class="mact cancel" style="margin-left:6px" onclick="tqClearAll()">Clear all</button>`) + '<div class="tq">' + T.fresh.map(x=>
-      `<div class="tcard">${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th"></span>'}
+      `<div class="tcard"${swAttr("today", todayId("fresh", x), x.client + " · " + x.shot, x.code, "fresh")}${clipAttr({code:x.code, id:x.file.id, name:x.file.name, idx:x.idx, kind:"fresh", shot:x.shot, client:x.client})}>${x.file.thumb?`<img class="th" src="${esc(x.file.thumb)}" onclick="openPreview(${q(x.file.id)},${q(x.file.name)},'')" alt="">`:'<span class="th"></span>'}
        <div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${esc(x.file.name)}</p>
        <div class="acts"><button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)},${x.idx===null?"null":x.idx})">Good ✓</button><button class="mact" onclick="tqRedo(${q(x.code)},${x.idx===null?"null":x.idx},${q(x.file.id)},${q(x.shot)})">Flag redo</button><button class="mact" onclick="clearClips({[${q(x.code)}]:[${q(x.file.id)}]})">Clear</button></div></div></div>`).join("") + "</div>";
   }
   if(T.quiet.length){
     h += stackHead("Going quiet", T.quiet.length) + '<div class="tq">' + T.quiet.map(x=>
-      `<div class="tcard warn"><div class="b"><h4>${esc(x.client)}</h4><p class="m">${x.quietDays===null?"no ticks yet":"quiet "+x.quietDays+" days"} · week ${x.wkDone} of ${x.wkTotal}</p>
+      `<div class="tcard warn"${swAttr("today", todayId("quiet", x), x.client + " · gone quiet", x.code, "quiet")}><div class="b"><h4>${esc(x.client)}</h4><p class="m">${x.quietDays===null?"no ticks yet":"quiet "+x.quietDays+" days"} · week ${x.wkDone} of ${x.wkTotal}</p>
        <div class="acts"><button class="nudgebtn" onclick="nudge()">Nudge ↗</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
   }
   if(T.feedback && T.feedback.length){
     h += stackHead("Client refinements", T.feedback.length) + '<div class="tq">' + T.feedback.map(x=>
-      `<div class="tcard${x.v==="change"?" warn":""}"><div class="b"><h4>${esc(x.client)} — ${x.v==="love"?"♥ loved":"refinement requested"}</h4><p class="m">${esc(x.by)}${x.note?": "+esc(x.note):""}</p>
+      `<div class="tcard${x.v==="change"?" warn":""}"${swAttr("today", todayId("fb", x), x.client + " · " + (x.v==="love" ? "loved a reel" : "a refinement"), x.code, "feedback")}><div class="b"><h4>${esc(x.client)} — ${x.v==="love"?"♥ loved":"refinement requested"}</h4><p class="m">${esc(x.by)}${x.note?": "+esc(x.note):""}</p>
        <div class="acts"><button class="mact ok" onclick="ackFb(${q(x.code)},${q(x.fileId)})">Got it</button><button class="mact cancel" onclick="openPreview(${q(x.fileId)},'Reel','')">Watch</button></div></div></div>`).join("") + "</div>";
   }
   if(T.consent && T.consent.length){
     h += stackHead("Waiting on consent", T.consent.length) + '<div class="tq">' + T.consent.map(x=>
-      `<div class="tcard warn"><div class="b"><h4>${esc(x.client)} — ${esc(x.t || "a reel")}</h4><p class="m">on hold for ${esc(x.who)} · since ${x.since ? new Date(x.since).toLocaleDateString("en-AU",{day:"numeric",month:"short"}) : "?"}</p>
+      `<div class="tcard warn"${swAttr("today", todayId("consent", x), x.client + " · consent for " + (x.who || "someone"), x.code, "consent")}><div class="b"><h4>${esc(x.client)} — ${esc(x.t || "a reel")}</h4><p class="m">on hold for ${esc(x.who)} · since ${x.since ? new Date(x.since).toLocaleDateString("en-AU",{day:"numeric",month:"short"}) : "?"}</p>
        <div class="acts"><button class="mact ok" onclick="recordConsent(${q(x.code)},${q(x.key)})">Record consent</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
+  }
+  if(T.cant && T.cant.length){   // v4.41 (server 2.9.6): a client swiped a shot "can't this week"
+    h += stackHead("Can't film this week", T.cant.length) + '<div class="tq">' + T.cant.map(x=>
+      `<div class="tcard"${swAttr("today", todayId("cant", x), x.client + " · can't film " + x.shot, x.code, "cant")}><div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${esc(x.by || "the client")} · ${x.at ? esc(ago(x.at)) : ""}</p>${x.why ? `<p class="ln">${esc(x.why)}</p>` : ""}
+       <div class="acts"><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
   }
   if(T.redosAging.length){
     h += stackHead("Redos aging", T.redosAging.length) + '<div class="tq">' + T.redosAging.map(x=>
-      `<div class="tcard warn"><div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${x.days===null?"":"out "+x.days+" days · "}${esc(x.reason)}</p>
+      `<div class="tcard warn"${swAttr("today", todayId("redo", x), x.client + " · redo on " + x.shot, x.code, "redo")}><div class="b"><h4>${esc(x.client)} — ${esc(x.shot)}</h4><p class="m">${x.days===null?"":"out "+x.days+" days · "}${esc(x.reason)}</p>
        <div class="acts"><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button></div></div></div>`).join("") + "</div>";
   }
   body.innerHTML = h + archiveHtml(T) + vitalsHtml(T);
+  swScan(body);   // v4.41: swipe right = done, left = snooze till tomorrow
 }
 /* v4.23 vault archive rule: months past delivery + 30 days, with sizes, for the T7. "Moved it" only hides the row; nothing is deleted. */
 const fmtGB = b => (Number(b||0)/1e9).toFixed(Number(b||0) >= 1e10 ? 0 : 1) + " GB";
@@ -3314,22 +3584,25 @@ async function runHealth(){
 function stackHead(t, n, extra){ return `<div class="stack"><div class="stackhead"><span class="t">${t}</span><span class="line"></span><span class="ct">${n}</span>${extra||""}</div></div>`; }
 /* ── ACTIVITY feed — everything that happened, one stream ── */
 function renderActivity(){
-  const T = todayData, head = document.getElementById("actHead"), body = document.getElementById("actBody");
-  if(!T){ head.innerHTML = SKH; body.innerHTML = SK("row", 4); return; }
+  const T0 = todayData, head = document.getElementById("actHead"), body = document.getElementById("actBody");
+  if(!T0){ head.innerHTML = SKH; body.innerHTML = SK("row", 4); return; }
+  if(swDefer("actBody", renderActivity)) return;   // v4.41: never rebuild under a finger
+  const T = todayView(T0, P41);   // v4.41: done, snoozed and cleared items stay out
   document.getElementById("actEyebrow").textContent = `${monthName(T.month)} · Week ${T.week} · Activity`;
-  const rows = [];
-  (T.feedback||[]).forEach(x=>rows.push({ic:x.v==="love"?"♥":"✎", t:`<b>${esc(x.client)}</b> ${x.v==="love"?"loved a reel":"asked for a refinement"}`, m:`${esc(x.by||"")}${x.note?" — "+esc(x.note):""}`, act:`<button class="mact ok" onclick="ackFb(${q(x.code)},${q(x.fileId)})">Got it</button><button class="mact cancel" onclick="openPreview(${q(x.fileId)},'Reel','')">Watch</button>`}));
-  (T.deliveries||[]).forEach(x=>rows.push({ic:"▶", t:`Editor delivered — <b>${esc(x.client)}</b>`, m:esc(x.file.name), act:`<button class="mact ok" onclick="tqApprove(${q(x.code)},${q(x.file.id)})">Approve</button><button class="mact" onclick="mgCode=${q(x.code)};openBack(${q(x.file.id)},${q(x.file.name)})">Send back</button>`}));
-  (T.fresh||[]).forEach(x=>rows.push({ic:"●", t:`<b>${esc(x.client)}</b> filmed “${esc(x.shot)}”`, m:esc(x.file.name), act:`<button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)},${x.idx===null?"null":x.idx})">Good ✓</button>`}));
-  (T.quiet||[]).forEach(x=>rows.push({ic:"…", t:`<b>${esc(x.client)}</b> has gone quiet`, m:`${x.quietDays===null?"no ticks yet":x.quietDays+" days"} · week ${x.wkDone} of ${x.wkTotal}`, act:`<button class="nudgebtn" onclick="nudge()">Nudge ↗</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button>`}));
-  (T.redosAging||[]).forEach(x=>rows.push({ic:"↺", t:`Redo out — <b>${esc(x.client)}</b>: ${esc(x.shot)}`, m:`${x.days===null?"":"out "+x.days+" days · "}${esc(x.reason)}`, act:`<button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button>`}));
-  const feed = (T.activity || []).slice(0, 40);   // v4.40: what clients actually did (ticks, uploads, approvals, redos), newest first
-  const feedHtml = feed.length ? '<p class="msect">What happened</p><div class="mlist">' + feed.map(a => `<div class="mrow"><div class="r"><span class="nm"><b>${esc(a.client)}</b> · ${esc(a.who || "")} ${esc(a.what || "")}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${esc(ago(a.at))}</span></span><button class="mact cancel" onclick="openManage(${q(a.code)})">Open</button></div></div>`).join("") + '</div>' : "";
-  head.textContent = rows.length ? `${rows.length} thing${rows.length===1?"":"s"} waiting on you.` : feed.length ? "All caught up." : "All quiet.";
-  if(!rows.length && feed.length){ body.innerHTML = feedHtml; return; }
-  body.innerHTML = feedHtml + (rows.length ? '<p class="msect">Waiting on you</p>' : "") + (rows.length
-    ? '<div class="mlist" style="margin-top:18px">' + rows.map(r=>`<div class="mrow"><div class="r"><span class="nm"><span style="color:var(--gold);font-family:'Space Mono',monospace;margin-right:9px">${r.ic}</span>${r.t}<br><span class="mono" style="font-size:10px;color:var(--dim)">${r.m}</span></span></div><div class="acts" style="margin-top:9px;display:flex;gap:8px">${r.act}</div></div>`).join("") + '</div>'
-    : '<div class="zero"><div class="big">Nothing yet.</div><div class="sml">Client ticks, uploads, reviews and refinements land here.</div></div>');
+  const rows = [], R = (k, x, lab, o) => rows.push(Object.assign({ id: todayId(k, x), lab, code: x.code }, o));
+  (T.feedback||[]).forEach(x=>R("fb", x, x.client + " · " + (x.v==="love" ? "loved a reel" : "a refinement"), {ic:x.v==="love"?"♥":"✎", t:`<b>${esc(x.client)}</b> ${x.v==="love"?"loved a reel":"asked for a refinement"}`, m:`${esc(x.by||"")}${x.note?" — "+esc(x.note):""}`, act:`<button class="mact ok" onclick="ackFb(${q(x.code)},${q(x.fileId)})">Got it</button><button class="mact cancel" onclick="openPreview(${q(x.fileId)},'Reel','')">Watch</button>`}));
+  (T.deliveries||[]).forEach(x=>R("deliv", x, x.client + " · a reel to review", {ic:"▶", t:`Editor delivered — <b>${esc(x.client)}</b>`, m:esc(x.file.name), act:`<button class="mact ok" onclick="tqApprove(${q(x.code)},${q(x.file.id)})">Approve</button><button class="mact" onclick="mgCode=${q(x.code)};openBack(${q(x.file.id)},${q(x.file.name)})">Send back</button>`}));
+  (T.fresh||[]).forEach(x=>R("fresh", x, x.client + " · " + x.shot, {ic:"●", t:`<b>${esc(x.client)}</b> filmed “${esc(x.shot)}”`, m:esc(x.file.name), act:`<button class="mact ok" onclick="tqGood(${q(x.code)},${q(x.file.id)},${x.idx===null?"null":x.idx})">Good ✓</button>`}));
+  (T.quiet||[]).forEach(x=>R("quiet", x, x.client + " · gone quiet", {ic:"…", t:`<b>${esc(x.client)}</b> has gone quiet`, m:`${x.quietDays===null?"no ticks yet":x.quietDays+" days"} · week ${x.wkDone} of ${x.wkTotal}`, act:`<button class="nudgebtn" onclick="nudge()">Nudge ↗</button><button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button>`}));
+  (T.cant||[]).forEach(x=>R("cant", x, x.client + " · can't film " + x.shot, {ic:"‖", t:`<b>${esc(x.client)}</b> can't film “${esc(x.shot)}” this week`, m:esc([x.by, x.why].filter(Boolean).join(" · ")), act:`<button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button>`}));
+  (T.redosAging||[]).forEach(x=>R("redo", x, x.client + " · redo on " + x.shot, {ic:"↺", t:`Redo out — <b>${esc(x.client)}</b>: ${esc(x.shot)}`, m:`${x.days===null?"":"out "+x.days+" days · "}${esc(x.reason)}`, act:`<button class="mact cancel" onclick="openManage(${q(x.code)})">Open client</button>`}));
+  const feed = (T.activity || []).slice(0, 40), unread = feed.filter(a => actUnread(a, P41)).length;   // v4.40: what clients actually did, newest first · v4.41: swipe left = clear, right = seen
+  const feedHtml = feed.length ? `<div class="acthd"><p class="msect">What happened</p>${unread ? '<button class="mact ok" onclick="actSeenAll()">Mark all seen</button>' : ""}</div><div class="mlist">` + feed.map(a => { const u = actUnread(a, P41);
+    return `<div class="mrow actrow${u ? " unread" : ""}"${swAttr("act", actId(a), a.client + " · " + (a.who || "") + " " + (a.what || ""), a.code)}>${u ? '<i class="udot" aria-label="New"></i>' : ""}<div class="r"><span class="nm"><b>${esc(a.client)}</b> · ${esc(a.who || "")} ${esc(a.what || "")}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${esc(ago(a.at))}</span></span><button class="mact cancel" onclick="openManage(${q(a.code)})">Open</button></div></div>`; }).join("") + '</div>' : "";
+  head.textContent = rows.length ? `${rows.length} thing${rows.length===1?"":"s"} waiting on you.` : unread ? `${unread} new.` : "You're all caught up.";
+  const wait = rows.length ? '<p class="msect">Waiting on you</p><div class="mlist" style="margin-top:12px">' + rows.map(r=>`<div class="mrow"${swAttr("today", r.id, r.lab, r.code, "activity")}><div class="r"><span class="nm"><span style="color:var(--gold);font-family:'Space Mono',monospace;margin-right:9px">${r.ic}</span>${r.t}<br><span class="mono" style="font-size:10px;color:var(--dim)">${r.m}</span></span></div><div class="acts" style="margin-top:9px;display:flex;gap:8px">${r.act}</div></div>`).join("") + '</div>' : "";
+  body.innerHTML = (!rows.length && !unread ? caughtUp(feed.length ? "Nothing new. Earlier activity is below." : "Client ticks, uploads, reviews and refinements land here.") : "") + feedHtml + wait;
+  swScan(body);
 }
 async function ackFb(code, fileId){ const d = await apiPost({action:"ackFeedback", pin, code, fileId}); if(d.ok){ toast("Acknowledged."); loadToday(); } else toast("Couldn't: "+errTxt(d.error)); }
 async function tqApprove(code, fileId){ const d = await apiPost({action:"approve", pin, code, fileId}); if(d.ok){ toast("<b>Approved.</b>"); loadToday(); } else toast("Couldn't: "+errTxt(d.error)); }
@@ -3349,8 +3622,8 @@ document.addEventListener("keydown", e=>{
 /* ── REVIEW PLAYER ── */
 let pq = [], pi = 0;
 function clipOrders(){ try { return JSON.parse(localStorage.getItem("xc_clip_order")||"{}"); } catch(e){ return {}; } }
-function openPlayer(){
-  const T = todayData; if(!T) return;
+function openPlayer(startCode){
+  const T = todayView(todayData, P41); if(!T) return;   // v4.41: minus what XC marked done or snoozed
   pq = T.deliveries.map(x=>({kind:"delivery", code:x.code, client:x.client, shot:"Delivered", file:x.file}))
      .concat(T.fresh.map(x=>({kind:"fresh", code:x.code, client:x.client, shot:x.shot, idx:x.idx, file:x.file, tag:x.tag||null})));
   if(!pq.length) return;
@@ -3362,7 +3635,7 @@ function openPlayer(){
     const ai=o.indexOf(a.file.id), bi=o.indexOf(b.file.id);
     return (ai<0?999:ai) - (bi<0?999:bi);
   });
-  pi = 0; document.getElementById("player").classList.add("show"); pShow();
+  pi = Math.max(0, startCode ? pq.findIndex(x => x.code === startCode) : 0); pFeedOpen(); document.getElementById("player").classList.add("show"); pShow();
 }
 /* review ONE shot's clips — every clip for that shot (already-rated ones included, so a verdict can be changed) */
 function openPlayerFor(i){
@@ -3371,10 +3644,10 @@ function openPlayerFor(i){
   pq = S.files[i].map(f=>({kind:"fresh", code:S.code, client:S.name, shot:S.shots[i].n, idx:i, file:f, tag:tg[f.id]||null, verdict:vd[f.id]||null}));
   const ords = clipOrders(); const o = ords[S.code+"|"+i];
   if(o) pq.sort((a,b)=>{ const ai=o.indexOf(a.file.id), bi=o.indexOf(b.file.id); return (ai<0?999:ai)-(bi<0?999:bi); });
-  pi = Math.max(0, pq.findIndex(x=>!x.verdict)); document.getElementById("player").classList.add("show"); pShow();
+  pi = Math.max(0, pq.findIndex(x=>!x.verdict)); pFeedOpen(); document.getElementById("player").classList.add("show"); pShow();
 }
 function pShow(){
-  if(pi >= pq.length){ closePlayer(); toast("<b>Queue clear.</b>"); loadToday(); return; }
+  if(pi >= pq.length){ closePlayer(); toast("<b>Queue clear.</b>"); loadToday(); setTimeout(pushMaybeAsk, 1800); return; }
   const it = pq[pi];
   document.getElementById("pInfo").innerHTML = `<b>${esc(it.client)}</b> — ${esc(it.shot)}`;
   document.getElementById("pCount").textContent = (pi+1) + " / " + pq.length;
@@ -3383,6 +3656,7 @@ function pShow(){
   renderTag(it);
   renderStrip(it);
   loadPList(it);
+  pGestPlace(); requestAnimationFrame(pGestPlace); pHintPaint();   // v4.41: the feed's gesture pads sit on the clip
 }
 /* word-level view of the matched take: green = he said it, red = he skipped it (from the transcript's said-map) */
 /* v2.8.7 packs the transcript word map ("~N:" then 6 flags a character); older tags are plain arrays */
@@ -3426,7 +3700,7 @@ function renderStrip(it){
     const f = pq[j].file, cur = j===pi;
     const tg = pq[j].tag; const tk = tg ? (tg.step===null||tg.step===undefined ? '<span class="tk miss">✕</span>' : `<span class="tk">T${tg.step+1}</span>`) : "";
     const vcls = pq[j].verdict==="good" ? " vgood" : pq[j].verdict==="bin" ? " vbin" : "";
-    return `<div class="pchip${cur?" cur":""}${vcls}" id="pch${j}"><a onclick="stripGo(${j})" role="button" tabindex="0">${f.thumb?`<img src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="im"></span>'}<span class="n">${k+1}</span>${tk}</a><div class="mv"><button onclick="stripMove(${j},-1)" aria-label="Play earlier">‹</button><button onclick="stripMove(${j},1)" aria-label="Play later">›</button></div></div>`;
+    return `<div class="pchip${cur?" cur":""}${vcls}" id="pch${j}"${clipAttr({code:pq[j].code, id:f.id, name:f.name, idx:pq[j].idx, kind:pq[j].kind, shot:pq[j].shot, client:pq[j].client})}><a onclick="stripGo(${j})" role="button" tabindex="0">${f.thumb?`<img src="${esc(f.thumb)}" alt="" loading="lazy" onerror="this.style.opacity=.3">`:'<span class="im"></span>'}<span class="n">${k+1}</span>${tk}</a><div class="mv"><button onclick="stripMove(${j},-1)" aria-label="Play earlier">‹</button><button onclick="stripMove(${j},1)" aria-label="Play later">›</button></div></div>`;
   }).join("");
   const cur = document.getElementById("pch"+pi); if(cur) cur.scrollIntoView({block:"nearest", inline:"nearest"});
 }
@@ -3947,6 +4221,847 @@ if(!NATIVE) setTimeout(async ()=>{ try {
   const m = t.match(/const BUILD = "([^"]+)"/);
   if(m && m[1] !== BUILD && sessionStorage.getItem("xcsUpd") !== m[1]){ sessionStorage.setItem("xcsUpd", m[1]); location.reload(); }
 } catch(e){} }, 1200);
+/* ═══════════════ v4.41: swipe rows + Undo + Recently deleted, tab badges, pull to refresh, offline bar, search, keyboard,
+   Review as a full-screen feed, hold a clip, streaks + month ring + celebration, first-open tour, teleprompter, and the iPhone
+   app's new bridge (badge, widget, quick actions, push, queued events). Every native call is feature-checked (a no-op on the
+   website and on app build 5); every new server call falls back when the server is still 2.9.5. A swipe never deletes footage. ═══════════════ */
+/* ── v4.41 pure:start · xc-shots-tests/test-round5.cjs runs this block on its own (no DOM, no app globals) ── */
+const PREF_KEEP_MS = 30 * 86400000, UNDO_MS = 5000;
+const PREF_REV = { clear: "unclear", unclear: "clear", seen: "unseen", unseen: "seen", done: "undone", undone: "done", snooze: "unsnooze", pin: "unpin", unpin: "pin" };
+function prefsNorm(p){
+  p = (p && typeof p === "object") ? p : {}; const o = x => (x && typeof x === "object" && !Array.isArray(x)) ? Object.assign({}, x) : {};
+  return { seenAt: p.seenAt || null, cleared: o(p.cleared), seen: o(p.seen), done: o(p.done), snoozed: o(p.snoozed), pins: Array.isArray(p.pins) ? p.pins.slice() : [], v: Number(p.v) || 0 };
+}
+/* the same rules as the server's prefsSet, so the screen changes the moment XC swipes and the fallback behaves identically */
+function prefsApply(P, o, now){
+  P = prefsNorm(P); if(!o) return P;
+  const at = new Date(now || Date.now()).toISOString(), id = o.id;
+  if(o.op === "clear" && id) P.cleared[id] = { at, label: String(o.label || "").slice(0, 160), kind: o.kind || "" };
+  else if(o.op === "unclear") delete P.cleared[id];
+  else if(o.op === "seen" && id) P.seen[id] = at;
+  else if(o.op === "unseen") delete P.seen[id];
+  else if(o.op === "seenAll") P.seenAt = o.at || null;
+  else if(o.op === "done" && id) P.done[id] = at;
+  else if(o.op === "undone") delete P.done[id];
+  else if(o.op === "snooze" && id && o.until) P.snoozed[id] = o.until;
+  else if(o.op === "unsnooze") delete P.snoozed[id];
+  else if(o.op === "pin" && o.code && P.pins.indexOf(o.code) < 0) P.pins.push(o.code);
+  else if(o.op === "unpin") P.pins = P.pins.filter(c => c !== o.code);
+  return P;
+}
+function prefsPrune(P, now){
+  P = prefsNorm(P); now = now || Date.now(); const old = t => !(now - Date.parse(t) < PREF_KEEP_MS);
+  Object.keys(P.cleared).forEach(k => { if(old(P.cleared[k] && P.cleared[k].at)) delete P.cleared[k]; });
+  ["seen", "done"].forEach(f => Object.keys(P[f]).forEach(k => { if(old(P[f][k])) delete P[f][k]; }));
+  Object.keys(P.snoozed).forEach(k => { if(!(Date.parse(P.snoozed[k]) > now)) delete P.snoozed[k]; });
+  return P;
+}
+function prefsHidden(P, id, now){ if(!P || !id) return false; now = now || Date.now(); return !!((P.cleared && P.cleared[id]) || (P.done && P.done[id]) || (P.snoozed && Date.parse(P.snoozed[id]) > now)); }
+function prefsRev(o){
+  if(!o) return null;
+  if(o.op === "seenAll") return { op: "seenAll", at: o.prev || "1970-01-01T00:00:00.000Z", undo: true };
+  const r = Object.assign({}, o, { op: PREF_REV[o.op], undo: true }); delete r.prev; delete r.until; return r.op ? r : null;
+}
+function opKey(o){ return o.op === "seenAll" ? "seenAll" : (o.op === "pin" || o.op === "unpin") ? "pin:" + o.code : "id:" + o.id; }
+/* the outbox: an undo of an op that hasn't left the phone yet cancels both, so the server never hears about either */
+function opsMerge(Q, o){
+  Q = (Q || []).slice(); if(!o) return Q; const k = opKey(o);
+  if(o.undo) for(let j = Q.length - 1; j >= 0; j--){
+    if(opKey(Q[j]) !== k) continue;
+    if(o.op === "seenAll" ? Q[j].op === "seenAll" : PREF_REV[Q[j].op] === o.op){ Q.splice(j, 1); return Q; }
+    break;
+  }
+  Q.push(o); return Q;
+}
+function prefsFromReply(d, local, queue){
+  if(d && d.ok && d.prefs){ let p = prefsNorm(d.prefs); (queue || []).forEach(o => { p = prefsApply(p, o); }); return { off: false, prefs: prefsPrune(p) }; }
+  if(d && d.error === "unknown action") return { off: true, prefs: prefsPrune(local) };
+  return null;
+}
+function snoozeUntil(now){ const d = new Date(now || Date.now()); d.setDate(d.getDate() + 1); d.setHours(6, 0, 0, 0); return d.toISOString(); }
+function actId(a){ return a ? String(a.id || (String(a.code || "").toUpperCase() + "|" + a.at)) : ""; }
+const TODAY_KINDS = [["deliveries", "deliv"], ["fresh", "fresh"], ["quiet", "quiet"], ["feedback", "fb"], ["consent", "consent"], ["redosAging", "redo"], ["held", "held"], ["cant", "cant"]];
+/* server 2.9.6 gives every Today item an id that changes when the thing changes; 2.9.5 doesn't, so build a stable one */
+function todayId(kind, x){
+  if(!x) return ""; if(x.id) return String(x.id);
+  const c = String(x.code || x.client || "").toUpperCase(), f = x.file ? x.file.id : "";
+  const key = (kind === "deliv" || kind === "fresh") ? f : kind === "fb" ? (x.fileId || "") + "." + (x.v || "")
+    : kind === "quiet" ? (x.wkDone || 0) + "of" + (x.wkTotal || 0) + "." + (x.quietDays === null || x.quietDays === undefined ? "n" : x.quietDays)
+    : kind === "consent" ? (x.key || "") : kind === "redo" ? x.idx + "." + (x.days === null || x.days === undefined ? "n" : x.days)
+    : kind === "health" ? (x.event || "") + "." + (x.shot === undefined ? "" : x.shot) : kind === "held" ? [].concat(x.names || []).length : kind === "cant" ? x.idx + "." + (x.at || "") : "";
+  return kind + ":" + c + ":" + key + ":0";
+}
+function todayView(T, P, now){
+  if(!T) return T; const V = Object.assign({}, T), hid = (k, x) => prefsHidden(P, todayId(k, x), now);
+  TODAY_KINDS.forEach(([f, k]) => { if(Array.isArray(T[f])) V[f] = T[f].filter(x => !hid(k, x)); });
+  if(T.health) V.health = Object.assign({}, T.health, { issues: (T.health.issues || []).filter(x => !hid("health", x)) });
+  const n = f => (V[f] || []).length;
+  V.counts = Object.assign({}, T.counts || {}, { deliveries: n("deliveries"), fresh: n("fresh"), quiet: n("quiet"), redos: n("redosAging"), feedback: n("feedback"), consent: n("consent"), held: n("held"), cant: n("cant"),
+    health: V.health ? (V.health.issues || []).length : ((T.counts || {}).health || 0) });
+  V.activity = (T.activity || []).filter(a => !(P && P.cleared && P.cleared[actId(a)]));
+  return V;
+}
+function actUnread(a, P){ if(!a) return false; P = P || {}; const id = actId(a); if((P.cleared || {})[id] || (P.seen || {})[id]) return false; return !P.seenAt || Date.parse(a.at) > Date.parse(P.seenAt); }
+function badgeXC(V, P){
+  const c = (V && V.counts) || {}, today = (c.deliveries || 0) + (c.fresh || 0) + (c.quiet || 0) + (c.redos || 0) + (c.feedback || 0) + (c.consent || 0) + (c.health || 0) + (c.held || 0) + (c.cant || 0);   // the server's count (2.9.6), after what XC hid
+  return { today, review: (c.deliveries || 0) + (c.fresh || 0), activity: ((V && V.activity) || []).filter(a => actUnread(a, P)).length, total: today };
+}
+function clientDue(C){ if(!C || !Array.isArray(C.shots)) return 0; const by = C.by || {}, cant = C.cant || {}; return C.shots.filter((s, i) => s.w <= C.week && !by[i] && !cant[i]).length; }
+function routeParse(r){
+  const m = /^(today|activity|shots|upload|docs|results|review|client)(?::([A-Za-z0-9-]{2,24}))?$/.exec(String(r || "").trim());
+  if(!m || (m[1] === "client" && !m[2])) return null; return { screen: m[1], code: m[2] ? m[2].toUpperCase() : null };
+}
+function binPrune(list, now){ now = now || Date.now(); return (list || []).filter(x => x && now - Date.parse(x.at) < PREF_KEEP_MS); }
+function recentList(P, bins, labels, now){
+  now = now || Date.now(); P = prefsPrune(P, now); labels = labels || {}; const L = id => labels[id] || {}, out = [];
+  Object.keys(P.cleared).forEach(id => { const c = P.cleared[id]; out.push({ id, src: "cleared", at: c.at, label: c.label || L(id).label || "An activity line", kind: c.kind || L(id).kind || "activity" }); });
+  Object.keys(P.done).forEach(id => out.push({ id, src: "done", at: P.done[id], label: L(id).label || "Something from Today", kind: L(id).kind || "today" }));
+  Object.keys(P.snoozed).forEach(id => out.push({ id, src: "snoozed", at: L(id).at || new Date(now).toISOString(), until: P.snoozed[id], label: L(id).label || "Something from Today", kind: L(id).kind || "today" }));
+  binPrune(bins, now).forEach(x => out.push(Object.assign({ src: "bin" }, x)));
+  return out.sort((a, b) => (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
+}
+/* Apple's rubber band: the further past the edge, the less the row follows */
+function rubber(over, dim, c){ c = c || 0.55; const a = Math.abs(over); return Math.sign(over) * (a * dim * c) / (dim + c * a); }
+function swipeArm(w){ return Math.min(150, Math.max(84, w * 0.36)); }
+/* commit = past the arm line (and not flicking back), or a real flick whose projected landing passes half the row */
+function swipeDecide(dx, vx, w){
+  const arm = swipeArm(w), s = Math.sign(dx); if(!s) return 0;
+  if(Math.abs(dx) >= arm && vx * s > -0.3) return s;
+  const p = dx + vx * 99; if(Math.abs(dx) > 24 && vx * s > 0.35 && Math.abs(p) >= w * 0.5) return s;
+  return 0;
+}
+function wkStart(t){ const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d.getTime(); }
+function wkStep(k, n){ const d = new Date(k); d.setDate(d.getDate() + 7 * n); return d.getTime(); }
+/* Mon–Sun weeks with a shot filmed, counting back from this week; an unfinished week with no tick yet doesn't break it */
+function streakLocal(times, now){
+  now = now || Date.now(); const ks = new Set((times || []).map(t => Date.parse(t)).filter(t => !isNaN(t)).map(wkStart));
+  let k = wkStart(now); const thisWeek = ks.has(k); if(!thisWeek) k = wkStep(k, -1);
+  let weeks = 0; while(ks.has(k)){ weeks++; k = wkStep(k, -1); }
+  let best = 0; ks.forEach(s => { if(ks.has(wkStep(s, -1))) return; let n = 0, x = s; while(ks.has(x)){ n++; x = wkStep(x, 1); } best = Math.max(best, n); });
+  return { weeks, best: Math.max(best, weeks), thisWeek };
+}
+function streakText(s){
+  if(!s || !(s.weeks > 0)) return ""; const n = s.weeks, w = n === 1 ? "week" : "weeks";
+  return s.thisWeek ? n + " " + w + " in a row" + (s.best > n ? ". Your best is " + s.best + "." : "") : n + " " + w + " in a row. Film one this week to make it " + (n + 1) + ".";
+}
+function searchRank(items, q, max){
+  const t = String(q || "").toLowerCase().trim().split(/\s+/).filter(Boolean); if(!t.length) return [];
+  const j = t.join(" "), sc = it => { const l = String(it.label || "").toLowerCase(), s = l + " " + String(it.sub || "").toLowerCase();
+    if(!t.every(w => s.indexOf(w) !== -1)) return -1; return l.startsWith(j) ? 0 : l.indexOf(j) !== -1 ? 1 : t.every(w => l.indexOf(w) !== -1) ? 2 : 3; };
+  return (items || []).map(it => [sc(it), it]).filter(x => x[0] >= 0).sort((a, b) => a[0] - b[0] || String(a[1].label).localeCompare(String(b[1].label))).slice(0, max || 40).map(x => x[1]);
+}
+/* the words to read: everything in «…» or quotes, else the take as written */
+function fmScript(st){
+  const s = String(st || ""), said = [];
+  s.replace(/«([^»]*)»|“([^”]+)”|"([^"]+)"/g, (m, a, b, c) => { said.push(String(a || b || c).trim()); return m; });
+  return said.filter(Boolean).length ? said.filter(Boolean).join("\n\n") : s.replace(/^\s*[☐☑✅]\s*/, "").trim();
+}
+function quietStep(st){ return /no talking|no talk|b-?roll|silent|no sound|don'?t talk/i.test(String(st || "")); }
+/* ── v4.41 pure:end ── */
+
+/* ── prefs: what XC cleared, saw, finished, snoozed and pinned, the same on every device (server 2.9.6 prefs / prefsSet). On 2.9.5
+     ("unknown action") they live on this device only, and move to the server the first time it answers. ── */
+let P41 = prefsPrune(readCache("prefs") || prefsLocal()), prefsQ = [], prefsT = null, prefsOff = false, prefsBusy = false;
+function prefsLocal(){ try { return JSON.parse(LS.get("prefs.local") || "null"); } catch(e){ return null; } }
+function prefsSave(){ writeCache("prefs", P41); if(prefsOff) LS.set("prefs.local", JSON.stringify(P41)); }
+let prefsAt = 0;
+async function prefsLoad(force){
+  if(!pin || (!force && Date.now() - prefsAt < 120000)) return; prefsAt = Date.now();
+  const d = await apiGet({ action: "prefs", pin }), r = prefsFromReply(d, prefsNorm(prefsLocal() || P41), prefsQ); if(!r) return;
+  prefsOff = r.off; P41 = r.prefs; if(!prefsOff) prefsMigrate(); prefsSave(); paintXC();
+}
+function prefsMigrate(){
+  const L = prefsLocal(); if(!L) return; LS.set("prefs.local", null); const p = prefsNorm(L), ops = [];
+  Object.keys(p.cleared).forEach(id => ops.push({ op: "clear", id, label: p.cleared[id].label, kind: p.cleared[id].kind }));
+  Object.keys(p.done).forEach(id => ops.push({ op: "done", id })); Object.keys(p.seen).forEach(id => ops.push({ op: "seen", id }));
+  Object.keys(p.snoozed).forEach(id => ops.push({ op: "snooze", id, until: p.snoozed[id] })); p.pins.forEach(c => ops.push({ op: "pin", code: c }));
+  if(p.seenAt) ops.push({ op: "seenAll", at: p.seenAt });
+  ops.forEach(o => { P41 = prefsApply(P41, o); prefsQ.push(o); }); if(ops.length) prefsSoon(400);
+}
+function prefsOp(o){ if(!o) return; P41 = prefsApply(P41, o); prefsQ = opsMerge(prefsQ, o); prefsSave(); prefsSoon(); }
+function prefsSoon(ms){ clearTimeout(prefsT); prefsT = setTimeout(prefsFlush, ms === undefined ? UNDO_MS + 600 : ms); }   // after the Undo window, so most undos never reach the server
+async function prefsFlush(){
+  clearTimeout(prefsT); prefsT = null;
+  if(prefsBusy || !prefsQ.length || !pin) return;
+  if(prefsOff){ prefsQ = []; return; }
+  prefsBusy = true; const sent = prefsQ; prefsQ = [];
+  const ops = sent.map(o => { const c = Object.assign({}, o); delete c.undo; delete c.prev; return c; });
+  let d = null; try { d = await apiPostRun({ action: "prefsSet", pin, ops }); } catch(e){}
+  prefsBusy = false;
+  if(d && d.ok){ const r = d.prefs ? prefsFromReply(d, null, prefsQ) : null; if(r){ P41 = r.prefs; prefsSave(); paintXC(); } }
+  else if(d && d.error === "unknown action"){ prefsOff = true; prefsSave(); }
+  else { prefsQ = sent.concat(prefsQ); prefsSoon(Math.min(120, Math.max(5, Number(d && d.retryAfter) || 30)) * 1000); return; }   // "busy" or no signal: the same ops again later
+  if(prefsQ.length) prefsSoon();
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden" && prefsQ.length) prefsFlush(); });
+/* labels for Recently deleted (done and snoozed carry only an id on the server) and the device-side bins */
+function rdLabels(){ try { return JSON.parse(LS.get("rd.labels") || "{}") || {}; } catch(e){ return {}; } }
+function rdLabel(id, label, kind){ const m = rdLabels(), now = Date.now(); m[id] = { label: String(label || "").slice(0, 160), kind: kind || "", at: new Date(now).toISOString() }; Object.keys(m).forEach(k => { if(!(now - Date.parse(m[k].at) < PREF_KEEP_MS)) delete m[k]; }); LS.set("rd.labels", JSON.stringify(m)); }
+function rdBins(key){ try { return binPrune(JSON.parse(LS.get(key) || "[]")); } catch(e){ return []; } }
+function rdBinAdd(key, x){ LS.set(key, JSON.stringify(rdBins(key).filter(y => y.id !== x.id).concat([x]).slice(-200))); }
+function rdBinDrop(key, id){ LS.set(key, JSON.stringify(rdBins(key).filter(y => y.id !== id))); }
+function paintXC(){ if(!pin) return; try { renderToday(); if(document.getElementById("today").classList.contains("hide")) renderActivity(); renderRoster(); renderRecent(); } catch(e){ console.log("paint " + e); } badgesPaint(); }
+
+/* ── the Undo bar: 5 seconds, a gold line running down. A new swipe commits the last one at once (Gmail does the same). ── */
+let ubCur = null;
+function undoBar(msg, undo, commit, ms){
+  if(ubCur) ubEnd(true);
+  const el = document.getElementById("undobar"); if(!el){ if(commit) commit(); return; }
+  ms = ms || UNDO_MS; el.style.setProperty("--ubms", ms + "ms");
+  el.innerHTML = `<span class="ubm">${msg}</span>${undo ? '<button class="ubu" type="button" onclick="ubUndo()">Undo</button>' : ""}<i class="ubt"></i>`;
+  el.classList.remove("show"); void el.offsetWidth; el.classList.add("show"); document.body.classList.add("ub");
+  ubCur = { undo, commit, t: setTimeout(() => ubEnd(true), ms) };
+}
+function ubHide(){ const el = document.getElementById("undobar"); if(el) el.classList.remove("show"); document.body.classList.remove("ub"); }
+function ubEnd(commit){ const c = ubCur; if(!c) return; ubCur = null; clearTimeout(c.t); ubHide(); if(commit && c.commit) try { c.commit(); } catch(e){ console.log("commit " + e); } }
+function ubUndo(){ const c = ubCur; if(!c) return; ubCur = null; clearTimeout(c.t); ubHide(); natHap("light"); try { if(c.undo) c.undo(); } catch(e){ console.log("undo " + e); } }
+window.addEventListener("pagehide", () => ubEnd(true));
+
+/* ── one swipe row for every list (Mail-style): pointer events, so touch, pen and mouse drag all work; a horizontal-intent lock,
+     so vertical scrolling stays the browser's; 1:1 tracking from where it was grabbed; rubber band on a side with no action; a
+     haptic tick on the arm line; colour + icon + label behind the row; a full swipe commits, a short one springs back (velocity
+     carried into the spring, interruptible). Hover buttons and keys do the same on a desktop. ── */
+const RM41 = matchMedia("(prefers-reduced-motion: reduce)").matches, HOVER41 = matchMedia("(hover: hover) and (pointer: fine)").matches;
+const SWI = { check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>', x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>', star: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z"/>',
+  ban: '<circle cx="12" cy="12" r="8.5"/><path d="M6 18L18 6"/>', pin: '<path d="M9 3.5h6l-1 5.5 3 3H7l3-3z"/><path d="M12 12v8.5"/>', chat: '<path d="M4.5 19.5l1.2-3.6A8 8 0 1 1 8.6 18.6z"/>',
+  calx: '<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M9.5 11.5l5 5M14.5 11.5l-5 5"/>', retry: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>',
+  minus: '<circle cx="12" cy="12" r="8.5"/><path d="M8 12h8"/>', undo: '<path d="M9 7L4.5 11.5 9 16"/><path d="M5 11.5h9a5 5 0 0 1 0 10h-2"/>', play: '<path d="M8 5.5v13l11-6.5z"/>',
+  doc: '<path d="M7 3.5h7l4.5 4.5v12.5h-11.5z"/><path d="M14 3.5V8h4.5"/>', people: '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.4 2.8-5 5.5-5s4.9 1.6 5.5 5"/><circle cx="17" cy="9" r="2.5"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>', cam: '<rect x="3" y="6.5" width="13" height="11" rx="2.5"/><path d="M16 10.5l5-3v9l-5-3"/>',
+  flame: '<path d="M12 21c-3.6 0-6-2.4-6-5.6 0-3.4 2.6-5.2 3.6-8.4 1.9 1.3 2.6 3 2.6 4.6 1-.7 1.6-1.9 1.8-3.2 1.8 1.6 4 4 4 7 0 3.2-2.4 5.6-6 5.6z"/>',
+  film: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 4v16M16 4v16M4 9h4M4 15h4M16 9h4M16 15h4"/>', send: '<path d="M12 16V5M7.5 9.5L12 5l4.5 4.5"/><path d="M4.5 16.5V19h15v-2.5"/>' };
+function swIcon(n){ return `<svg viewBox="0 0 24 24" aria-hidden="true">${SWI[n] || ""}</svg>`; }
+function swAttr(kind, id, label, code, cat){ return ` data-sw="${kind}" data-id="${esc(id)}" data-label="${esc(label)}"${code ? ` data-code="${esc(code)}"` : ""}${cat ? ` data-kind="${esc(cat)}"` : ""}`; }
+function clipAttr(o){ return ` data-clip="${esc(JSON.stringify(o))}"`; }
+let swLive = null; const swDeferT = {};
+function swDefer(hostId, fn){ const h = document.getElementById(hostId); if(!swLive || !h || !h.contains(swLive)) return false; if(!swDeferT[hostId]) swDeferT[hostId] = setTimeout(() => { swDeferT[hostId] = 0; fn(); }, 450); return true; }
+const SWK = {};   // per list: what a swipe left (finger moves left) and a swipe right do
+function swScan(root){ if(!root) return; root.querySelectorAll("[data-sw]").forEach(el => { if(el.__sw || !el.parentNode) return; const f = SWK[el.dataset.sw], cfg = f && f(el); if(cfg && (cfg.left || cfg.right)) swipeRow(el, cfg); }); }
+function swEl(w){ return w && w.querySelector(":scope > .swf"); }
+function swipeRow(el, cfg){
+  const w = document.createElement("div"); w.className = "sw"; el.__sw = cfg; el.classList.add("swf");
+  const side = (a, s) => a ? `<div class="swa ${s} t-${a.tone || "gold"}">${s === "l" ? `<span>${esc(a.short || a.label)}</span>${swIcon(a.icon)}` : `${swIcon(a.icon)}<span>${esc(a.short || a.label)}</span>`}</div>` : "";
+  w.innerHTML = `<div class="swbg" aria-hidden="true">${side(cfg.right, "r")}${side(cfg.left, "l")}</div>`;
+  el.parentNode.insertBefore(w, el); w.appendChild(el);
+  try { w.style.borderRadius = getComputedStyle(el).borderTopLeftRadius; } catch(e){}
+  if(HOVER41){
+    const hb = document.createElement("div"); hb.className = "swh";
+    [["right", 1], ["left", -1]].forEach(([k, d]) => { const a = cfg[k]; if(!a) return; const b = document.createElement("button"); b.type = "button"; b.className = "swhb t-" + (a.tone || "gold"); b.title = a.label + (a.key ? " (" + a.key.toUpperCase() + ")" : ""); b.innerHTML = swIcon(a.icon) + "<span>" + esc(a.label) + "</span>"; b.addEventListener("click", e => { e.stopPropagation(); e.preventDefault(); swCommit(w, d, 0); }); hb.appendChild(b); });
+    w.appendChild(hb);
+  }
+  swBind(w); return w;
+}
+function swSet(w, x){ w.__x = x; const el = swEl(w); if(el) el.style.transform = x ? `translate3d(${x.toFixed(1)}px,0,0)` : ""; w.classList.toggle("toR", x > 0.5); w.classList.toggle("toL", x < -0.5); w.style.setProperty("--swp", Math.min(1, Math.abs(x) / swipeArm(w.offsetWidth || 1)).toFixed(3)); }
+function swStop(w){ if(w.__raf){ cancelAnimationFrame(w.__raf); w.__raf = 0; } }
+/* a spring from where the row is now, with the finger's speed handed over (ratio < 1 = a little life on a flick) */
+function swSpring(w, to, v0, done, ratio){
+  swStop(w);
+  if(RM41){ swSet(w, to); if(done) done(); return; }
+  let x = w.__x || 0, v = (v0 || 0) * 1000, last = performance.now(); const k = 420, c = 2 * Math.sqrt(k) * (ratio || 1);
+  const step = now => { const dt = Math.min(0.032, (now - last) / 1000); last = now; v += (-k * (x - to) - c * v) * dt; x += v * dt;
+    if(Math.abs(x - to) < 0.6 && Math.abs(v) < 24){ w.__raf = 0; swSet(w, to); if(done) done(); return; }
+    swSet(w, x); w.__raf = requestAnimationFrame(step); };
+  w.__raf = requestAnimationFrame(step);
+}
+function swArm(w, on){ if(on === !!w.__arm) return; w.__arm = on; w.classList.toggle("arm", on); if(on) natHap("light"); }
+function swRest(w){ w.classList.remove("on", "arm", "toR", "toL"); w.__arm = false; swSet(w, 0); }
+function swDrag(w, x){
+  const el = swEl(w), cfg = (el && el.__sw) || {}, W = w.offsetWidth || 320, a = x > 0 ? cfg.right : x < 0 ? cfg.left : null;
+  let t = x; if(!a) t = rubber(x, W, 0.25); else { const m = W * 0.86; if(Math.abs(x) > m) t = Math.sign(x) * (m + rubber(Math.abs(x) - m, W)); }
+  swSet(w, t); swArm(w, !!a && Math.abs(x) >= swipeArm(W));
+}
+function swBind(w){
+  let st = null;
+  w.addEventListener("pointerdown", e => {
+    if(e.pointerType === "mouse" && e.button !== 0) return;
+    if(e.target.closest && e.target.closest("input,textarea,select,[contenteditable],.swh")) return;
+    swStop(w); st = { id: e.pointerId, x0: e.clientX, y0: e.clientY, base: w.__x || 0, lock: 0, h: [[e.timeStamp, e.clientX]] }; swLive = w;
+  });
+  w.addEventListener("pointermove", e => {
+    if(!st || e.pointerId !== st.id) return;
+    const dx = e.clientX - st.x0, dy = e.clientY - st.y0;
+    if(!st.lock){
+      if(Math.abs(dx) < 9 && Math.abs(dy) < 9) return;
+      if(Math.abs(dy) >= Math.abs(dx)){ st = null; if(swLive === w) swLive = null; if(w.__x) swSpring(w, 0, 0, () => swRest(w)); return; }   // vertical: the page scrolls
+      st.lock = 1; st.off = Math.sign(dx) * 9; w.classList.add("on"); try { w.setPointerCapture(e.pointerId); } catch(err){} holdCancel();
+    }
+    if(e.cancelable) e.preventDefault();
+    st.h.push([e.timeStamp, e.clientX]); if(st.h.length > 8) st.h.shift();
+    swDrag(w, st.base + dx - st.off);
+  });
+  w.addEventListener("pointerup", e => { if(!st || e.pointerId !== st.id) return; const s = st; st = null; if(swLive === w) swLive = null; if(!s.lock) return; w.__eat = Date.now(); swRelease(w, s); });
+  w.addEventListener("pointercancel", e => { if(!st || e.pointerId !== st.id) return; const s = st; st = null; if(swLive === w) swLive = null; if(s.lock || w.__x){ swArm(w, false); swSpring(w, 0, 0, () => swRest(w), 0.9); } });
+  w.addEventListener("click", e => { if(w.__eat && Date.now() - w.__eat < 450){ e.preventDefault(); e.stopPropagation(); } }, true);   // a swipe is never also a tap
+}
+document.addEventListener("pointerup", () => setTimeout(() => { if(swLive && !swLive.classList.contains("on")) swLive = null; }, 0), true);   // a press that ended somewhere else never blocks the lists
+document.addEventListener("pointercancel", () => setTimeout(() => { if(swLive && !swLive.classList.contains("on")) swLive = null; }, 0), true);
+function swRelease(w, s){
+  const el = swEl(w), cfg = (el && el.__sw) || {}, W = w.offsetWidth || 320, end = s.h[s.h.length - 1], h = s.h.filter(p => end[0] - p[0] <= 100), a0 = h[0];
+  const vx = end[0] - a0[0] > 0 ? (end[1] - a0[1]) / (end[0] - a0[0]) : 0, x = w.__x || 0, d = swipeDecide(x, vx, W);
+  if(!(d > 0 ? cfg.right : d < 0 ? cfg.left : null)){ swArm(w, false); swSpring(w, 0, vx, () => swRest(w), 0.82); return; }
+  swCommit(w, d, vx);
+}
+function swCommit(w, d, vx){
+  const el = swEl(w), cfg = (el && el.__sw) || {}, act = d > 0 ? cfg.right : cfg.left; if(!act) return;
+  const run = () => { try { act.run(el, w); } catch(e){ console.log("swipe " + e); } };
+  if(act.hide){
+    if(RM41){ w.style.opacity = "0"; setTimeout(run, 60); return; }
+    const W = w.offsetWidth || 320; w.classList.add("on", "arm", d > 0 ? "toR" : "toL");
+    el.style.transition = "transform .2s cubic-bezier(.4,0,1,1)"; el.style.transform = `translate3d(${d * (W + 40)}px,0,0)`;
+    setTimeout(() => { const h = w.offsetHeight; w.style.height = h + "px"; void w.offsetHeight; w.classList.add("gone"); w.style.height = "0px"; setTimeout(run, 200); }, 190);
+    return;
+  }
+  let ran = false; const go = () => { if(ran) return; ran = true; swRest(w); run(); };
+  swArm(w, false); swSpring(w, 0, vx, go, 0.82); setTimeout(go, 420);   // the action never waits on a frame that doesn't come (a hidden page)
+}
+
+/* what each list's swipes do (the swipe map in xc-shots-tests/CONTRACT-4.41.md) */
+SWK.today = el => { const id = el.dataset.id, lab = el.dataset.label || "", kind = el.dataset.kind || ""; if(!id || !pin) return null;
+  return { left: { label: "Snooze till tomorrow", short: "Snooze", icon: "clock", tone: "ink", hide: true, key: "s", run: () => todayHide("snooze", id, lab, kind) },
+           right: { label: "Done", icon: "check", tone: "gold", hide: true, key: "e", run: () => todayHide("done", id, lab, kind) } }; };
+SWK.act = el => { const id = el.dataset.id, lab = el.dataset.label || ""; if(!id || !pin) return null;
+  return { left: { label: "Clear", icon: "x", tone: "warn", hide: true, key: "e", run: () => actClear(id, lab) },
+           right: el.classList.contains("unread") ? { label: "Mark as seen", short: "Seen", icon: "eye", tone: "gold", key: "m", run: () => actSeen(id) } : null }; };
+SWK.roster = el => { const c = el.dataset.code, nm = el.dataset.label || "", on = P41.pins.indexOf(c) !== -1; if(!c || !pin) return null;
+  return { left: { label: "Message on WhatsApp", short: "WhatsApp", icon: "chat", tone: "ink", key: "w", run: () => waClient(c) },
+           right: { label: on ? "Unpin" : "Pin to top", short: on ? "Unpin" : "Pin", icon: "pin", tone: "gold", key: "p", run: () => pinClient(c, nm, !on) } }; };
+SWK.shot = el => { const i = Number(el.dataset.i); if(!C || !C.shots || !C.shots[i] || previewMode) return null; const done = !!C.by[i], cant = !!(C.cant && C.cant[i]);
+  return { right: done ? { label: "Not filmed yet", short: "Not filmed", icon: "undo", tone: "ink", key: "f", run: () => shotTick(i) } : { label: "Filmed it", short: "Filmed", icon: "check", tone: "gold", key: "f", run: () => shotTick(i) },
+           left: done ? null : cant ? { label: "I can film it", short: "Can film", icon: "check", tone: "ink", key: "s", run: () => shotUncant(i, true) } : { label: "Can't this week", icon: "calx", tone: "ink", key: "s", run: () => shotCant(i) } }; };
+SWK.upq = el => { const x = upd.find(y => y.k === el.dataset.k && y.code === code); if(!x || x.hold) return null;
+  const queued = x.st === "queued" && !x.handing && !x.natId, failed = x.st === "error" && ((x.nat && x.path && !x.stop) || (!x.nat && x.file));
+  return { left: queued ? { label: "Remove before it sends", short: "Remove", icon: "minus", tone: "warn", hide: true, key: "e", run: () => upRemove(x) } : null,
+           right: failed ? { label: "Retry now", short: "Retry", icon: "retry", tone: "gold", key: "r", run: () => upRetry(x) } : null }; };
+
+function todayHide(op, id, label, kind){
+  rdLabel(id, label, kind); const o = op === "snooze" ? { op, id, until: snoozeUntil(), label, kind } : { op, id, label, kind };
+  prefsOp(o); paintXC();
+  undoBar(op === "snooze" ? "<b>Snoozed till tomorrow.</b> It's back at 6am." : "<b>Done.</b> It comes back if anything changes.", () => { prefsOp(prefsRev(o)); paintXC(); });
+}
+function actClear(id, label){ rdLabel(id, label, "activity"); const o = { op: "clear", id, label, kind: "activity" }; prefsOp(o); paintXC(); undoBar("<b>Cleared.</b> It's in Recently deleted for 30 days.", () => { prefsOp(prefsRev(o)); paintXC(); }); }
+function actSeen(id){ const o = { op: "seen", id }; prefsOp(o); paintXC(); undoBar("<b>Marked as seen.</b>", () => { prefsOp(prefsRev(o)); paintXC(); }); }
+function actSeenAll(){ if(!todayData) return; const o = { op: "seenAll", at: new Date().toISOString(), prev: P41.seenAt }; prefsOp(o); paintXC(); undoBar("<b>All marked as seen.</b>", () => { prefsOp(prefsRev(o)); paintXC(); }); }
+function pinClient(c, nm, on){ const o = { op: on ? "pin" : "unpin", code: c }; prefsOp(o); renderRoster(); undoBar(on ? `<b>${esc(nm)}</b> is pinned to the top.` : `<b>${esc(nm)}</b> is unpinned.`, () => { prefsOp(prefsRev(o)); renderRoster(); }); }
+/* WhatsApp opens a chat, nothing changes in the app, so there's nothing to undo (the one swipe without an Undo bar) */
+function waClient(c){
+  const r = ((roster && roster.clients) || []).find(x => x.code === c) || {}, mg = readCache("mg:" + c) || {}, wa = mg.wa || {};
+  const to = String(r.waTo || (r.wa && r.wa.to) || wa.to || "").replace(/\D/g, "").replace(/^0(?=4)/, "61"), first = String(wa.name || "").trim();
+  const url = "https://wa.me/" + to + "?text=" + encodeURIComponent("Hey" + (first ? " " + first : "") + ", ");
+  if(NATIVE) natOpen(url); else window.open(url, "_blank", "noopener");
+  if(!to) toast("No WhatsApp number saved for them yet, so WhatsApp asks who it's for. Add it in their Settings.");
+}
+function shotTick(i){
+  if(!C || !C.shots[i]) return; const was = !!C.by[i], nm = C.shots[i].n, tok = {};
+  const p = tick(i);
+  undoBar(was ? `<b>“${esc(nm)}”</b> isn't marked filmed.` : `<b>“${esc(nm)}”</b> marked filmed.`, () => { if(C && !!C.by[i] !== was) tick(i, true); });
+  ubCur.tok = tok;
+  Promise.resolve(p).then(() => { if(C && !!C.by[i] === was && ubCur && ubCur.tok === tok) ubEnd(false); });   // the save failed: tick() put it back and said so
+}
+async function shotCant(i, preset){
+  if(!C || !C.shots[i]) return; const s = C.shots[i];
+  const why = preset !== undefined ? preset : await askText({ title: "Can't film “" + s.n + "” this week?", body: "XC gets a message so the week can be planned around it. A reason helps, but it's optional.", placeholder: "Optional, e.g. away till Monday", ok: "Tell XC", cancel: "Never mind" });
+  if(why === null || !C) return;
+  writeSeq++; C.cant = Object.assign({}, C.cant, { [i]: { at: new Date().toISOString(), why: why || "", by: me || "" } }); renderClient();
+  const d = await apiPost({ action: "cantFilm", code, i, why: String(why || "").slice(0, 300) || undefined, by: me || "" });
+  if(!d.ok){ if(C && C.cant) delete C.cant[i]; renderClient(); if(d.error === "preview") return;
+    toast(d.error === "unknown action" ? "Telling XC from here needs the next update. For now, <b>message XC</b> from You." : "Couldn't tell XC: " + errTxt(d.error)); return; }
+  if(d.shots && (!d.code || !C.code || d.code === C.code)){ C = d; writeCache("state", d); }
+  renderClient();
+  undoBar(`<b>XC knows</b> you can't film “${esc(s.n)}” this week.`, () => shotUncant(i));
+}
+async function shotUncant(i, withUndo){
+  if(!C) return; const was = C.cant && C.cant[i]; writeSeq++; if(C.cant) delete C.cant[i]; renderClient();
+  const d = await apiPost({ action: "uncant", code, i, by: me || "" });
+  if(!d.ok){ if(was && C){ C.cant = Object.assign({}, C.cant, { [i]: was }); renderClient(); } if(d.error !== "preview") toast("Couldn't save that: " + errTxt(d.error)); return; }
+  if(d.shots && (!d.code || !C.code || d.code === C.code)){ C = d; writeCache("state", d); renderClient(); }
+  if(withUndo && C && C.shots[i]) undoBar(`<b>“${esc(C.shots[i].n)}”</b> is back on for this week.`, () => shotCant(i, (was && was.why) || ""));
+}
+/* the upload list: a queued clip comes off before it sends (it stays on the phone), a failed one goes again. Both wait out the Undo. */
+const upBinFiles = {};
+function upRemove(x){
+  x.hold = "rm"; updRender(); try { renderUpBoard(); } catch(e){}
+  undoBar(`<b>${esc(x.name)}</b> won't send. It stays on your phone.`, () => { x.hold = false; updRender(); if(NATIVE) natRun(); else updRun(); }, () => upRemoveNow(x));
+}
+async function upRemoveNow(x){
+  const d = await apiPost({ action: "clearPending", code: x.code, idx: x.idx === undefined || x.idx === null ? "u" : x.idx, key: x.name + "|" + x.size, m: x.m || undefined });
+  if(!d.ok && d.error !== "unknown action" && d.error !== "preview"){ x.hold = false; updRender(); toast("Couldn't take it off: " + errTxt(d.error)); return; }
+  if(x.natId) natCall("Uploader", "removeUpload", { id: x.natId }).catch(() => {});
+  if(x.path) natTidy(x.path, x.rel);   // the app's own copy only; the clip itself is still in Photos
+  if(x.file) upBinFiles[x.k] = x.file;
+  rdBinAdd("rd.up", { id: x.k + "|" + Date.now(), k: x.k, code: x.code, idx: x.idx === undefined ? null : x.idx, name: x.name, size: x.size, type: x.type, m: x.m, nat: !!x.nat, at: new Date().toISOString(), label: x.name });
+  upd = upd.filter(y => y !== x); updSave(); updRender(); natOwed(); loadUploads(true); renderRecent();
+}
+function upRetry(x){
+  const prev = { st: x.st, err: x.err };
+  x.st = "queued"; x.err = ""; x.hold = "rt"; if(x.nat) Object.assign(x, { natTry: 0, natId: null, driveId: null, arrived: false, final: null });
+  updSave(); updRender();
+  undoBar(`Sending <b>${esc(x.name)}</b> again.`, () => { x.hold = false; Object.assign(x, prev); updSave(); updRender(); },
+    () => { x.hold = false; updRender(); if(x.nat) natRun(); else updDeclare().then(updRun); });
+}
+
+/* ── Recently deleted: everything a swipe hid in the last 30 days, with Bring back (Studio, and You on the client side) ── */
+function renderRecent(){
+  const xc = !!(pin && document.body.classList.contains("xc")), host = document.getElementById(xc ? "rdStudio" : "rdClient"); if(!host) return;
+  const L = xc ? recentList(P41, rdBins("rd.review"), rdLabels()) : rdBins("rd.up").filter(x => x.code === code).map(x => Object.assign({ src: "up" }, x)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  const what = x => x.src === "cleared" ? "Cleared · " + ago(x.at) : x.src === "done" ? "Marked done · " + ago(x.at) : x.src === "snoozed" ? "Snoozed till " + whenStr(x.until) : x.src === "bin" ? "Not this one · " + (x.client ? x.client + " · " : "") + ago(x.at) : "Taken off the send list · " + ago(x.at);
+  host.innerHTML = L.length ? L.slice(0, 60).map(x => `<div class="mrow"><div class="r"><span class="nm">${esc(x.label)}<br><span class="mono rdsub">${esc(what(x))}</span></span><button class="mact ok" onclick="rdBack(${q(x.src)},${q(x.id)})">Bring back</button></div></div>`).join("")
+    : `<p class="sub">Nothing here. Anything a swipe hides stays here for 30 days${xc ? ". Footage is never deleted" : ""}.</p>`;
+}
+async function rdBack(src, id){
+  if(src === "cleared") prefsOp({ op: "unclear", id }); else if(src === "done") prefsOp({ op: "undone", id }); else if(src === "snoozed") prefsOp({ op: "unsnooze", id });
+  else if(src === "bin"){ const b = rdBins("rd.review").find(x => x.id === id); if(b){ const d = await apiPost({ action: "verdict", pin, code: b.code, fileId: b.id, v: "none", lite: 1 }); if(!d.ok){ toast("Couldn't bring it back: " + errTxt(d.error)); return; } rdBinDrop("rd.review", id); loadToday(); } }
+  else if(src === "up"){ const b = rdBins("rd.up").find(x => x.id === id); if(b){ rdBinDrop("rd.up", id); const f = upBinFiles[b.k];
+      if(!upd.some(x => x.k === b.k && x.code === b.code && x.st !== "done")) upd.push({ k: b.k, code: b.code, idx: b.idx, name: b.name, size: b.size, type: b.type || "video/mp4", st: f ? "queued" : "lost", file: f || undefined, nat: b.nat || undefined, off: 0, m: b.m });
+      updSave(); try { renderUpBoard(); } catch(e){} if(f) updDeclare().then(updRun); else toast(`Pick <b>${esc(b.name)}</b> again under ↑ Upload and it sends.`); } }
+  paintXC(); renderRecent(); if(src !== "up") toast("<b>Brought back.</b>");
+}
+
+/* ── tab badges (gold number, a dot for Activity) and the same total on the app icon ── */
+let natBadgeN = -1;
+function setN(id, n, dot){ const el = document.getElementById(id); if(!el) return; el.classList.toggle("hide", !n); el.classList.toggle("dot", !!dot && !!n); el.textContent = dot ? "" : (n > 99 ? "99+" : String(n || "")); }
+function badgesPaint(){
+  if(pin && document.body.classList.contains("xc")){
+    const V = todayView(todayData, P41), b = V ? badgeXC(V, P41) : null; if(!b) return;
+    setN("todayN", b.today); setN("xbTodayN", b.today); setN("xbRevN", b.review); setN("xbActN", b.activity, true); setN("actN", b.activity, true);
+    natBadge(b.today); natWidgetXC(V, b); natEvFlush(); return;
+  }
+  if(C && C.shots && !previewMode && !document.getElementById("client").classList.contains("hide")){
+    const due = clientDue(C), unrev = C.portalUrl ? 0 : (C.approved || []).filter(f => !(C.feedback || {})[f.id]).length;
+    setN("cbShotsN", due); setN("cnShotsN", due); natBadge(due + unrev); natWidgetClient(due); natEvFlush();
+  }
+}
+function natSignedOut41(){ natBadge(0); if(!NATIVE || (!natWLast && !natSCLast)) return; natWLast = ""; natSCLast = ""; natPlugin("XCNative", "setWidget", {}).catch(() => {}); natPlugin("XCNative", "setShortcuts", { items: [] }).catch(() => {}); }
+function natBadge(n){ if(!NATIVE || n === natBadgeN) return; natBadgeN = n; natPlugin("XCNative", "setBadge", { count: n }).catch(() => {}); }
+
+/* ── widget + quick actions (Home Screen and lock screen); the app ignores both until build 6 ── */
+let natWLast = "", natSCLast = "";
+function natWidget(o){ if(!NATIVE) return; const k = JSON.stringify(o); if(k === natWLast) return; natWLast = k; natPlugin("XCNative", "setWidget", Object.assign({}, o, { at: new Date().toISOString() })).catch(() => {}); }
+function natWidgetXC(V, b){
+  const f = (V.deliveries || [])[0], g = (V.fresh || [])[0], h = (V.feedback || [])[0], k = (V.quiet || [])[0];
+  const line = f ? f.client + " · a reel to review" : g ? g.client + " · " + g.shot : h ? h.client + " · " + (h.v === "love" ? "loved a reel" : "a refinement") : k ? k.client + " · gone quiet" : "";
+  natWidget({ role: "xc", title: b.today ? b.today + (b.today === 1 ? " needs" : " need") + " a look" : "All caught up", line, sub: "XC Studio", count: b.today, due: null });
+  natShortcuts("xc");
+}
+function wkEndIso(c){ const m = String((c && c.month) || "").match(/^(\d{4})-(\d{2})$/), w = Number(c && c.week); if(!m || !w) return null; const y = +m[1], mo = +m[2] - 1, last = new Date(y, mo + 1, 0).getDate(); return new Date(y, mo, w >= 4 ? last : w * 7, 23, 59).toISOString(); }
+function natWidgetClient(due){
+  const wd = wkDates(C), nx = C.shots.map((s, i) => [s, i]).find(([s, i]) => s.w <= C.week && !C.by[i] && !(C.cant || {})[i]);
+  natWidget({ role: "client", title: nx ? nx[0].n : "Week filmed", line: nx ? "Next shot" + (wd ? " · due " + String(wd.end).split(/[\s,]+/)[0] : "") : "Nothing due this week", sub: C.name || "", count: due, due: wkEndIso(C) });
+  natShortcuts("client", nx ? nx[0].n : "");
+}
+function natShortcuts(role, shot){
+  if(!NATIVE) return;
+  const items = role === "xc" ? [{ type: "today", title: "Today", subtitle: "What needs a look", icon: "tray" }, { type: "review", title: "Review", subtitle: "Watch the new clips", icon: "play.circle" }]
+    : [{ type: "send", title: "Send clips", subtitle: "Pick clips for a shot", icon: "arrow.up.circle" }, { type: "shot", title: "This week's shot", subtitle: shot || "Open film mode", icon: "video" }];
+  const k = JSON.stringify(items); if(k === natSCLast) return; natSCLast = k; natPlugin("XCNative", "setShortcuts", { items }).catch(() => {});
+}
+function quickGo(type){
+  if(type === "today" && pin) return xcnav("today");
+  if(type === "review" && pin) return todayData ? barReview() : loadToday().then(barReview);
+  if(!C || !C.shots) return;
+  if(type === "send"){ subtab("shots"); return openUpPick(); }
+  if(type === "shot"){ subtab("shots"); const i = C.shots.findIndex((s, k) => s.w <= C.week && !C.by[k]), j = i >= 0 ? i : C.shots.findIndex((s, k) => !C.by[k]); return openFilm(Math.max(0, j)); }
+}
+/* a tap on a notification (data.route) or a widget */
+function routeGo(r){
+  const R = routeParse(r) || { screen: "home", code: null }, xc = !!pin && !code;   // 2.9.6: a route this build doesn't know opens the home tab
+  if(xc || (pin && document.body.classList.contains("xc"))){
+    if(R.screen === "today") return xcnav("today");
+    if(R.screen === "activity") return xcnav("activity");
+    if(R.screen === "client" && R.code) return openManage(R.code);
+    if(R.screen === "review"){ xcnav("today"); return (todayData ? Promise.resolve() : loadToday()).then(() => { if(todayData) openPlayer(R.code); }); }
+    return xcnav("today");
+  }
+  if(!C) return;
+  if(R.screen === "shots") return subtab("shots");
+  if(R.screen === "docs") return subtab("docs");
+  if(R.screen === "results") return subtab("results");
+  if(R.screen === "upload"){ subtab("shots"); return updOpenN() ? updShow() : openUpPick(); }
+  subtab("shots");
+}
+
+/* ── push (Firebase through the app): ask at a sensible moment, never on the first open; the token goes to pushReg ── */
+async function pushSync(prompt){
+  if(!NATIVE) return;
+  if(!prompt){ let st = ""; try { st = ((await natPlugin("XCNative", "notifStatus")) || {}).status; } catch(e){ return; } if(st !== "on") return; }   // allowed already: no prompt, just the token
+  let r = null; try { r = await natPlugin("XCNative", "pushRegister"); } catch(e){ return; }   // build 5: no push yet
+  if(r && r.granted && r.token) pushSend(r.token);
+  else if(prompt && r && r.reason === "no-firebase" && r.permission !== "on") natPlugin("XCNative", "notifRequest").catch(() => {});   // build 6 without Firebase never prompts: the app's own switch
+}
+async function pushSend(token){
+  if(!token) return; const xc = !!(pin && document.body.classList.contains("xc")); if(!xc && !code) return;
+  const key = (xc ? "xc" : "client:" + String(code).toUpperCase()) + ":" + token; if(LS.get("pushSent") === key) return;
+  const body = { action: "pushReg", token, kind: "fcm", role: xc ? "xc" : "client", device: devLabel() }; if(xc) body.pin = pin; else body.code = code;
+  let d = null; try { d = await apiPostRun(keyed(body)); } catch(e){}
+  if(d && d.ok) LS.set("pushSent", key);   // 2.9.5 says "unknown action": tried again on the next open
+}
+async function pushMaybeAsk(){
+  if(!NATIVE || LS.get("pushAsked") || natWelcomeBusy || overlayOpen()) return;
+  let st = "ask"; try { st = ((await natPlugin("XCNative", "notifStatus")) || {}).status; } catch(e){ return; }
+  if(st === "on"){ pushSync(); return; } if(st === "off") return;   // said no in Settings: never nag
+  LS.set("pushAsked", new Date().toISOString());
+  const xc = !!(pin && document.body.classList.contains("xc"));
+  if(await ask({ title: xc ? "A buzz when clips land?" : "Want a buzz when it matters?", body: xc ? "A notification when a client sends clips, can't film a shot, or something needs your eye. Nothing else." : "XC Studio can tell you when your clips land, when new shots are ready and when your reels are in. Nothing else.", ok: "Turn on", cancel: "Not now" })) pushSync(true);
+}
+/* ── events the app queued while the page was asleep (quick actions, notification taps, a new push token) ── */
+let natEvQ = [], nat41Done = false;
+window.xcNativeEvent = (name, data) => { natEvQ.push({ name, data }); natEvFlush(); };
+async function natDrain(){
+  if(!NATIVE) return;
+  try { const r = await natPlugin("XCNative", "pendingEvents"); const evs = Array.isArray(r) ? r : (r && (r.events || r.items)) || []; evs.forEach(e => { if(e && e.name) natEvQ.push(e); }); } catch(e){}   // build 5: nothing to drain
+  natEvFlush();
+}
+function natEvFlush(){
+  if(!natEvQ.length || document.getElementById("app").classList.contains("hide") || !(C || pin)) return;
+  const qq = natEvQ; natEvQ = [];
+  qq.forEach(e => { const d = e.data || {}; try { if(e.name === "pushToken") pushSend(d.token); else if(e.name === "quickAction") quickGo(d.type); else if(e.name === "pushOpen") routeGo(d.route); } catch(err){ console.log("event " + err); } });
+}
+function natBoot41(){
+  if(!NATIVE || nat41Done) return; nat41Done = true;
+  setTimeout(() => { natDrain(); pushSync(); }, 900);
+  try { window.Capacitor.addListener("App", "resume", () => { natDrain(); offPaint(); }); } catch(e){}
+  try { window.Capacitor.addListener("Network", "networkStatusChange", () => setTimeout(offPaint, 0)); } catch(e){}
+}
+
+/* ── pull to refresh on Today, Activity, Clients and Shots: a gold ring that fills as it's pulled, a tick at the line ── */
+let ptrBusy = false;
+function ptrTarget(){ const v = id => { const el = document.getElementById(id); return !!el && !el.classList.contains("hide"); }; return v("today") ? "today" : v("activity") ? "activity" : v("dash") ? "dash" : (v("client") && v("shotsView")) ? "client" : null; }
+function ptrPaint(d, host, anim){
+  const p = document.getElementById("ptr"); if(!p) return; const k = Math.min(1, d / 62);
+  p.style.transition = anim ? "transform .3s cubic-bezier(.22,1,.36,1), opacity .2s" : "none"; p.style.opacity = d > 4 ? String(Math.min(1, k * 1.4)) : "0";
+  p.style.transform = `translateY(${(Math.min(d, 90) - 30).toFixed(1)}px) scale(${(0.7 + 0.3 * k).toFixed(3)})`;
+  const c = p.querySelector("circle"); if(c && !p.classList.contains("spin")) c.style.strokeDashoffset = String((57 - 50 * k).toFixed(1));
+  if(host){ host.style.transition = anim ? "transform .32s cubic-bezier(.22,1,.36,1)" : "none"; host.style.transform = d > 0.5 ? `translateY(${(Math.min(d, 90) * 0.55).toFixed(1)}px)` : ""; }
+}
+async function ptrRun(host){
+  ptrBusy = true; const p = document.getElementById("ptr"); p.classList.add("spin"); ptrPaint(62, host, true); const t0 = Date.now();
+  try { await natPullRefresh(true); } catch(e){}
+  await new Promise(r => setTimeout(r, Math.max(0, 650 - (Date.now() - t0))));
+  p.classList.remove("spin", "arm"); ptrPaint(0, host, true); ptrBusy = false;
+}
+(function(){
+  let y0 = null, x0 = 0, on = false, arm = false, host = null;
+  document.addEventListener("touchstart", e => {
+    y0 = null; if(ptrBusy || e.touches.length !== 1 || window.scrollY > 2 || overlayOpen() || document.getElementById("app").classList.contains("hide")) return;
+    const t = ptrTarget(); if(!t || (e.target.closest && e.target.closest("input,textarea,select,.sw.on"))) return;
+    host = document.getElementById(t); y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; on = false; arm = false;
+  }, { passive: true });
+  document.addEventListener("touchmove", e => {
+    if(y0 === null) return; const dy = e.touches[0].clientY - y0, dx = e.touches[0].clientX - x0;
+    if(!on){ if(Math.abs(dx) > 12 && Math.abs(dx) > dy){ y0 = null; return; } if(dy < 8){ if(dy < -8) y0 = null; return; } if(window.scrollY > 2 || swLive){ y0 = null; return; } on = true; }
+    const d = Math.max(0, rubber(dy - 8, 420, 0.6)); ptrPaint(d, host);
+    const a = d >= 62; if(a !== arm){ arm = a; if(a) natHap("light"); const p = document.getElementById("ptr"); if(p) p.classList.toggle("arm", a); }
+  }, { passive: true });
+  const end = () => { if(y0 === null) return; y0 = null; if(!on) return; on = false; if(arm) ptrRun(host); else ptrPaint(0, host, true); };
+  document.addEventListener("touchend", end); document.addEventListener("touchcancel", end);
+})();
+
+/* ── offline bar ── */
+let offWas = false;
+function offPaint(){
+  const off = navigator.onLine === false || (NATIVE && natOnline === false) || !!window.__devOff, b = document.getElementById("offbar"); if(!b) return;
+  if(off){ b.className = "offbar show"; b.innerHTML = "<i></i>You're offline · showing what was saved"; document.body.classList.add("isoff"); }
+  else { document.body.classList.remove("isoff"); if(offWas && !NATIVE){ b.className = "offbar show back"; b.innerHTML = "<i></i>Back online"; setTimeout(() => { if(!document.body.classList.contains("isoff")) b.className = "offbar"; }, 1800); } else b.className = "offbar"; }
+  offWas = off;
+}
+window.addEventListener("online", offPaint); window.addEventListener("offline", offPaint);
+
+/* ── search: studio from searchIndex (built from config + manifests on the server; 2.9.5 = what this device already has), clients
+     search their own shots, documents and reels ── */
+let srIdx = null, srAt = 0, srSel = 0, srList = [];
+const SR_LAB = { client: "Clients", shot: "Shots", clip: "Clips", doc: "Documents", reel: "Reels" }, SR_IC = { client: "people", shot: "film", clip: "play", doc: "doc", reel: "play" };
+function srXC(){ return !!(pin && document.body.classList.contains("xc")); }
+function srchOpen(){
+  if(document.getElementById("app").classList.contains("hide")) return;
+  document.getElementById("srch").classList.add("show"); const i = document.getElementById("srQ"); i.value = ""; srSel = 0; srchRender();
+  setTimeout(() => i.focus(), 40); if(srXC()) srchLoad();
+}
+function srchClose(){ const s = document.getElementById("srch"); if(s) s.classList.remove("show"); }
+async function srchLoad(){
+  if(srIdx && Date.now() - srAt < 300000) return; if(!srIdx) srIdx = srchLocal();
+  const d = await apiGet({ action: "searchIndex", pin });
+  if(d && d.ok && Array.isArray(d.items)){ srIdx = d.items; srAt = Date.now(); } else srIdx = srchLocal();
+  if(document.getElementById("srch").classList.contains("show")) srchRender();
+}
+const srClean = n => String(n || "").replace(/^\d{4}-\d{2}-\d{2} \d{4} — /, "");
+function srchLocal(){
+  const out = [];
+  ((roster && roster.clients) || []).forEach(c => {
+    out.push({ t: "client", code: c.code, label: c.name, sub: c.done + " of " + c.total + " filmed this month" });
+    const S = readCache("mg:" + c.code); if(!S || !S.shots) return;
+    S.shots.forEach((s, i) => { out.push({ t: "shot", code: c.code, i, label: s.n, sub: c.name + " · week " + s.w }); ((S.files || {})[i] || []).forEach(f => out.push({ t: "clip", code: c.code, i, id: f.id, label: srClean(f.name), sub: c.name + " · " + s.n })); });
+    (S.docs || []).forEach(d => out.push({ t: "doc", code: c.code, label: d.label, sub: c.name }));
+  });
+  if(todayData) (todayData.deliveries || []).concat(todayData.fresh || []).forEach(x => { if(x.file && !out.some(o => o.id === x.file.id)) out.push({ t: "clip", code: x.code, i: x.idx, id: x.file.id, label: srClean(x.file.name), sub: x.client + (x.shot ? " · " + x.shot : "") }); });
+  return out;
+}
+function srchClient(){
+  if(!C || !C.shots) return []; const out = C.shots.map((s, i) => ({ t: "shot", i, label: s.n, sub: "Week " + s.w + " · " + (C.by[i] ? "filmed" : "to film") }));
+  if(C.role >= 1) (C.docs || []).forEach(d => out.push({ t: "doc", label: d.label, sub: "Document", url: d.url }));
+  (C.approved || []).forEach(f => out.push({ t: "reel", id: f.id, label: srClean(f.name), sub: "Finished reel" }));
+  return out;
+}
+function srMark(s, qv){ s = String(s || ""); const w = String(qv || "").trim().toLowerCase(); const j = w ? s.toLowerCase().indexOf(w) : -1; return j < 0 ? esc(s) : esc(s.slice(0, j)) + "<mark>" + esc(s.slice(j, j + w.length)) + "</mark>" + esc(s.slice(j + w.length)); }
+function srchRender(){
+  const qv = document.getElementById("srQ").value.trim(), xc = srXC(), items = xc ? (srIdx || srchLocal()) : srchClient();
+  srList = qv ? searchRank(items, qv, 40) : (xc ? items.filter(x => x.t === "client") : items.filter(x => x.t === "shot" && C && C.shots[x.i] && C.shots[x.i].w === C.week)).slice(0, 12);
+  srSel = Math.max(0, Math.min(srSel, srList.length - 1));
+  const host = document.getElementById("srRes");
+  if(!srList.length){ host.innerHTML = `<p class="srnone">${qv ? "Nothing matches “" + esc(qv) + "”." : xc ? "Type a client, a shot or a clip." : "Type a shot or a document."}</p>`; return; }
+  let h = "", last = ""; srList.forEach((it, k) => { if(it.t !== last){ last = it.t; h += `<p class="srg">${qv ? SR_LAB[it.t] || "" : xc ? "Clients" : "This week"}</p>`; }
+    h += `<button class="sri${k === srSel ? " on" : ""}" type="button" onclick="srchGo(${k})"><span class="ic">${swIcon(SR_IC[it.t] || "film")}</span><span class="tx"><span class="l">${srMark(it.label, qv)}</span><span class="s">${esc(it.sub || "")}</span></span></button>`; });
+  host.innerHTML = h;
+  const on = host.querySelector(".sri.on"); if(on) on.scrollIntoView({ block: "nearest" });
+}
+function srchGo(k){
+  const it = srList[k]; if(!it) return; srchClose();
+  if(!srXC()){ if(it.t === "shot"){ subtab("shots"); openFilm(it.i); } else if(it.t === "doc" && it.url){ if(NATIVE) natOpen(it.url); else window.open(it.url, "_blank", "noopener"); } else if(it.t === "reel" && it.id) openPreview(it.id, it.label, ""); return; }
+  if(it.t === "clip" && it.id){ openPreview(it.id, it.label, it.sub || ""); return; }
+  if(!it.code) return;
+  Promise.resolve(openManage(it.code)).then(() => { if(mgCode !== it.code) return; if(it.t === "doc") mtab("tools"); else if(it.t === "clip") mtab("review");
+    else if(it.t === "shot" && it.i !== undefined){ const r = document.querySelectorAll("#mgShots > .mrow")[it.i]; if(r){ r.scrollIntoView({ block: "center" }); r.classList.add("flash"); setTimeout(() => r.classList.remove("flash"), 1600); } } });
+}
+document.addEventListener("input", e => { if(e.target && e.target.id === "srQ"){ srSel = 0; srchRender(); } });
+document.addEventListener("keydown", e => {
+  if(!document.getElementById("srch").classList.contains("show")) return;
+  if(e.key === "Escape"){ e.preventDefault(); srchClose(); }
+  else if(e.key === "ArrowDown" || e.key === "ArrowUp"){ e.preventDefault(); srSel = Math.max(0, Math.min(srList.length - 1, srSel + (e.key === "ArrowDown" ? 1 : -1))); srchRender(); }
+  else if(e.key === "Enter"){ e.preventDefault(); srchGo(srSel); }
+});
+
+/* ── keyboard: J/K move, Enter open, E done/clear, S snooze, M seen, P pin, F filmed, / or ⌘K search, ⌘Z undo, ? this list ── */
+function overlayOpen(){ return !!document.querySelector(".sheet.show,.player.show,.fmode.show,.srch.show,.askwrap,.newsbox.show,.tour.show,.prompt.show,.upd.show,.cele.show,#lockv.show"); }
+function kRows(){ return [...document.querySelectorAll("#app section:not(.hide) .sw")].filter(w => w.offsetParent !== null && !w.classList.contains("gone")); }
+function kMove(d){ const R = kRows(); if(!R.length) return; let i = R.findIndex(w => w.classList.contains("kfoc")); R.forEach(w => w.classList.remove("kfoc")); i = i < 0 ? (d > 0 ? 0 : R.length - 1) : Math.max(0, Math.min(R.length - 1, i + d)); R[i].classList.add("kfoc"); R[i].scrollIntoView({ block: "nearest", behavior: RM41 ? "auto" : "smooth" }); }
+function kCur(){ const w = document.querySelector(".sw.kfoc"); return w && w.offsetParent !== null ? w : null; }
+function kOpen(w){ const el = swEl(w); if(!el) return; if(el.dataset.code && pin && !el.matches("button,[role=button]")){ openManage(el.dataset.code); return; } el.click(); }
+const KEYS41 = [["J / K", "Move down and up a list"], ["Enter", "Open"], ["E", "Done, clear or remove"], ["S", "Snooze till tomorrow · Can't this week"], ["M", "Mark as seen"], ["P", "Pin a client to the top"], ["W", "Message a client on WhatsApp"], ["F", "Filmed it"], ["/ or ⌘K", "Search"], ["⌘Z", "Undo the last swipe"], ["?", "This list"]];
+const KEYS41R = [["↑ ↓", "Previous and next clip"], ["G", "Good, keep it"], ["B", "Bin, not this one"], ["R", "Redo"], ["S", "Skip"], ["L", "Shot list"], ["Esc", "Close"]];
+function keysOpen(){ const el = document.getElementById("kList"); el.innerHTML = KEYS41.map(([k, t]) => `<kbd>${esc(k)}</kbd><span>${esc(t)}</span>`).join("") + (pin ? '<h4>In Review</h4>' + KEYS41R.map(([k, t]) => `<kbd>${esc(k)}</kbd><span>${esc(t)}</span>`).join("") : ""); document.getElementById("kveil").classList.add("show"); document.getElementById("ksheet").classList.add("show"); }
+function keysClose(){ document.getElementById("kveil").classList.remove("show"); document.getElementById("ksheet").classList.remove("show"); }
+document.addEventListener("keydown", e => {
+  const t = e.target || {}, typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || "") || t.isContentEditable, k = e.key || "";
+  if((e.metaKey || e.ctrlKey) && k.toLowerCase() === "k"){ if(!document.getElementById("app").classList.contains("hide")){ e.preventDefault(); srchOpen(); } return; }
+  if((e.metaKey || e.ctrlKey) && !e.shiftKey && k.toLowerCase() === "z" && ubCur && ubCur.undo && !typing){ e.preventDefault(); ubUndo(); return; }
+  if(k === "Escape"){ keysClose(); promptClose(); celeClose(); if(document.getElementById("tour").classList.contains("show")) tourDone(); }
+  if(typing || e.metaKey || e.ctrlKey || e.altKey || overlayOpen() || document.getElementById("app").classList.contains("hide")) return;
+  if(k === "/"){ e.preventDefault(); srchOpen(); return; }
+  if(k === "?"){ e.preventDefault(); keysOpen(); return; }
+  if(k === "j" || k === "k"){ e.preventDefault(); kMove(k === "j" ? 1 : -1); return; }
+  const w = kCur(); if(!w) return;
+  if(k === "Enter"){ e.preventDefault(); kOpen(w); return; }
+  const cfg = (swEl(w) || {}).__sw || {}, d = cfg.right && cfg.right.key === k.toLowerCase() ? 1 : cfg.left && cfg.left.key === k.toLowerCase() ? -1 : 0;
+  if(d){ e.preventDefault(); const R = kRows(), i = R.indexOf(w); swCommit(w, d, 0); const nx = R[i + 1] || R[i - 1]; if(nx && (d > 0 ? cfg.right : cfg.left).hide){ w.classList.remove("kfoc"); nx.classList.add("kfoc"); } }
+});
+
+/* ── "You're all caught up" ── */
+function caughtUp(sub){ return `<div class="caught"><svg class="cring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28"/><path d="M21 33l7 7 15-16"/></svg><div class="sml">${esc(sub)}</div></div>`; }
+
+/* ── Review as a full-screen feed: swipe up = next, down = back, right = keep, left = not this one, double-tap = keep. The clip is
+     Drive's own player in a frame, so the gestures live on pads around its middle (the play button) and above its controls. ── */
+let pg = null, pTapAt = 0, pTapXY = null;
+function pGestInit(){
+  if(document.getElementById("pGest")) return;
+  const g = document.createElement("div"); g.id = "pGest"; g.className = "pgest"; g.innerHTML = '<i data-p="t"></i><i data-p="l"></i><i data-p="r"></i><i data-p="b"></i>';
+  document.getElementById("player").appendChild(g);
+  document.getElementById("pCol").insertAdjacentHTML("afterbegin", '<span class="pstamp k" id="pStK">Keep</span><span class="pstamp n" id="pStN">Not this one</span>');
+  document.querySelector("#player .pbar").insertAdjacentHTML("beforebegin", '<p class="phint" id="pHint"></p>');
+  g.addEventListener("pointerdown", e => { if(e.pointerType === "mouse" && e.button !== 0) return; pg = { id: e.pointerId, x0: e.clientX, y0: e.clientY, ax: "", h: [[e.timeStamp, e.clientX, e.clientY]] }; try { e.target.setPointerCapture(e.pointerId); } catch(err){} });
+  g.addEventListener("pointermove", e => {
+    if(!pg || e.pointerId !== pg.id) return; const dx = e.clientX - pg.x0, dy = e.clientY - pg.y0;
+    if(!pg.ax){ if(Math.abs(dx) < 10 && Math.abs(dy) < 10) return; pg.ax = Math.abs(dx) > Math.abs(dy) ? "x" : "y"; }
+    pg.h.push([e.timeStamp, e.clientX, e.clientY]); if(pg.h.length > 8) pg.h.shift();
+    pDrag(pg.ax === "x" ? dx : 0, pg.ax === "y" ? dy : 0);
+  });
+  g.addEventListener("pointerup", e => { if(!pg || e.pointerId !== pg.id) return; const s = pg; pg = null; if(!s.ax) pTap(e); else pRelease(s, e); });
+  g.addEventListener("pointercancel", () => { if(pg){ pg = null; pSnap(); } });
+  window.addEventListener("resize", pGestPlace);
+}
+function pGestPlace(){ const f = document.getElementById("pVid"), g = document.getElementById("pGest"); if(!f || !g) return; const r = f.getBoundingClientRect(); g.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`; }
+function pDrag(dx, dy){
+  const col = document.getElementById("pCol"), W = window.innerWidth || 375;
+  col.style.transition = "none"; col.style.transform = `translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) rotate(${(dx / 26).toFixed(2)}deg)`; col.style.opacity = String(Math.max(0.35, 1 - Math.abs(dy) / 700));
+  const k = document.getElementById("pStK"), n = document.getElementById("pStN"), it = pq[pi] || {};
+  if(k){ k.textContent = it.kind === "delivery" ? "Approve" : "Keep"; k.style.opacity = String(Math.max(0, Math.min(1, dx / (W * 0.3)))); }
+  if(n){ n.textContent = it.kind === "delivery" ? "Redo" : "Not this one"; n.style.opacity = String(Math.max(0, Math.min(1, -dx / (W * 0.3)))); }
+}
+function pSnap(){ const col = document.getElementById("pCol"); col.style.transition = RM41 ? "none" : "transform .34s cubic-bezier(.3,1.25,.5,1), opacity .2s"; col.style.transform = ""; col.style.opacity = ""; ["pStK", "pStN"].forEach(id => { const s = document.getElementById(id); if(s) s.style.opacity = "0"; }); }
+function pFly(tx, ty, then){
+  const col = document.getElementById("pCol"); if(RM41){ pSnap(); then(); return; }
+  col.style.transition = "transform .22s cubic-bezier(.4,0,1,1), opacity .22s"; col.style.transform = `translate3d(${tx}px,${ty}px,0) rotate(${(tx / 26).toFixed(1)}deg)`; col.style.opacity = "0";
+  setTimeout(() => { col.style.transition = "none"; col.style.transform = ""; col.style.opacity = ""; ["pStK", "pStN"].forEach(id => { const s = document.getElementById(id); if(s) s.style.opacity = "0"; }); then(); }, 210);
+}
+function pIn(dir){ const col = document.getElementById("pCol"); if(RM41) return; col.classList.remove("pin", "pinup"); void col.offsetWidth; col.classList.add(dir < 0 ? "pinup" : "pin"); }
+function pRelease(s){
+  const end = s.h[s.h.length - 1], h = s.h.filter(p => end[0] - p[0] <= 100), a = h[0], dt = end[0] - a[0], W = window.innerWidth || 375, H = window.innerHeight || 700;
+  const dx = end[1] - s.x0, dy = end[2] - s.y0, vx = dt > 0 ? (end[1] - a[1]) / dt : 0, vy = dt > 0 ? (end[2] - a[2]) / dt : 0;
+  if(s.ax === "x"){ const d = swipeDecide(dx, vx, W * 0.9); if(!d){ pSnap(); return; } natHap("light"); pFly(d * W * 1.2, 0, () => pFeedAct(d > 0 ? "keep" : "bin")); return; }
+  if((dy < -70 || vy < -0.45) && dy < 0){ pFly(0, -H * 0.7, () => { pi++; pShow(); pIn(1); }); return; }
+  if((dy > 70 || vy > 0.45) && dy > 0 && pi > 0){ pFly(0, H * 0.7, () => { pi--; pShow(); pIn(-1); }); return; }
+  pSnap();
+}
+function pTap(e){
+  const now = Date.now(), xy = [e.clientX, e.clientY];
+  if(now - pTapAt < 320 && pTapXY && Math.hypot(xy[0] - pTapXY[0], xy[1] - pTapXY[1]) < 40){ pTapAt = 0; pBurst(xy[0], xy[1]); natHap("success"); setTimeout(() => pFeedAct("keep"), RM41 ? 0 : 260); return; }
+  pTapAt = now; pTapXY = xy;
+}
+function pBurst(x, y){ if(RM41) return; const b = document.createElement("span"); b.className = "pburst"; b.style.left = x + "px"; b.style.top = y + "px"; b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z"/></svg>'; document.body.appendChild(b); setTimeout(() => b.remove(), 760); }
+/* the feed's verdicts wait out the Undo bar before they save (an approved reel is in front of the client the moment it saves) */
+function pFeedAct(kind){
+  const it = pq[pi]; if(!it) return; const at = pi;
+  if(kind === "bin" && it.kind === "delivery"){ pSnap(); pRedo(); return; }
+  it.verdict = kind === "keep" ? "good" : "bin"; pi++; pShow(); pIn(1);
+  const msg = kind === "keep" ? (it.kind === "delivery" ? "<b>Approved.</b> The client sees it once this bar goes." : "<b>Kept as a select.</b>") : "<b>Not this one.</b> Kept in Drive, out of the edit.";
+  undoBar(msg, () => pBack(it, at), () => pCommit(it, kind));
+}
+function pBack(it, at){ it.verdict = null; pi = Math.min(at, pq.length - 1); const p = document.getElementById("player"); if(!p.classList.contains("show")) p.classList.add("show"); pShow(); pIn(-1); }
+async function pCommit(it, kind){
+  const fid = it.file.id, d = kind === "keep" ? await apiPost(it.kind === "delivery" ? { action: "approve", pin, code: it.code, fileId: fid } : { action: "reviewGood", pin, code: it.code, fileId: fid, idx: it.idx === undefined ? null : it.idx, lite: 1 })
+    : await apiPost({ action: "verdict", pin, code: it.code, fileId: fid, v: "bin", lite: 1 });
+  if(!d.ok){ it.verdict = null; toast("Save failed: " + errTxt(d.error)); return; }
+  if(kind === "bin") rdBinAdd("rd.review", { id: fid, code: it.code, client: it.client, label: (it.shot || "Clip") + " · " + srClean(it.file.name), at: new Date().toISOString() });
+  if(!document.getElementById("player").classList.contains("show")) loadToday();
+}
+function pHintPaint(){ const h = document.getElementById("pHint"); if(!h) return; const n = Number(LS.get("feedHint") || 0); h.textContent = TOUCH && n < 4 ? "Swipe up for the next · double-tap to keep" : ""; }
+document.addEventListener("keydown", e => {
+  if(!document.getElementById("player").classList.contains("show") || document.getElementById("fsheet").classList.contains("show") || /^(INPUT|TEXTAREA)$/.test((e.target || {}).tagName || "")) return;
+  if(e.key === "ArrowDown" && pi < pq.length){ e.preventDefault(); pi++; pShow(); pIn(1); } else if(e.key === "ArrowUp" && pi > 0){ e.preventDefault(); pi--; pShow(); pIn(-1); }
+});
+
+/* ── hold a clip: a preview sheet with what can be done to it (long-press on a phone, right-click on a computer) ── */
+let holdT = null, holdP = null, holdFired = false, holdEat = 0, holdCur = null;
+function holdCancel(){ if(holdT){ clearTimeout(holdT); holdT = null; } holdP = null; }
+document.addEventListener("pointerdown", e => { const t = e.target.closest && e.target.closest("[data-clip]"); if(!t || e.pointerType === "mouse") return; holdCancel(); holdFired = false; holdP = { x: e.clientX, y: e.clientY }; holdT = setTimeout(() => { holdT = null; holdFired = true; holdOpen(t); }, 480); }, true);
+document.addEventListener("pointermove", e => { if(holdP && Math.hypot(e.clientX - holdP.x, e.clientY - holdP.y) > 9) holdCancel(); }, true);
+document.addEventListener("pointerup", () => { holdCancel(); if(holdFired){ holdFired = false; holdEat = Date.now(); } }, true);
+document.addEventListener("pointercancel", holdCancel, true);
+document.addEventListener("click", e => { if(holdEat && Date.now() - holdEat < 600){ holdEat = 0; e.preventDefault(); e.stopPropagation(); } }, true);
+document.addEventListener("contextmenu", e => { const t = e.target.closest && e.target.closest("[data-clip]"); if(!t) return; e.preventDefault(); holdOpen(t); });
+function holdOpen(t){
+  let c = null; try { c = JSON.parse(t.dataset.clip); } catch(e){} if(!c || !c.id || Date.now() - (holdOpen.at || 0) < 800) return; holdOpen.at = Date.now();
+  natHap("heavy"); holdCur = c;
+  openPreview(c.id, c.name ? srClean(c.name) : "Clip", [c.client, c.shot].filter(Boolean).join(" · "));
+  let el = document.getElementById("pActs"); if(!el){ el = document.createElement("div"); el.id = "pActs"; el.className = "pacts"; document.getElementById("pNote").before(el); }
+  el.innerHTML = !pin ? "" : c.kind === "delivery" ? `<button class="mact ok" onclick="holdDo('approve')">Approve</button><button class="mact" onclick="holdDo('back')">Send back</button>`
+    : `<button class="mact ok" onclick="holdDo('keep')">Keep as a select</button><button class="mact" onclick="holdDo('bin')">Not this one</button>${c.idx !== null && c.idx !== undefined ? `<button class="mact" onclick="holdDo('redo')">Flag redo</button>` : ""}`;
+}
+async function holdDo(k){
+  const c = holdCur; if(!c) return; closePreview();
+  if(k === "approve") return tqApprove(c.code, c.id);
+  if(k === "back"){ mgCode = c.code; return openBack(c.id, c.name || "Reel"); }
+  if(k === "redo") return tqRedo(c.code, c.idx, c.id, c.shot || "this shot");
+  const gone = () => { if(todayData){ todayData.fresh = (todayData.fresh || []).filter(x => !(x.file && x.file.id === c.id)); renderToday(); } };
+  if(k === "keep"){ const d = await apiPost({ action: "reviewGood", pin, code: c.code, fileId: c.id, idx: c.idx === undefined ? null : c.idx, lite: 1 }); if(!d.ok){ toast("Couldn't save: " + errTxt(d.error)); return; } gone(); toast("<b>Kept as a select.</b>"); if(mgCode === c.code) loadManage(); return; }
+  if(k === "bin"){ const d = await apiPost({ action: "verdict", pin, code: c.code, fileId: c.id, v: "bin", lite: 1 }); if(!d.ok){ toast("Couldn't save: " + errTxt(d.error)); return; } gone();
+    rdBinAdd("rd.review", { id: c.id, code: c.code, client: c.client || "", label: (c.shot || "Clip") + " · " + srClean(c.name), at: new Date().toISOString() });
+    if(mgCode === c.code) loadManage();
+    undoBar("<b>Not this one.</b> Kept in Drive, out of the edit.", async () => { const r = await apiPost({ action: "verdict", pin, code: c.code, fileId: c.id, v: "none", lite: 1 }); if(r.ok){ rdBinDrop("rd.review", c.id); loadToday(); if(mgCode === c.code) loadManage(); } }); }
+}
+
+/* ── streak line + month ring + the celebration when the whole month is filmed ── */
+function ringPaint(n, N){
+  const el = document.getElementById("pRing"); if(!el) return; const r = 24, L = 2 * Math.PI * r, p = N ? Math.min(1, n / N) : 0;
+  if(!el.firstChild) el.innerHTML = `<svg viewBox="0 0 58 58" aria-hidden="true"><circle class="bg" cx="29" cy="29" r="${r}"/><circle class="fg" cx="29" cy="29" r="${r}" stroke-dasharray="${L.toFixed(1)}" style="stroke-dashoffset:${L.toFixed(1)}"/></svg><span class="tx"></span>`;
+  const fg = el.querySelector(".fg"); requestAnimationFrame(() => { fg.style.strokeDashoffset = (L * (1 - p)).toFixed(1); });
+  el.querySelector(".tx").innerHTML = `${n}<small>of ${N}</small>`; el.setAttribute("aria-label", n + " of " + N + " filmed this month"); el.classList.toggle("full", N > 0 && n >= N);
+}
+function streakPaint(){
+  const el = document.getElementById("streakLine"); if(!el || !C) return;
+  const s = C.streak || streakLocal(Object.values(C.tickAt || {})), t = streakText(s), cut = t.indexOf(". ");
+  el.classList.toggle("hide", !t); el.innerHTML = t ? swIcon("flame") + `<b>${esc(cut > 0 ? t.slice(0, cut) : t.replace(/\.$/, ""))}</b>${cut > 0 ? "<span>" + esc(t.slice(cut + 2)) + "</span>" : ""}` : "";
+}
+function celeMaybe(){
+  if(!C || !C.shots || previewMode || document.body.classList.contains("xc") || !C.shots.length) return;
+  if(C.shots.some((s, i) => !C.by[i])) return; const k = (C.code || code) + ":" + C.month; if(LS.get("cele") === k) return;
+  const last = Math.max(0, ...Object.values(C.tickAt || {}).map(t => Date.parse(t) || 0)); if(last && Date.now() - last > 3 * 86400000){ LS.set("cele", k); return; }   // an old month on a new phone: no party
+  if(overlayOpen()){ clearTimeout(celeMaybe.t); celeMaybe.t = setTimeout(celeMaybe, 1500); return; }
+  LS.set("cele", k); celeShow();
+}
+function celeShow(){
+  const el = document.getElementById("cele"); if(!el || !C) return; document.getElementById("celeP").textContent = "Every shot for " + monthName(C.month).split(" ")[0] + " is in. XC takes it from here.";
+  const card = document.getElementById("celeCard"); card.querySelectorAll(".cdot").forEach(n => n.remove());
+  if(!RM41) for(let k = 0; k < 22; k++){ const a = (k / 22) * Math.PI * 2 + Math.random() * 0.3, r = 90 + Math.random() * 70, i = document.createElement("i"); i.className = "cdot" + (k % 3 === 0 ? " w" : ""); i.style.setProperty("--dx", (Math.cos(a) * r).toFixed(0) + "px"); i.style.setProperty("--dy", (Math.sin(a) * r).toFixed(0) + "px"); i.style.animationDelay = (0.95 + Math.random() * 0.15).toFixed(2) + "s"; card.appendChild(i); }
+  el.classList.add("show"); natHap("success");
+}
+function celeClose(){ const el = document.getElementById("cele"); if(el) el.classList.remove("show"); }
+
+/* ── first-open tour for clients: three cards, swipe or Next ── */
+let tourP = null, tourRes = null;
+function tourShow(){
+  if(tourP) return tourP; const el = document.getElementById("tour"); if(!el) return Promise.resolve();
+  tourP = new Promise(r => { tourRes = r; }); el.classList.add("show"); document.getElementById("newsbox").classList.remove("show");
+  const trk = document.getElementById("tourTrk"); trk.scrollLeft = 0; tourDots();
+  if(!trk.__b){ trk.__b = 1; trk.addEventListener("scroll", tourDots, { passive: true }); }
+  setTimeout(() => { const b = document.getElementById("tourNext"); if(b && !TOUCH) b.focus(); }, 80);
+  return tourP;
+}
+function tourAfter(fn){ setTimeout(() => { (tourP || Promise.resolve()).then(fn); }, 80); }
+function tourIdx(){ const t = document.getElementById("tourTrk"); return Math.round(t.scrollLeft / Math.max(1, t.clientWidth)); }
+function tourDots(){ const k = tourIdx(); document.querySelectorAll("#tourDots i").forEach((d, j) => d.classList.toggle("on", j === k)); document.getElementById("tourNext").textContent = k >= 2 ? "Let's go" : "Next"; }
+function tourNext(){ const t = document.getElementById("tourTrk"), k = tourIdx(); if(k >= 2) return tourDone(); t.scrollTo({ left: (k + 1) * t.clientWidth, behavior: RM41 ? "auto" : "smooth" }); }
+function tourDone(){ const el = document.getElementById("tour"); if(el) el.classList.remove("show"); LS.set("tour", "1"); LS.set("tourDue", null); LS.set("seenFilmMode", "1"); const r = tourRes; tourRes = null; tourP = null; if(r) r(); }
+document.addEventListener("keydown", e => { if(!document.getElementById("tour").classList.contains("show")) return; if(e.key === "ArrowRight"){ e.preventDefault(); tourNext(); } else if(e.key === "ArrowLeft"){ e.preventDefault(); const t = document.getElementById("tourTrk"); t.scrollTo({ left: Math.max(0, tourIdx() - 1) * t.clientWidth, behavior: RM41 ? "auto" : "smooth" }); } });
+
+/* ── teleprompter: in the app, the native camera with the script under the lens (its clip goes into the same send path as the
+     picker's); on the website and older builds, a big auto-scrolling script screen to read from while filming ── */
+async function fmPrompt(){
+  if(fmIdx === null || !C) return; const i = fmIdx, k = fmStep, s = C.shots[i], script = fmScript(s.steps[k]);
+  if(NATIVE){
+    let r, miss = false;
+    try { r = await natPlugin("XCNative", "prompter", { title: s.n, script, shot: "Shot " + (i + 1), speed: Number(LS.get("prSpeedN")) || 4, camera: LS.get("prCam") || "front" }); }   // the app's speed runs 1 to 10 (4 = easy talking pace)
+    catch(e){ const m = String((e && (e.code || e.message)) || e); miss = /UNIMPLEMENTED|not implemented|not available|unknown method/i.test(m); if(!miss){ console.log("prompter " + m); toast("The camera didn't open. Reading from the script screen instead."); } }
+    if(r === undefined) return promptWeb(s.n, script);
+    if(r && r.speed) LS.set("prSpeedN", String(r.speed));
+    if(r && r.cancelled){
+      if(r.reason === "no-camera"){ toast("This phone has no camera XC Studio can use, so here's the script to read from instead."); return promptWeb(s.n, script); }
+      if(r.reason === "camera-off" || r.reason === "mic-off") toast("XC Studio needs the camera and the microphone for this. Turn them on in <b>Settings › XC Studio</b>.");
+      else if(r.reason === "busy") toast("The camera is busy with another app. Try again in a moment.");
+      return;
+    }
+    if(!r || !((r.files || []).length)) return;
+    await natPicked(r, i, { quiet: true });
+    if(fmIdx === i && !(((C.stepTicks || {})[i] || {})[k])){ fmStep = k; fmTickCur(); }
+    toast(r.savedToPhotos ? "<b>Take saved to Photos</b> and sending to XC. Keep going." : "<b>Take saved</b> and sending to XC. Keep going.");
+    return;
+  }
+  promptWeb(s.n, script);
+}
+let pr = null; const PR_BASE = 42;   // pixels a second at 1×
+function promptWeb(title, script){
+  const el = document.getElementById("prompt"); document.getElementById("prTitle").textContent = title || ""; document.getElementById("prText").textContent = script || "";
+  if(pr && pr.ct) clearInterval(pr.ct); pr = { y: 0, run: false, speed: Math.max(0.4, Math.min(3, Number(LS.get("prSpeed")) || 1)), raf: 0, last: 0, counted: false };
+  el.classList.add("show"); prPaint(); prSpdPaint(); document.getElementById("prGo").textContent = "Start";
+}
+function promptClose(){ const el = document.getElementById("prompt"); if(!el || !el.classList.contains("show")) return; if(pr){ pr.run = false; cancelAnimationFrame(pr.raf); if(pr.ct) clearInterval(pr.ct); } el.classList.remove("show"); document.getElementById("prCount").style.display = ""; }
+function prPaint(){ const v = document.getElementById("prView"), t = document.getElementById("prText"); if(!v || !t || !pr) return; t.style.transform = `translate3d(0,${(v.clientHeight * 0.32 - pr.y).toFixed(1)}px,0)`; }
+function prMax(){ const t = document.getElementById("prText"); return Math.max(0, t.offsetHeight - 20); }
+function prSpdPaint(){ document.getElementById("prSpd").textContent = pr.speed.toFixed(1) + "×"; }
+function prSpeed(d){ if(!pr) return; pr.speed = Math.max(0.4, Math.min(3, pr.speed * (d > 0 ? 1.2 : 1 / 1.2))); LS.set("prSpeed", pr.speed.toFixed(2)); prSpdPaint(); }
+function prToggle(){ if(!pr) return; const b = document.getElementById("prGo");
+  if(pr.run){ pr.run = false; cancelAnimationFrame(pr.raf); b.textContent = "Carry on"; return; }
+  if(pr.y >= prMax()){ pr.y = 0; pr.counted = false; prPaint(); }
+  if(!pr.counted) return prCount(); prGo(); }
+function prCount(){ pr.counted = true; const c = document.getElementById("prCount"), b = document.getElementById("prGo"); let n = 3; c.textContent = n; c.style.display = "flex"; b.textContent = "Pause"; natHap("light");
+  pr.ct = setInterval(() => { n--; if(n <= 0){ clearInterval(pr.ct); pr.ct = 0; c.style.display = ""; prGo(); return; } c.textContent = n; natHap("light"); }, 800); }
+function prGo(){ pr.run = true; pr.last = performance.now(); document.getElementById("prGo").textContent = "Pause";
+  const step = now => { if(!pr || !pr.run) return; const dt = Math.min(0.05, (now - pr.last) / 1000); pr.last = now; pr.y += PR_BASE * pr.speed * dt;
+    if(pr.y >= prMax()){ pr.y = prMax(); prPaint(); pr.run = false; document.getElementById("prGo").textContent = "From the top"; return; }
+    prPaint(); pr.raf = requestAnimationFrame(step); };
+  pr.raf = requestAnimationFrame(step); }
+(function(){
+  let d = null; const v = () => document.getElementById("prView");
+  document.addEventListener("pointerdown", e => { if(!pr || !v() || !v().contains(e.target)) return; d = { y: e.clientY, y0: pr.y, run: pr.run, moved: false }; if(pr.run){ pr.run = false; cancelAnimationFrame(pr.raf); } });
+  document.addEventListener("pointermove", e => { if(!d) return; const dy = e.clientY - d.y; if(Math.abs(dy) > 6) d.moved = true; if(d.moved){ pr.y = Math.max(0, Math.min(prMax(), d.y0 - dy)); prPaint(); } });
+  document.addEventListener("pointerup", () => { if(!d) return; const s = d; d = null; if(!s.moved){ if(s.run){ document.getElementById("prGo").textContent = "Carry on"; } else prToggle(); return; } if(s.run) prGo(); });
+  document.addEventListener("keydown", e => { if(!document.getElementById("prompt").classList.contains("show")) return; if(e.key === " "){ e.preventDefault(); prToggle(); } else if(e.key === "ArrowUp"){ e.preventDefault(); prSpeed(1); } else if(e.key === "ArrowDown"){ e.preventDefault(); prSpeed(-1); } });
+})();
+/* the Live Activity's label while clips send (the app shows it on the lock screen and in the Dynamic Island) */
+function natLabel(x){ const who = String((C && C.name) || "").split(" ")[0], i = x && x.idx; return [who, i === null || i === undefined ? "General folder" : "Shot " + (Number(i) + 1)].filter(Boolean).join(" · "); }
+/* the owner's "What's happened": a dot on anything since they last looked (this device) */
+function ownNew(a){ const s = LS.get("seenAct." + String(code || "").toUpperCase()); return !!s && Date.parse(a.at) > Date.parse(s); }
+function pFeedOpen(){ pGestInit(); LS.set("feedHint", String(Number(LS.get("feedHint") || 0) + 1)); }
+offPaint();
+
 /* ── UI dev harness: ?uidev=1 renders the XC workspace with sample data (stubbed API, no gates, no writes).
      &view=dash|manage|calendar picks the screen. Shows only fake data — safe if hit in production. ── */
 (function(){
@@ -3965,12 +5080,13 @@ if(!NATIVE) setTimeout(async ()=>{ try {
       sweep:{last:new Date(Date.now()-60000).toISOString(),ms:4100,day:{d:"2026-09-30",ms:2400000,n:780,max:61000},err:null},drive:{used:1.31e12,limit:2e12,pct:65.5,perDay:2.2e9,daysToFull:313},backup:{at:"2026-09-27T17:00:00Z"}},
     archive:{at:new Date().toISOString(),bytes:71.4e9,items:[{code:"SAMPT1234",client:"Sam Carter PT",month:"2026-08",bytes:64.2e9,files:212,delivered:"2026-08-29",due:"2026-09-28",url:"#"},{code:"HARBR5678",client:"Harbour Café",month:"2026-08",bytes:7.2e9,files:40,delivered:"2026-08-31",due:"2026-09-30",url:"#"}]},
     counts:{deliveries:2,fresh:3,quiet:1,redos:1,feedback:1,consent:1,health:q.get("hq")==="0"?0:1,archive:2}};
+  DEVT.activity = [{client:"Sam Carter PT",code:"SAMPT1234",at:new Date(Date.now()-20*60000).toISOString(),who:"Sam",what:"sent 4 clips to “Coach fixing a squat”"},{client:"Harbour Café",code:"HARBR5678",at:new Date(Date.now()-3*3600000).toISOString(),who:"Mia",what:"filmed “Roller door opening”"},{client:"Sam Carter PT",code:"SAMPT1234",at:new Date(Date.now()-26*3600000).toISOString(),who:"Sam",what:"can't film “PB celebration” this week: away"},{client:"Harbour Café",code:"HARBR5678",at:new Date(Date.now()-50*3600000).toISOString(),who:"Owner",what:"loved a reel"}];   // v4.41
   const DEVR = {ok:true, week:1, month:"2026-09", clients:[
     {code:"HARBR5678",name:"Harbour Café",month:"2026-09",total:12,done:4,wkTotal:3,wkDone:1,redos:0,quietDays:4,deliveriesPending:1,inbox:"x",weeks:[{done:3,total:3},{done:2,total:3},{done:3,total:3},{done:1,total:3}]},
-    {code:"SAMPT1234",name:"Sam Carter PT",month:"2026-09",total:12,done:7,wkTotal:3,wkDone:2,redos:1,quietDays:0,deliveriesPending:2,inbox:"y",weeks:[{done:2,total:3},{done:3,total:3},{done:2,total:3},{done:0,total:3}]}]};
+    {code:"SAMPT1234",name:"Sam Carter PT",month:"2026-09",streak:{weeks:3,best:5,thisWeek:true},total:12,done:7,wkTotal:3,wkDone:2,redos:1,quietDays:0,deliveriesPending:2,inbox:"y",weeks:[{done:2,total:3},{done:3,total:3},{done:2,total:3},{done:0,total:3}]}]};
   const DEVSTATE = (c)=>({ok:true, code:c||"SAMPT1234", name:"Sam Carter PT", month:"2026-09", week:1, role:2, team:["Sam"],
     shots:[{w:1,t:"wide",n:"The 6am floor",h:"The gym at open.",d:"20s",steps:["☐ TAKE 1 — THE QUESTION. Say ONLY this, 3 times: «Running or walking for fat loss?»","☐ TAKE 2 — THE HOOK. Twice: «Running burns more per minute. I'm still choosing walking.»","☐ SHOT 3 — NO TALKING. Phone far away, 15 seconds."],refs:["https://picsum.photos/seed/a/500/320","","https://picsum.photos/seed/b/500/320"],dont:"d",folder:"https://drive.google.com/drive/folders/x"},{w:1,t:"mid",n:"Coach fixing a squat",h:"One cue.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"mid",n:"PB celebration",h:"After the lift.",d:"20s",steps:["s"],dont:"d"},{w:2,t:"close",n:"Chalk hands",h:"Fill the frame.",d:"10s",steps:["s"],dont:"d"}],
-    by:{1:"Sam", 2:"Sam"}, tickAt:{2:new Date(Date.now()-7200000).toISOString()}, gaps:[{from:"C3717", to:"C3730", n:10, missing:["C3719–C3722","C3724–C3729"]}], redo:{}, reasons:{}, received:{0:true}, recv:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"], clips:[{id:"r1",n:"C3601.MP4"},{id:"r2",n:"C3602.MP4"},{id:"r3",n:"C3603.MP4"},{id:"r4",n:"C3604.MP4"},{id:"r5",n:"IMG_0412.JPG"}]}}, unsortedN:0, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Sam",wk:1,v:12400}], drive:"#",
+    by: window.__devBy || (q.get("done")==="all" ? {0:"Sam",1:"Sam",2:"Sam",3:"Sam"} : {1:"Sam", 2:"Sam"}), tickAt: q.get("done")==="all" ? {0:new Date(Date.now()-86400000).toISOString(),1:new Date(Date.now()-9e6).toISOString(),2:new Date(Date.now()-7200000).toISOString(),3:new Date(Date.now()-60000).toISOString()} : {2:new Date(Date.now()-7200000).toISOString()}, cant: window.__devCant || {}, streak: {weeks:3, best:5, thisWeek:true}, gaps:[{from:"C3717", to:"C3730", n:10, missing:["C3719–C3722","C3724–C3729"]}], redo:{}, reasons:{}, received:{0:true}, recv:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"], clips:[{id:"r1",n:"C3601.MP4"},{id:"r2",n:"C3602.MP4"},{id:"r3",n:"C3603.MP4"},{id:"r4",n:"C3604.MP4"},{id:"r5",n:"IMG_0412.JPG"}]}}, unsortedN:0, stepTicks:{0:{0:1}}, results:[{n:"Coach cue reel",by:"Sam",wk:1,v:12400}], drive:"#",
     approved:[F("ap1","2026-09-03 1100 — Coach cue reel")], feedback:{}, docs:[{label:"Terms & agreement",url:"https://example.com"},{label:"Set up your payment",url:"https://buy.stripe.com/x"}],
     activity:[{at:"2026-08-31T05:00:00Z",who:"Sam",what:"filmed “Coach fixing a squat”"},{at:"2026-08-31T02:00:00Z",who:"XC",what:"added a document"}],
     lastTick:"2026-08-31T05:00:00Z", weeks:DEVR.clients[1].weeks, history:[], files:{0:[F("r1","2026-09-03 1300 — C3519.MP4"),F("r2","2026-09-03 1302 — C3520.MP4"),F("r3","2026-09-03 1305 — C3521.MP4"),F("r4","2026-09-03 1310 — C3522.MP4")], 1:[F("r5","2026-09-04 0900 — C3530.MP4"),F("r6","2026-09-04 0905 — C3531.MP4")]}, reviewed:{r1:1,r2:1,r4:1}, verdicts:{r1:"good",r2:"good"}, clipTags:{r1:{step:0,label:"",words:"",conf:1},r2:{step:2,label:"",words:"",conf:1}}, portalUrl:"https://app.timeliner.io/portal/demo", selectsUrls:{0:"https://drive.google.com/drive/folders/demo-selects"}, redoAt:{}, rhythm:{filmDow:4}, tier:"min", billingDay:30, deliv:{ap1:{m:"2026-09",i:0,at:"2026-09-11T05:00:00Z"},"tl:2026-09:1":{m:"2026-09",i:1,at:"2026-09-28T05:00:00Z"}}, hasOwnerPin:true, ownerEmail:"", draftV:3, upPlan:{}, upDirect:true,
@@ -3997,18 +5113,27 @@ if(!NATIVE) setTimeout(async ()=>{ try {
       E(-1,"landed","grey","Footage landed: I'm doing everything right and still not seeing it","1 clip",R,"SAMPT1234","shots",{m:"2026-09",idx:5,shot:"I'm doing everything right and still not seeing it"}),
       E(-4,"delivered","green","Delivered: reel 2 w1 v2","Not linked to a shot yet",R,"SAMPT1234","deliveries",{linked:false})
     ].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)}; };
-  apiGet = async(p)=>{ if(p.action==="uploads") return {ok:true, code:"SAMPT1234", month:"2026-09", shots:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"], clips:[{id:"r1",n:"C3601.MP4"},{id:"r2",n:"C3602.MP4"},{id:"r3",n:"C3603.MP4"},{id:"r4",n:"C3604.MP4"},{id:"r5",n:"IMG_0412.JPG"}]}, 1:{n:0, filing:2, last:null, names:[]}}, unsortedN:0, filingUnsorted:0, safe:{0:{ok:true,n:5,why:""},1:{ok:false,n:0,why:"filing"},2:{ok:false,n:0,why:"nothing in"}}, t:new Date().toISOString()}; if(p.action==="health") return {ok:true, issues:[]}; if(p.action==="calList") return DEVCAL(); if(p.action==="today") return JSON.parse(JSON.stringify(DEVT)); if(p.action==="roster") return JSON.parse(JSON.stringify(DEVR)); if(p.action==="state") return DEVSTATE(p.code); if(p.action==="deliveries") return {ok:true,pending:[F("p1","2026-09-02 1015 — Coach cue reel")],approved:[F("ap1","2026-09-01 — Week one reel")],sentBack:[]}; return {ok:true}; };
-  apiPost = async(b)=>{ if(b.action==="upStartMany") return {ok:true, items:(b.files||[]).map(f=>({name:f.name, size:f.size, ok:true, uri:"harness://s/"+encodeURIComponent(f.name), final:"2026-10-02 0900 — "+f.name}))}; if(b.action==="clearPending") return Object.assign({}, mgState||{}, {ok:true}); if(b.action==="upStart") return {ok:true, uri:(NATIVE && window.__xcPut ? "http://localhost:3464/u/" : "harness://s/")+encodeURIComponent(b.name), name:"2026-10-02 0900 — "+b.name, chunk:262144*4}; if(b.action==="upDone") return b.name==="broken.mov" ? {ok:false, error:"size mismatch: phone 10 bytes, Drive 9 bytes. Send it again."} : {ok:true, receipt:{id:b.id, size:b.size}}; if(b.action==="setWa" && mgState){ const on = !!b.on, w = mgState.wa || {};   // v4.25: echo setWa like the backend does
+  apiGet = async(p)=>{ if(p.action==="uploads") return {ok:true, code:"SAMPT1234", month:"2026-09", shots:{0:{n:5, filing:0, last:new Date(Date.now()-3600000).toISOString(), names:["C3601.MP4","C3602.MP4","C3603.MP4","C3604.MP4","IMG_0412.JPG"], clips:[{id:"r1",n:"C3601.MP4"},{id:"r2",n:"C3602.MP4"},{id:"r3",n:"C3603.MP4"},{id:"r4",n:"C3604.MP4"},{id:"r5",n:"IMG_0412.JPG"}]}, 1:{n:0, filing:2, last:null, names:[]}}, unsortedN:0, filingUnsorted:0, safe:{0:{ok:true,n:5,why:""},1:{ok:false,n:0,why:"filing"},2:{ok:false,n:0,why:"nothing in"}}, t:new Date().toISOString()}; if(p.action==="prefs") return q.get("old")==="1" ? {ok:false, error:"unknown action"} : {ok:true, prefs: window.__devPrefs || (window.__devPrefs = {seenAt:null, cleared:{}, seen:{}, done:{}, snoozed:{}, pins:[], v:1})};   // v4.41 (old=1: a 2.9.5 server)
+    if(p.action==="searchIndex") return q.get("old")==="1" ? {ok:false, error:"unknown action"} : {ok:true, items:[{t:"client",code:"SAMPT1234",label:"Sam Carter PT",sub:"7 of 12 filmed"},{t:"client",code:"HARBR5678",label:"Harbour Café",sub:"4 of 12 filmed"},{t:"shot",code:"SAMPT1234",i:1,label:"Coach fixing a squat",sub:"Sam Carter PT · week 1"},{t:"shot",code:"HARBR5678",i:0,label:"Roller door opening",sub:"Harbour Café · week 1"},{t:"clip",code:"SAMPT1234",i:0,id:"r1",label:"C3519.MP4",sub:"Sam Carter PT · The 6am floor"},{t:"doc",code:"SAMPT1234",label:"Terms & agreement",sub:"Sam Carter PT"}]};
+    if(p.action==="health") return {ok:true, issues:[]}; if(p.action==="calList") return DEVCAL(); if(p.action==="today") return JSON.parse(JSON.stringify(DEVT)); if(p.action==="roster") return JSON.parse(JSON.stringify(DEVR)); if(p.action==="state") return DEVSTATE(p.code); if(p.action==="deliveries") return {ok:true,pending:[F("p1","2026-09-02 1015 — Coach cue reel")],approved:[F("ap1","2026-09-01 — Week one reel")],sentBack:[]}; return {ok:true}; };
+  apiPost = async(b)=>{
+    if(b.action==="prefsSet"){ if(q.get("old")==="1") return {ok:false, error:"unknown action"}; let P = window.__devPrefs || {}; (b.ops||[]).forEach(o => { P = prefsApply(P, o); }); window.__devPrefs = P; (window.__devOps = window.__devOps || []).push(b.ops); return {ok:true, prefs:P}; }   // v4.41
+    if(b.action==="cantFilm"){ if(q.get("old")==="1") return {ok:false, error:"unknown action"}; window.__devCant = Object.assign({}, window.__devCant, {[b.i]: {at:new Date().toISOString(), why:b.why||"", by:b.by||""}}); return Object.assign(DEVSTATE(b.code), {ok:true}); }
+    if(b.action==="uncant"){ const c = Object.assign({}, window.__devCant); delete c[b.i]; window.__devCant = c; return Object.assign(DEVSTATE(b.code), {ok:true}); }
+    if(b.action==="tick" || b.action==="untick"){ const by = Object.assign({}, DEVSTATE(b.code).by); if(b.action==="tick") by[b.idx] = b.by || "Sam"; else delete by[b.idx]; window.__devBy = by; if(window.__devCant && b.action==="tick"){ const c = Object.assign({}, window.__devCant); delete c[b.idx]; window.__devCant = c; } return Object.assign(DEVSTATE(b.code), {ok:true}); }
+    if(b.action==="pushReg") return {ok:true};
+    if(b.action==="upStartMany") return {ok:true, items:(b.files||[]).map(f=>({name:f.name, size:f.size, ok:true, uri:"harness://s/"+encodeURIComponent(f.name), final:"2026-10-02 0900 — "+f.name}))}; if(b.action==="clearPending") return Object.assign({}, mgState||{}, {ok:true}); if(b.action==="upStart") return {ok:true, uri:(NATIVE && window.__xcPut ? "http://localhost:3464/u/" : "harness://s/")+encodeURIComponent(b.name), name:"2026-10-02 0900 — "+b.name, chunk:262144*4}; if(b.action==="upDone") return b.name==="broken.mov" ? {ok:false, error:"size mismatch: phone 10 bytes, Drive 9 bytes. Send it again."} : {ok:true, receipt:{id:b.id, size:b.size}}; if(b.action==="setWa" && mgState){ const on = !!b.on, w = mgState.wa || {};   // v4.25: echo setWa like the backend does
       return Object.assign({}, mgState, { ok:true, wa: { to: String(b.to||"").replace(/\D/g,"").replace(/^04/,"614"), name:b.name||"", optIn: b.optInAt ? {at:b.optInAt, how:b.optInHow||""} : null, on, off: Object.fromEntries((b.off||[]).map(k=>[k,true])), since: on ? (w.since || new Date().toISOString()) : null } }); }
     if(b.action==="waAdmin"){ if(b.op==="status") return {ok:true, at:new Date().toISOString(), templates:["xc_welcome","xc_redo","xc_alert"].map((n,i)=>({name:n, status:["APPROVED","PENDING","APPROVED"][i]}))};
       if(b.op==="submit") return {ok:true, submitted:{xc_welcome:"submitted"}}; if(b.op==="test") return {ok:true};
       window.__waDevOn = b.op==="channels" ? !!b.on : !!window.__waDevOn;
       return {ok:true, keys:{WA_KEY:true,WA_PLUGIN_ID:true,WA_PHONE_ID:true,WA_WABA_ID:true,WA_XC_TO:true}, ready:true, sending:window.__waDevOn, xcTo:"…0875", templates:20, lastStatus:null, triggers:["sweep","healthCheck","healthDaily","backupDb","waEvening"], clients:["Sam Carter PT"]}; }
     return {ok:true}; };
+  apiPostRun = async(b)=>apiPost(b);   // v4.41: prefsSet and pushReg go through apiPostRun; the harness never reaches the live server
   warm = ()=>{};
   pin = "DEV"; code = null;
   const v = q.get("view");
-  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="calendar") xcnav("calendar"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="manage"){ openManage("SAMPT1234"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } if(ms==="review" && q.get("rq")){ rqToggle("0"); rqPick("r3", true); } }, 400); } if(v==="client"){ LS.set("seenFilmMode","1"); document.body.classList.remove("xc"); code="SAMPT1234"; me="Sam"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); if(q.get("clips")) setTimeout(()=>toggleNames(0), 600); } }catch(e){} }, 600);
+  if(v) setTimeout(()=>{ try{ if(v==="dash") xcnav("dash"); if(v==="calendar") xcnav("calendar"); if(v==="activity") xcnav("activity"); if(v==="studio") xcnav("studio"); if(v==="review"){ xcnav("today"); setTimeout(()=>openPlayer(), 500); } if(v==="search"){ xcnav("today"); setTimeout(srchOpen, 400); } if(v==="keys"){ xcnav("today"); setTimeout(keysOpen, 400); } if(v==="manage"){ openManage("SAMPT1234"); const ms = q.get("sub"); if(ms) setTimeout(()=>{ mtab(ms); if(ms==="edit"){ editOpen.add(0); renderEdit(); } if(ms==="review" && q.get("rq")){ rqToggle("0"); rqPick("r3", true); } }, 400); } if(q.get("off")==="1"){ window.__devOff = true; setTimeout(offPaint, 100); } if(v==="client"){ if(q.get("tour")==="1"){ LS.set("tour", null); LS.set("tourDue", "1"); } else LS.set("tour", "1"); if(q.get("done")==="all") LS.set("cele", null); LS.set("seenFilmMode","1"); document.body.classList.remove("xc"); code="SAMPT1234"; me="Sam"; enterClient(); const sv = q.get("sub"); if(sv) setTimeout(()=>subtab(sv), 300); if(q.get("clips")) setTimeout(()=>toggleNames(0), 600); if(q.get("pr")==="1") setTimeout(()=>{ openFilm(0); setTimeout(fmPrompt, 300); }, 700); if(q.get("up")==="1") setTimeout(()=>{ upd = [{k:"C3940.MP4|500000000",code,idx:0,name:"C3940.MP4",size:5e8,type:"video/mp4",st:"queued",off:0},{k:"C3941.MP4|300000000",code,idx:0,name:"C3941.MP4",size:3e8,type:"video/mp4",st:"error",err:"x",off:0,file:new Blob(["x"])},{k:"C3942.MP4|200000000",code,idx:1,name:"C3942.MP4",size:2e8,type:"video/mp4",st:"done",off:2e8,doneAt:Date.now()}]; updShow(); }, 700); } }catch(e){} }, 600);
 })();
 if(NATIVE){ document.body.classList.add("native"); natPreBoot().catch(e => console.log("preboot " + e)).then(boot).catch(e => { console.log("boot " + e); bootFailed(); }).then(() => { setTimeout(natLiveUpdate, 4000); }); } else boot().catch(e => { console.log("boot " + e); bootFailed(); });   /* the app always starts */
 </script>
