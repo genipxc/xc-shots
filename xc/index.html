@@ -763,6 +763,9 @@ body.native{overscroll-behavior-x:none}
       <p class="sub" style="margin-top:8px">The code they type, and every phone signed in. Signing a phone out keeps everyone else in. A new code stops the old one working for new phones; phones already in stay in.</p>
       <div class="mlist" style="max-width:460px" id="mgSign"></div>
       <div class="sheetbtns" style="max-width:420px"><button class="up" onclick="newCode()">Make a new studio code</button></div>
+      <div id="mgHeldWrap" class="hide"><p class="msect">Files set aside</p>
+      <p class="sub" style="margin-top:8px">These came in named like clips but are really programs or documents. They're private in the client's ⚠ Set aside folder in the vault. Don't open them. Once you've looked, clear the hold so the shot can say safe to clear.</p>
+      <div class="mlist" style="max-width:460px" id="mgHeld"></div></div>
       <p class="msect">Works alone</p>
       <p class="sub" style="margin-top:8px">For a one-person business. They sign in with the studio code only: no name list, no owner PIN, and they get the owner view (results, history, documents).</p>
       <div class="addteam" style="max-width:420px"><input id="soloName" placeholder="Their name, e.g. Sam" onkeydown="if(event.key==='Enter')saveSolo(true)"><button onclick="saveSolo(true)">Turn on</button></div>
@@ -1061,7 +1064,7 @@ body.native{overscroll-behavior-x:none}
 <script>
 /* v4.31 harness only (?uidev=1&nat=1): a stand-in for the iPhone app's bridge, so the native upload path can be clicked through in a browser */
 window.__xcSelf = /XCShotsTest/.test(navigator.userAgent) && /[?&]xcselftest=1/.test(location.search);   // v4.33: test builds only (mode.cjs test)   // iPhone app test build only: sends files placed in Library/NoCloud/xc-test by the Mac (no picker)
-if(window.__xcSelf){ const m = /[?&]xcode=([A-Z0-9]{4,16})/.exec(location.search); if(m){ try { localStorage.setItem("xcs.code", m[1]); if(!localStorage.getItem("xcs.me")) localStorage.setItem("xcs.me", "XC"); } catch(e){} } }   // test build: signed in as the test client
+if(window.__xcSelf){ const m = /[?&]xcode=([A-Z0-9-]{4,16})/.exec(location.search); if(m){ try { localStorage.setItem("xcs.code", m[1]); if(!localStorage.getItem("xcs.me")) localStorage.setItem("xcs.me", "XC"); } catch(e){} } }   // test build: signed in as the test client
 window.__xcPut = /[?&]uidev=1/.test(location.search) && /[?&]put=1/.test(location.search);   // harness: send native test uploads to a local sink (:3464)
 if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !window.Capacitor) (function(){ const LS_ = {}, n0 = { n: 0 }; const L = ev => LS_["Uploader"] && LS_["Uploader"](ev);
   const KC = JSON.parse(sessionStorage.getItem("__kc") || "{}"), kcw = () => sessionStorage.setItem("__kc", JSON.stringify(KC)); window.__face = sessionStorage.getItem("__noface") ? false : true; window.__fire = (p, e) => (LS_[p + "." + e] || []).forEach(f => f());   // v4.37: Keychain + Face ID + app pause/resume stand-ins
@@ -1075,8 +1078,9 @@ if(/[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(location.search) && !
     if(p === "Uploader" && m === "startUpload"){ const id = "u" + (++n0.n); let k = 0; const t = setInterval(() => { k += 20; L && L({ name: "uploading", id, payload: { percent: k } }); if(k >= 100){ clearInterval(t); L && L({ name: "completed", id, payload: { statusCode: 200 } }); } }, 400); return Promise.resolve({ id }); }
     return Promise.resolve({}); } }; })();
 /* ═══════════════ config ═══════════════ */
+try { const k1 = localStorage.getItem("xcs.pk"), c1 = localStorage.getItem("xcs.code") || localStorage.getItem("xcs.ownercode"); if(k1){ if(c1 && !/-/.test(c1)){ const m = JSON.parse(localStorage.getItem("xcs.pks") || "{}"); m[c1.toUpperCase()] = k1; localStorage.setItem("xcs.pks", JSON.stringify(m)); } localStorage.removeItem("xcs.pk"); } } catch(e){}   // v4.38: 4.37 kept one key
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.37";
+const BUILD = "4.38";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1118,10 +1122,20 @@ let lastErr = "";
 function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout after "+ms/1000+"s")), ms))]); }
 /* v4.37: every phone has its own key from XC's side (hello hands it out). It goes with every request for its client, so XC can sign
    one phone out, and a new studio code never signs out the phones already in. */
-function phoneKey(){ return LS.get("pk") || ""; }
-function keyed(o){ if(o && o.code && !o.pk && phoneKey()) o.pk = phoneKey(); return o; }
+/* v4.38: one key per client (pks = {record code: key}), so a phone that has been two clients never sends the wrong one */
+function pks(){ try { return JSON.parse(LS.get("pks") || "{}") || {}; } catch(e){ return {}; } }
+function phoneKey(c){ c = String(c || code || LS.get("ownercode") || "").toUpperCase(); return pks()[c] || ""; }
+function setKey(c, k){ if(!c || !k) return; const m = pks(); m[String(c).toUpperCase()] = k; LS.set("pks", JSON.stringify(m)); }
+function keyed(o){
+  if(!o || !o.code) return o;
+  if(typeof previewMode !== "undefined" && previewMode && pin && (o.action === "state" || o.action === "uploads")){ o.pin = pin; o.as = "team"; return o; }   // v4.38: XC's preview keeps reading as XC
+  if(!o.pk){ const k = phoneKey(o.code); if(k) o.pk = k; }
+  return o;
+}
 function devLabel(){ const ua = navigator.userAgent; return NATIVE ? "iPhone app" : /iPhone|iPad/.test(ua) ? "iPhone browser" : /Android/.test(ua) ? "Android" : "Computer"; }
-function seenSignedOut(d){ if(d && d.error === "signed out" && (code || LS.get("ownercode")) && !previewMode) setTimeout(signedOut, 0); return d; }
+function seenSignedOut(d){
+  const onGate = ["gateCode", "gateOwner", "gatePin"].some(id => { const el = document.getElementById(id); return el && !el.classList.contains("hide"); });   // v4.38: a wrong code typed on a gate is just a wrong code
+  if(d && d.error === "signed out" && (code || LS.get("ownercode")) && !previewMode && !onGate) setTimeout(signedOut, 0); return d; }
 async function apiGet(params){
   inflight++; syncUI("busy"); params = keyed(Object.assign({}, params));
   try {
@@ -1172,6 +1186,7 @@ function splashDone(){
 /* v4.37: every PIN is typed on an iPhone-style keypad, so no keyboard jumps up. "Use letters" keeps any older PIN with letters working. */
 const PAD_ABC = ["", "", "ABC", "DEF", "GHI", "JKL", "MNO", "PQRS", "TUV", "WXYZ"];
 function padInit(){
+  natPinCheck();
   document.querySelectorAll(".pad[data-for]").forEach(p => {
     if(p.dataset.ready) return; p.dataset.ready = "1";
     const id = p.dataset.for, go = p.dataset.go, k = n => `<button type="button" data-k="${n}" aria-label="${n}">${n}<small>${PAD_ABC[n]}</small></button>`;
@@ -1180,10 +1195,10 @@ function padInit(){
       <div class="codein ptext"><input id="${id}" type="password" placeholder="PIN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="PIN"><button class="bigbtn" style="flex:none;padding:14px 20px" type="button" data-k="go">Enter</button></div>
       <button type="button" class="plink" data-k="txt">PIN has letters? Type it instead</button>`;
     const inp = p.querySelector("input");
-    inp.addEventListener("keydown", e => { if(e.key === "Enter") window[go](); });
+    inp.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); padGo(p); } });
     p.addEventListener("click", e => {
       const b = e.target.closest("button[data-k]"); if(!b) return; const v = b.dataset.k;
-      if(v === "go") return window[go]();
+      if(v === "go") return padGo(p);
       if(v === "txt"){ const t = !p.classList.contains("txt"); p.classList.toggle("txt", t); b.textContent = t ? "Use the keypad" : "PIN has letters? Type it instead"; if(t) inp.focus(); return; }
       if(v === "face") return natPinFaceId();
       if(v === "del") inp.value = inp.value.slice(0, -1); else if(inp.value.length < 12){ inp.value += v; natHap("light"); }
@@ -1192,21 +1207,25 @@ function padInit(){
     padPaint(p);
   });
 }
+async function padGo(p){ if(p.dataset.busy) return; p.dataset.busy = "1"; try { await window[p.dataset.go](); } finally { delete p.dataset.busy; } }   // v4.38: one try at a time
+let natHasPin = false;   // v4.38: the Face ID key shows only when XC's PIN is saved on this phone
+function natPinCheck(){ if(natPinCheck.done || !NATIVE) return; natPinCheck.done = true; natPlugin("XCNative", "kcHas", { key: "pin", bio: true }).then(r => { natHasPin = !!(r && r.has); document.querySelectorAll(".pad[data-for]").forEach(padPaint); }).catch(() => {}); }   // called from padInit: NATIVE is defined further down
 function padPaint(p){
   const inp = p.querySelector("input"), n = inp.value.length, face = p.querySelector('[data-slot="l"]'), del = p.querySelector('[data-k="del"]');
   p.querySelector(".pdots").innerHTML = Array.from({ length: Math.max(4, n) }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("");
   del.textContent = n ? "Delete" : ""; del.classList.toggle("pnil", !n);
-  face.classList.toggle("pnil", !(NATIVE && p.dataset.for === "pinInput"));   // Face ID key: XC's PIN in the app (owners get Face ID straight away once saved)
+  face.classList.toggle("pnil", !(NATIVE && natHasPin && p.dataset.for === "pinInput"));   // Face ID key: XC's PIN in the app (owners get Face ID straight away once saved)
   if(n >= 4){ face.classList.remove("pnil"); face.className = "pgo"; face.textContent = "OK"; face.dataset.k = "go"; face.setAttribute("aria-label", "Enter"); }
-  else if(face.dataset.k === "go"){ face.className = "pfn"; face.textContent = "Face ID"; face.dataset.k = "face"; face.setAttribute("aria-label", "Unlock with Face ID"); face.classList.toggle("pnil", !(NATIVE && p.dataset.for === "pinInput")); }
+  else if(face.dataset.k === "go"){ face.className = "pfn"; face.textContent = "Face ID"; face.dataset.k = "face"; face.setAttribute("aria-label", "Unlock with Face ID"); face.classList.toggle("pnil", !(NATIVE && natHasPin && p.dataset.for === "pinInput")); }
 }
 function padWrong(id){ const inp = document.getElementById(id); if(!inp) return; const p = inp.closest(".pad"); inp.value = ""; if(!p) return; padPaint(p); const d = p.querySelector(".pdots"); d.classList.remove("bad"); void d.offsetWidth; d.classList.add("bad"); natHap("warning"); }
 function padClear(id){ const inp = document.getElementById(id); if(inp){ inp.value = ""; const p = inp.closest(".pad"); if(p) padPaint(p); } }
 document.addEventListener("keydown", e => {   // a computer's keyboard types on the visible keypad too
   if(e.target && e.target.matches && e.target.matches("input,textarea")) return;
+  if(e.metaKey || e.ctrlKey || e.altKey) return;   // v4.38
   const p = [...document.querySelectorAll(".pad[data-for]")].find(x => x.offsetParent !== null && !x.classList.contains("txt")); if(!p) return;
   const inp = p.querySelector("input");
-  if(/^\d$/.test(e.key) && inp.value.length < 12) inp.value += e.key; else if(e.key === "Backspace") inp.value = inp.value.slice(0, -1); else if(e.key === "Enter"){ window[p.dataset.go](); return; } else return;
+  if(/^\d$/.test(e.key) && inp.value.length < 12) inp.value += e.key; else if(e.key === "Backspace") inp.value = inp.value.slice(0, -1); else if(e.key === "Enter"){ e.preventDefault(); padGo(p); return; } else return;
   e.preventDefault(); padPaint(p);
 });
 const TOUCH = matchMedia("(pointer: coarse)").matches;   // phones: never pop the keyboard up by itself
@@ -1226,7 +1245,7 @@ async function boot(){
   splashT1 = setTimeout(()=>{ const m = document.getElementById("splashMsg"); if(m) m.textContent = "Waking the server…"; }, 5000);
   splashT2 = setTimeout(()=>{ const m = document.getElementById("splashMsg"); if(m) m.textContent = "Still going — hang tight"; }, 14000);
   const isXC = FORCE_XC || location.hash === "#xc" || /[?&]xc(=|&|$)/.test(location.search);
-  if(!isXC && (code || LS.get("ownercode")) && !phoneKey()){ await keyUp(); if(!code && !LS.get("ownercode")){ gate("gateCode"); return; } }   // v4.37
+  if(!isXC && (code || LS.get("ownercode")) && !phoneKey()) keyUp();   // v4.37 · v4.38: in the background, the cached screen never waits for it
   if(isXC || (pin && !code)){ if(pin){ await enterXC(); } else gate("gatePin"); return; }
   // returning owner: last-known state instantly, verify + refresh in the background
   if(code && LS.get("ownerpin") && LS.get("ownercode")){
@@ -1258,9 +1277,9 @@ async function tryCode(){
   btn.disabled = false;
   if(!d.ok){
     if(d.error === "unknown action"){ const d2 = await apiGet({action:"state", code:v}); if(d2.ok){ code = v; LS.set("code", v); C = d2; buildNames(); gate("gateName"); } else err.textContent = "That's not it — check the gold card in the staff room, or ask your manager."; return; }
-    err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : d.error === "signed out" ? "That code has changed. Ask XC or your manager for the new one." : "That's not it — check the gold card in the staff room, or ask your manager."; return;
+    err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : d.error === "signed out" ? "That code has changed. Ask XC or your manager for the new one." : /busy/.test(d.error || "") ? "XC's system is busy. Tap Open again in a moment." : "That's not it — check the gold card in the staff room, or ask your manager."; return;
   }
-  if(d.pk) LS.set("pk", d.pk);   // v4.37: this phone's own key
+  if(d.pk) setKey(d.code || v, d.pk);   // v4.37: this phone's own key
   const cc = d.code || v;   // v4.37: a studio code (RILEY-7K4PQ) signs in to the client's record code
   if(d.solo){ await soloEnter(cc, d.solo.name); return; }   // v4.35: works alone: the code is the whole sign-in
   code = cc; LS.set("code", cc); C = d;   // partial (name+team) — full state loads on entry
@@ -1303,11 +1322,11 @@ function signedOut(){
 }
 /* v4.37: phones signed in before keys existed get theirs quietly on the next open, so a new studio code never signs them out */
 async function keyUp(typed){
-  const cc = typed || code || LS.get("ownercode"); if(!cc || phoneKey()) return;
-  const d = await apiGet({ action: "hello", code: cc, dev: devLabel() });
-  if(d.ok && d.pk){ LS.set("pk", d.pk); if(d.code && d.code !== cc){ if(code){ code = d.code; LS.set("code", d.code); } if(LS.get("ownercode")) LS.set("ownercode", d.code); } }
+  const cc = typed || code || LS.get("ownercode"); if(!cc || (!typed && phoneKey(cc))) return;
+  const d = await apiGet({ action: "hello", code: cc, dev: devLabel(), pk: phoneKey(cc) });
+  if(d.ok && d.pk){ setKey(d.code || cc, d.pk); if(d.code && d.code !== cc && !typed){ if(code === cc){ code = d.code; LS.set("code", d.code); } if(LS.get("ownercode") === cc) LS.set("ownercode", d.code); } }
 }
-function resetDevice(){ LS.set("code",null); LS.set("me",null); LS.set("ownercode",null); LS.set("ownerpin",null); LS.set("pk",null); dropCache("state"); dropCache("owner"); code=null; me=null; C=null; U=null; upOpen.clear(); stopWatchUploads(); stopPoll(); gate("gateCode"); }
+function resetDevice(){ LS.set("code",null); LS.set("me",null); LS.set("ownercode",null); LS.set("ownerpin",null); LS.set("pks",null); dropCache("state"); dropCache("owner"); code=null; me=null; C=null; U=null; upOpen.clear(); stopWatchUploads(); stopPoll(); gate("gateCode"); }
 
 /* ═══════════════ client side ═══════════════ */
 let writeSeq = 0;   // bumped on every write; stale polls that started earlier are discarded
@@ -1316,7 +1335,8 @@ async function loadClient(){
   const seq = writeSeq;
   const d = await apiGet({action:"state", code});
   if(seq !== writeSeq) return;   // a write happened while this was in flight — its response is newer
-  if(d.ok && d.code && d.code !== code) return;   // v4.31: signed in as someone else meanwhile
+  if(d.ok && d.code && d.code !== code && /-/.test(code || "")){ code = d.code; LS.set("code", d.code); keyUp(); }   // v4.38: a studio code from a link: switch to the record code
+  else if(d.ok && d.code && d.code !== code) return;   // v4.31: signed in as someone else meanwhile
   if(d.ok){ C = d; writeCache("state", d); if(!document.getElementById("client").classList.contains("hide")) renderClient(); }
   else if(d.error !== "network"){
     C = null; dropCache("state");
@@ -1693,9 +1713,12 @@ function updPick(i, from){
 }
 /* v4.31: tell XC's side about every picked clip at once, so a shot can't say safe to clear while some were never started */
 /* v4.37: XC's side only takes videos, photos and voice notes (and checks each file's first bytes when it lands) */
-const MEDIA_EXT = /\.(mov|mp4|m4v|hevc|heic|heif|hif|jpe?g|png|gif|webp|avif|dng|tiff?|cr2|cr3|crw|arw|nef|raf|orf|rw2|avi|mxf|mts|m2ts|ts|3gp|webm|mkv|insv|insp|lrv|lrf|braw|r3d|wav|m4a|mp3|aac|aif|aiff|caf|flac|ogg|opus)$/i;
+const MEDIA_EXT = /\.(mov|mp4|m4v|hevc|heic|heif|hif|jpe?g|png|gif|webp|avif|dng|tiff?|cr2|cr3|crw|crm|arw|nef|raf|orf|rw2|avi|mxf|mts|m2ts|m2t|ts|mpe?g|m2v|vob|mod|tod|wmv|flv|3gp|3g2|webm|mkv|insv|insp|lrv|lrf|braw|r3d|wav|m4a|mp3|aac|aif|aiff|caf|flac|ogg|opus|amr|3ga|qta)$/i;   // same list as the backend
+const JUNK_RE = /^(\._.*|\.DS_Store|Thumbs\.db|desktop\.ini|.*\.(xml|thm|srt|aae|bim|cpi|ctg|mpl|bdm|ind|xmp|ppn|log))$/i;
 function mediaOnly(files){
-  const ok = files.filter(f => MEDIA_EXT.test(String(f.name || "").trim())), no = files.length - ok.length;
+  files = files.filter(f => !JUNK_RE.test(String(f.name || "").trim()));   // v4.38: camera and Mac extras are left out quietly
+  const isMedia = f => { const n = String(f.name || "").trim(); return MEDIA_EXT.test(n) || (!/\.[A-Za-z0-9]{1,8}$/.test(n) && /^(video|image|audio)\//.test(f.type || f.mimeType || "")); };
+  const ok = files.filter(isMedia), no = files.length - ok.length;
   if(no) toast(`<b>${no} file${no === 1 ? "" : "s"} left out.</b> Only videos, photos and voice notes can be sent.`);
   return ok;
 }
@@ -1885,6 +1908,7 @@ async function natReceipt(x, quiet){
   for(let k = 0; k < 6; k++){
     const d = await apiPost({ action: "upDone", code: x.code, idx: x.idx, final: x.final, name: x.name, size: x.size });
     if(d.ok){ console.log("nat: RECEIPT ok " + x.name + " " + (d.receipt && d.receipt.id)); natHap("success"); x.st = "done"; x.doneAt = Date.now(); x.off = x.size; const p = x.path; x.path = null; x.natId = null; updSave(); updRender(); natTidy(p); natAllDone(); return true; }
+    if(d.stop){ x.st = "error"; x.err = d.error; x.uri = null; natTidy(x.path); x.path = null; updSave(); updRender(); return false; }   // v4.38: set aside: final, never sent again
     if(quiet && d.error !== "network") return false;   // checking on a clip that may still be sending: not there yet is fine
     if(d.error !== "network" && !/can't find/.test(d.error || "")){ x.st = "error"; x.err = d.error; x.uri = null; natTidy(x.path); x.path = null; updSave(); updRender(); return false; }
     await new Promise(r => setTimeout(r, 3000 * (k + 1)));   // Drive can take a moment to list a file it just finished
@@ -1954,7 +1978,7 @@ function natPlugin(p, m, o){ return NATIVE ? window.Capacitor.nativePromise(p, m
 function natHap(kind){ if(!NATIVE) return; (kind === "success" || kind === "warning" ? natPlugin("Haptics", "notification", { type: kind.toUpperCase() }) : natPlugin("Haptics", "impact", { style: kind === "heavy" ? "HEAVY" : "LIGHT" })).catch(() => {}); }
 
 /* sign-in: secrets in the Keychain behind Face ID, the rest mirrored so a cleared web storage doesn't sign anyone out */
-const NAT_SECRET = { pin: 1, ownerpin: 1, editorpin: 1 }, NAT_KEEP = { code: 1, me: 1, ownercode: 1, guided: 1, seenFilmMode: 1, gapHide: 1, upq: 1, pk: 1, faceLock: 1 }, NAT_MEM = {};   // upq = clips still sending: a wiped page must still check on them
+const NAT_SECRET = { pin: 1, ownerpin: 1, editorpin: 1 }, NAT_KEEP = { code: 1, me: 1, ownercode: 1, guided: 1, seenFilmMode: 1, gapHide: 1, upq: 1, pks: 1, faceLock: 1 }, NAT_MEM = {};   // upq = clips still sending: a wiped page must still check on them
 if(NATIVE){
   const g = LS.get, s = LS.set;
   LS.get = k => NAT_SECRET[k] ? (NAT_MEM[k] !== undefined ? NAT_MEM[k] : (g(k) === "solo" ? "solo" : null)) : g(k);
@@ -1978,7 +2002,10 @@ async function natPreBoot(){
       Object.keys(NAT_KEEP).concat(["ownerpin"]).forEach(k => { if(it[k] && (k !== "ownerpin" || it[k] === "solo")) try { localStorage.setItem("xcs." + k, it[k]); } catch(e){} });
       code = LS.get("code"); me = LS.get("me");
     }
-    if(faceLockOn()){ natCover(true); natLocked = true; while(!(await natAppUnlock())) await new Promise(r => { const b = document.querySelector("#lockv .bigbtn"); b.onclick = () => { b.onclick = () => natAppUnlock(); r(); }; }); }   // v4.37: the face first, then everything else
+    if(faceLockOn()){   // v4.37: the face first, then everything else. v4.38: any unlock (button, resume, first try) ends the wait
+      natCover(true); natLocked = true; natSplashHide();   // the shell hears boot is OK: a lock screen is a good start
+      const done = new Promise(r => natUnlockWait.push(r)); natAppUnlock(); await done;
+    }
     if(!code){ const p = await natUnlock("pin", "Unlock the XC studio"); if(p) pin = p; }   // the studio: XC's phone
     else if(LS.get("ownercode")) await natUnlock("ownerpin", "Unlock the owner view");
   } catch(e){}
@@ -1988,7 +2015,8 @@ async function natPreBoot(){
    behind Face ID, so the app asks for a face on every open and after 2 minutes away. The screen is covered while the app is in the
    background, so the app switcher never shows a client's shots. If the lock item is ever gone (a restored phone), the lock turns off
    rather than shutting anyone out. */
-let natLocked = false, natAwayAt = 0;
+let natLocked = false, natAwayAt = 0, natUnlockWait = [];
+function natUnlockedNow(){ const w = natUnlockWait; natUnlockWait = []; w.forEach(f => f()); }
 function faceLockOn(){ return NATIVE && LS.get("faceLock") === "1"; }
 function faceLockPaint(){ document.querySelectorAll(".faceLockBtn").forEach(b => { b.textContent = faceLockOn() ? "Turn off" : "Turn on"; b.classList.toggle("ok", !faceLockOn()); }); }
 async function faceLockToggle(){
@@ -2008,15 +2036,16 @@ async function natAppUnlock(check){
   let has = true; try { has = (await natPlugin("XCNative", "kcHas", { key: "applock", bio: true })).has; } catch(e){}
   if(!has){ LS.set("faceLock", null); natCover(false); natLocked = false; faceLockPaint(); return true; }
   const r = await natPlugin("XCNative", "kcGet", { key: "applock", bio: true, reason: check ? "Turn off the XC Studio lock" : "Unlock XC Studio" }).catch(() => null);
-  if(r && r.value === "1"){ natLocked = false; natCover(false); return true; }
+  if(r && r.value === "1"){ natLocked = false; natCover(false); natUnlockedNow(); return true; }
+  if(r && r.error === "no passcode"){ LS.set("faceLock", null); natPlugin("XCNative", "kcRemove", { key: "applock", bio: true }).catch(() => {}); natLocked = false; natCover(false); faceLockPaint(); natUnlockedNow(); return true; }   // v4.38: the phone's passcode was removed: the lock can't work, so it turns off
   if(m) m.textContent = "Face ID didn't go through. Tap Unlock to try again.";
   return false;
 }
 if(NATIVE){
   try { window.Capacitor.addListener("App", "pause", () => { natAwayAt = Date.now(); if(faceLockOn() && !natPicking) natCover(true); }); } catch(e){}
   try { window.Capacitor.addListener("App", "resume", () => {
-    if(!faceLockOn() || natPicking){ natCover(false); return; }
-    if(Date.now() - natAwayAt < 120000){ natCover(false); return; }   // back within 2 minutes: no face needed
+    if(!faceLockOn() || natPicking){ if(!natLocked) natCover(false); return; }
+    if(!natLocked && Date.now() - natAwayAt < 120000){ natCover(false); return; }   // back within 2 minutes: no face needed (v4.38: never while locked)
     natLocked = true; natCover(true); const m = document.getElementById("lockMsg"); if(m) m.textContent = "Unlock with Face ID to carry on."; natAppUnlock();
   }); } catch(e){}
 }
@@ -3126,10 +3155,10 @@ async function tryOwner(){
   const t1 = setTimeout(()=>{ err.innerHTML = '<span class="spin"></span>Waking the server — first open of the day is the slow one…'; }, 4000);
   const d = await apiGet({action:"state", code:oc, owner:op});
   clearTimeout(t1); btn.disabled = false; err.className = "err";
-  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : "Code didn't match a client."; return; }
+  if(!d.ok){ err.textContent = d.error==="network" ? "Couldn't reach the server — " + (lastErr || "no connection") : d.error === "signed out" ? "That code has changed. Ask XC for the new studio code." : "Code didn't match a client."; return; }
   if(d.role < 1){ padWrong("ownPin"); err.textContent = "Wrong PIN. Check it with XC."; return; }
   err.textContent = "";
-  if(!phoneKey()) await keyUp(oc);   // v4.37: the owner's phone gets its key from the code they typed
+  await keyUp(oc);   // v4.37: the owner's phone gets its key from the code they typed (v4.38: its own key for this client, kept if it has one)
   LS.set("ownercode", d.code || oc); LS.set("ownerpin", op);
   ownerEnter(d);
 }
@@ -3199,6 +3228,17 @@ async function saveWa(){
 async function saveOwnerEmail(){ const v = document.getElementById("ownerEmailInput").value.trim(); const d = await apiPost({action:"setOwnerEmail", pin, code:mgCode, ownerEmail:v}); if(d.ok){ toast(v ? "<b>Owner email saved</b> — they get the month-wrap email at close." : "Owner email cleared."); mgState = mgTake(d); } else toast("Couldn't: "+esc(d.error)); }
 function addDoc(){ const l = document.getElementById("docLabel").value.trim(), u = document.getElementById("docUrl").value.trim(); if(!l || !/^https:\/\//.test(u)){ toast("Need a label and a full https:// link."); return; } editDocs.push({label:l, url:u}); document.getElementById("docLabel").value=""; document.getElementById("docUrl").value=""; renderTools(); }
 async function saveDocs(){ const d = await apiPost({action:"setDocs", pin, code:mgCode, docs:editDocs}); if(d.ok){ toast("<b>Documents saved.</b> The owner sees them now."); mgState = mgTake(d); editDocs = null; renderTools(); } else toast("Couldn't: "+esc(d.error)); }
+function renderHeld(){
+  const w = document.getElementById("mgHeldWrap"), host = document.getElementById("mgHeld"); if(!w || !mgState) return;
+  const h = mgState.held || {}, ks = Object.keys(h).filter(k => (h[k] || []).length);
+  w.classList.toggle("hide", !ks.length); if(!ks.length) return;
+  host.innerHTML = ks.map(k => { const nm = k === "u" ? "Unsorted" : ((mgState.shots || [])[Number(k)] || {}).n || "Shot " + (Number(k) + 1);
+    return `<div class="mrow"><div class="r"><span class="nm">${esc(nm)}<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">${esc(h[k].map(x => x.n).join(", ").slice(0, 120))}</span></span><button class="mact ok" onclick="heldClear(${q(k)})">I've checked</button></div></div>`; }).join("");
+}
+async function heldClear(k){
+  const d = await apiPost({ action: "heldClear", pin, code: mgCode, idx: k === "u" ? "u" : Number(k) });
+  if(d.ok){ mgState = mgTake(d); renderTools(); toast("Hold cleared."); } else toast("Couldn't: " + esc(d.error));
+}
 /* v4.37: studio code + the phones signed in */
 function renderSign(){
   const host = document.getElementById("mgSign"); if(!host || !mgState) return;
@@ -3209,12 +3249,13 @@ function renderSign(){
 }
 async function newCode(){
   const nm = mgState.name;
-  if(!(await ask({ title: "Make a new studio code for " + nm + "?", body: "The old code stops working for new phones. Phones already signed in stay in. Send the new code to anyone who still needs to sign in, and print a new staff card.", ok: "Make new code" }))) return;
+  const listed = (mgState.phones || []).length, team = (mgState.team || []).length;
+  if(!(await ask({ title: "Make a new studio code for " + nm + "?", body: "The old code stops working straight away. Phones on the list below stay signed in (" + listed + " now). Any phone that isn't on the list yet, because it hasn't opened the app since this update, will need the new code." + (team > listed ? " " + nm + " has " + team + " names on the team, so check everyone's phone has shown up first." : "") + " Then send the new code and print a new staff card.", ok: "Make new code" }))) return;
   const d = await apiPost({ action: "newCode", pin, code: mgCode });
   if(d.ok){ mgState = mgTake(d); renderTools(); toast("<b>New studio code: " + esc(d.join) + "</b>"); } else toast("Couldn't: " + esc(d.error));
 }
 async function phoneRemove(id, label){
-  if(!(await ask({ title: "Sign out " + label + "?", body: "That phone goes back to the code screen. Everyone else stays signed in." + (mgState.strong ? "" : " A new studio code is made too, so the old short code can't sign it straight back in."), ok: "Sign out", danger: true }))) return;
+  if(!(await ask({ title: "Sign out " + label + "?", body: "That phone goes back to the code screen. Phones on the list stay signed in." + (mgState.strong ? "" : " A new studio code is made too, so the old short code can't sign it straight back in. Any phone not on the list yet will need the new code."), ok: "Sign out", danger: true }))) return;
   const d = await apiPost({ action: "phoneRemove", pin, code: mgCode, id });
   if(d.ok){ mgState = mgTake(d); renderTools(); toast("<b>Signed out.</b>" + (d.join ? " Studio code: " + esc(d.join) : "")); } else toast("Couldn't: " + esc(d.error));
 }
@@ -3250,7 +3291,7 @@ function renderTools(){
     ? Object.keys(INTAKE_LABELS).map(k=>`<div class="mrow"><div class="r"><span class="nm" style="flex:none;width:150px;color:var(--gold);font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase">${INTAKE_LABELS[k]}</span><span class="who" style="color:var(--ink);text-align:left;max-width:none;flex:1">${esc(iv.answers[k]||"—")}</span></div></div>`).join("")
     : '<p class="sub">Not filled in yet — text them the link above (needs backend v2.3).</p>';
   document.getElementById("ownerPinState").textContent = mgState.hasOwnerPin ? "OWNER PIN IS SET" : "NO OWNER PIN YET";
-  renderSign();
+  renderSign(); renderHeld();
   { const so = mgState.solo, sn = document.getElementById("soloName");
     document.getElementById("soloState").textContent = so ? "ON · SIGNS IN AS " + String(so.name).toUpperCase() + " WITH THE CODE ONLY" : "OFF · THEY PICK A NAME, OWNERS USE A PIN";
     document.getElementById("soloOff").classList.toggle("hide", !so); if(document.activeElement !== sn) sn.value = so ? so.name : ""; }
