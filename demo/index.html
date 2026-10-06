@@ -1132,7 +1132,7 @@ if(window.__devHost && /[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(l
 /* ═══════════════ config ═══════════════ */
 try { const k1 = localStorage.getItem("xcs.pk"), c1 = localStorage.getItem("xcs.code") || localStorage.getItem("xcs.ownercode"); if(k1){ if(c1 && !/-/.test(c1)){ const m = JSON.parse(localStorage.getItem("xcs.pks") || "{}"); m[c1.toUpperCase()] = k1; localStorage.setItem("xcs.pks", JSON.stringify(m)); } localStorage.removeItem("xcs.pk"); } } catch(e){}   // v4.38: 4.37 kept one key
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.40";
+const BUILD = "4.40.1";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -1302,9 +1302,13 @@ document.addEventListener("keydown", e => {   // a computer's keyboard types on 
   e.preventDefault(); padPaint(p);
 });
 const TOUCH = matchMedia("(pointer: coarse)").matches;
-(function(){ const h = document.querySelector("#gateCode .gwel"); if(!h) return; let t = null;   // v4.40: hold the "Welcome to the studio" heading for a second = XC's studio sign-in on a new phone
-  const go = () => { t = setTimeout(() => { natHap("light"); gate("gatePin"); }, 900); }, stop = () => { if(t){ clearTimeout(t); t = null; } };
-  h.addEventListener("touchstart", go, { passive: true }); h.addEventListener("touchend", stop); h.addEventListener("touchmove", stop); h.addEventListener("mousedown", go); h.addEventListener("mouseup", stop); })();   // phones: never pop the keyboard up by itself
+(function(){ const h = document.querySelector("#gateCode .gwel"); if(!h) return; let t = null, taps = [];   // v4.40.1: XC's studio sign-in on a phone that doesn't know his PIN yet: hold the heading 1 s, or tap it 5 times
+  h.style.webkitUserSelect = "none"; h.style.userSelect = "none"; h.style.webkitTouchCallout = "none";   // iOS was turning the hold into a text selection
+  const open = () => { taps = []; natHap("light"); gate("gatePin"); };
+  const go = () => { if(t) clearTimeout(t); t = setTimeout(() => { t = null; open(); }, 900); }, stop = () => { if(t){ clearTimeout(t); t = null; } };
+  h.addEventListener("touchstart", go, { passive: true }); h.addEventListener("touchend", stop); h.addEventListener("touchcancel", stop); h.addEventListener("mousedown", go); h.addEventListener("mouseup", stop);
+  h.addEventListener("contextmenu", e => e.preventDefault());
+  h.addEventListener("click", () => { const now = Date.now(); taps = taps.filter(x => now - x < 2500).concat(now); if(taps.length >= 5) open(); }); })();   // phones: never pop the keyboard up by itself
 /* v4.40: if starting up throws, a clear screen with Try again, never an empty shell */
 function bootFailed(){ try { const sp = document.getElementById("splash"); if(sp) sp.classList.remove("hide"); natPlugin("SplashScreen", "hide", { fadeOutDuration: 180 }).catch(() => {}); const m = document.getElementById("splashMsg"); if(m) m.innerHTML = 'XC Studio didn\'t open properly. <button class="mact ok" onclick="location.reload()">Try again</button>'; } catch(e){} }   // v4.40: never bootOk here, so a broken self-update gets rolled back
 function gate(which){
