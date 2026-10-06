@@ -57,8 +57,8 @@
       <span class="snum">Step 1 · The deal, in writing</span>
       <h2>No surprises, ever.</h2>
       <div class="terms">
-        <div class="trow"><span class="d">01</span><span><b>The service — Minimum.</b> A weekly shot list in your app, built for your brand, with a how-to on every shot. You film; XC edits <b>12 reels a month</b> — hooks, subtitles, sound, grade — delivered weekly, ready to post. One refinement round per reel.</span></div>
-        <div class="trow"><span class="d">02</span><span><b>The price.</b> $1,150/month. Invoiced monthly, payable within 7 days. Posting stays yours at this tier — posting and ads live in the Amplify upgrade, whenever you want it.</span></div>
+        <div class="trow"><span class="d">01</span><span><b>The service.</b> A weekly shot list in your app, built for your brand, with a how-to on every shot. You film; XC edits <b>the reels in your plan</b> (hooks, subtitles, sound, grade), delivered weekly, ready to post. One refinement round per reel.</span></div>
+        <div class="trow"><span class="d">02</span><span><b>The price.</b> As agreed with XC for your plan, invoiced monthly, payable within 7 days. Your agreement and invoices are under <b>Documents</b> in your app.</span></div>
         <div class="trow"><span class="d">03</span><span><b>The term.</b> Month to month, no lock-in fee. Either of us can end it with <b>30 days' written notice</b>; work and billing run as normal through the notice period.</span></div>
         <div class="trow"><span class="d">04</span><span><b>The rhythm.</b> Film and upload across each week. If a week's footage doesn't arrive, that delivery slot rolls. Deliverables are finished reels — raw footage isn't included. No guarantees of views, followers or revenue — anyone who promises that is lying to you.</span></div>
         <div class="trow"><span class="d">04b</span><span><b>Delivery, turnaround and liability.</b> (1) Finished reels are delivered within five (5) business days of receipt of the footage. Footage is received when it appears in your XC Studio folder. Footage received after 5:00pm Australian Eastern time, or on a non-business day, is received on the next business day. (2) Up to twice your weekly allocation (Minimum 6, Standard 8, Scale 10 reels) is delivered within one delivery period. Footage in excess of that volume is delivered in successive delivery periods. (3) The monthly allocation is fulfilled from footage received on or before the fifth-last business day of the month. Footage received after that date is applied to the following month. Unfilmed allocation does not roll over and is not credited or refunded. (4) XC Media does not offer expedited, same-week or next-day delivery. Within each delivery period, Scale clients are scheduled first. (5) XC Media is not liable for any loss, missed publication, launch, campaign, promotion, booking or other opportunity arising from delivery within the delivery period, from footage received late, incomplete or unusable, or from your own publishing schedule. (6) Where XC Media fails to deliver within the delivery period for reasons within its control, your sole remedy is delivery in the next delivery period and a credit equal to the affected reels' proportion of that month's fee.</span></div>
@@ -73,20 +73,18 @@
     <!-- STEP 2 · APP -->
     <div class="step">
       <span class="snum">Step 2 · Your app</span>
-      <h2>Your studio code and owner PIN.</h2>
+      <h2>Your studio code.</h2>
       <div class="code"><div class="l">Studio code</div><div class="c" id="codeShow">—</div></div>
-      <div class="code" style="border-style:solid;border-color:var(--hair)"><div class="l">Owner PIN — for "Run the place?"</div><div class="c">3008</div></div>
-      <p>Open the app, enter the studio code, tap your name. Add it to your home screen when it asks — one tap from then on. The owner PIN unlocks your business side: progress, reels, documents.</p>
-      <p><b>One rule:</b> never delete footage off your camera or phone until the app says it's safe. Each shot shows <b>All in, safe to clear your card</b> once every clip has reached XC. Until then it says Don't delete anything yet.</p>
-      <a class="bigbtn" href="https://app.xcmedia.co" target="_blank" rel="noopener">Open XC Studio ↗</a>
+      <p>Open the app, enter the studio code, tap your name. Owners: XC sends your owner PIN separately. It unlocks your business side: progress, reels and documents.</p>
+      <p><b>One rule:</b> never delete footage off your camera or phone until the app says it's safe. Each shot shows <b>XC has the clips you sent</b> once they've all arrived. Filmed extra takes? Send them too before you clear anything. Until then it says Don't delete anything yet.</p>
+      <a class="bigbtn" id="openApp" href="https://app.xcmedia.co" target="_blank" rel="noopener">Open XC Studio ↗</a>
     </div>
 
     <!-- STEP 3 · PAYMENT -->
     <div class="step">
       <span class="snum">Step 3 · Payment</span>
       <h2>Set and forget.</h2>
-      <p>$1,150/month, card, cancel-able any time per the terms above. Your invoice lands in your app under Documents each month.</p>
-      <a class="bigbtn" href="https://buy.stripe.com/eVq9ATeCfeCo5YB1FX0sU03" target="_blank" rel="noopener">Set up payment ↗</a>
+      <p>Your payment link and each month's invoice are in your app under <b>Documents</b> (owner view). Card or bank debit, cancel-able any time per the terms above.</p>
     </div>
 
     <!-- STEP 4 · QUESTIONS -->
@@ -118,8 +116,8 @@
 
   <div id="broken" class="hide">
     <div class="eyebrow">Welcome</div>
-    <h1>Hmm — that link isn't right.</h1>
-    <p class="sub">Check the link has your code on the end, or message XC — sorted in a minute.</p>
+    <h1 id="brokenHead">Hmm, that didn't open.</h1>
+    <p class="sub" id="brokenSub">Check the link has your code on the end, or message XC. Sorted in a minute.</p>
   </div>
 </div>
 
@@ -132,12 +130,15 @@ async function boot(){
   try {
     const r = await fetch(API + "?action=hello&code=" + encodeURIComponent(CODE), {redirect:"follow"});
     const d = await r.json();
-    if(!d.ok){ show("broken"); return; }
+    if(!d.ok){ const bh = document.getElementById("brokenHead"), bs = document.getElementById("brokenSub");
+      if(bs) bs.textContent = d.error === "signed out" ? "That code has changed. Ask XC for your new welcome link." : d.error === "busy" ? "XC's system is busy. Refresh this page in a minute." : "That link isn't right. Ask XC to send it again.";
+      show("broken"); return; }
     const first = (d.name||"").split(" ")[0];
     document.getElementById("welEyebrow").textContent = "Welcome aboard, " + (first || "mate");
     document.getElementById("welHead").textContent = first ? (first + ", let's get you set up.") : "Let's get you set up.";
     document.getElementById("codeShow").textContent = CODE;
     document.getElementById("intakeBtn").href = "/onboard/?code=" + encodeURIComponent(CODE);
+    document.getElementById("openApp").href = "https://app.xcmedia.co/?code=" + encodeURIComponent(CODE);   // the app opens on this code
     try { if(localStorage.getItem("xcw."+CODE)==="1"){ const b=document.getElementById("agreeBtn"); b.disabled=true; b.textContent="Agreed ✓"; document.getElementById("agreeOk").style.display="block"; } } catch(e){}
     show("flow");
   } catch(e){ show("broken"); }
@@ -148,7 +149,7 @@ async function agree(){
   try {
     const r = await fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({action:"feedback", code:CODE, fileId:"TERMS-ACCEPTED-" + CODE, verdict:"love",
-        note:"AGREED TO TERMS (welcome page): Minimum $1,150/mo, 30-day notice, case-study permission, 1 refinement round, weekly delivery, delivery terms (5 business days, volume cap, monthly allocation, no expedited, liability and remedy).", by:"Client via welcome page"})});
+        note:"AGREED TO TERMS (welcome page, terms of " + new Date().toISOString().slice(0,10) + "): price as agreed for their plan, 30-day notice, case-study permission, 1 refinement round, weekly delivery, delivery terms (5 business days, volume cap, monthly allocation, no expedited, liability and remedy).", by:"Client via welcome page"})});
     const d = await r.json();
     if(d.ok){ btn.textContent = "Agreed ✓"; document.getElementById("agreeOk").style.display = "block"; try{ localStorage.setItem("xcw."+CODE,"1"); }catch(e){} }
     else { err.textContent = "Didn't save — try once more."; btn.disabled = false; btn.textContent = "I agree — let's go"; }

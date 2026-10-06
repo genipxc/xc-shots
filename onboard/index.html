@@ -43,6 +43,7 @@
     <div class="eyebrow" id="bizName">Onboarding</div>
     <h1>Ten quick answers.<br>Then we build.</h1>
     <p class="sub">This is how XC learns your business before the first shot list. Short answers are fine — say it like you'd say it out loud.</p>
+    <div class="q" id="ownerQ" style="display:none"><label>Owner PIN (from XC)</label><input id="ownerPin" inputmode="numeric" autocomplete="off" placeholder="Only the owner fills this in"></div>
     <div class="q"><label>Your name</label><input id="byName" placeholder="Who's filling this in?"></div>
     <div id="qs"></div>
     <button class="bigbtn" id="sendBtn" onclick="submitIntake()">Send it to XC →</button>
@@ -73,13 +74,15 @@ function show(id){ ["loading","form","thanks","broken"].forEach(x=>document.getE
 async function boot(){
   if(!CODE){ show("broken"); return; }
   try {
-    const r = await fetch(API + "?action=intake&code=" + encodeURIComponent(CODE), {redirect:"follow"});
+    const op = (document.getElementById("ownerPin") || {}).value || "";
+    const r = await fetch(API + "?action=intake&code=" + encodeURIComponent(CODE) + (op ? "&owner=" + encodeURIComponent(op) : ""), {redirect:"follow"});
     const d = await r.json();
     if(!d.ok){
       if(d.error === "unknown action"){ document.getElementById("brokenHead").textContent = "Almost ready."; document.getElementById("brokenSub").textContent = "This form goes live with XC's next app update — text your answers to XC in the meantime."; }
       show("broken"); return;
     }
-    if(d.submitted){ show("thanks"); return; }
+    if(d.submitted && !d.ownerOnly){ show("thanks"); return; }
+    document.getElementById("ownerQ").style.display = d.ownerOnly ? "" : "none";   // this business has an owner PIN: only the owner sends the answers
     QUESTIONS = d.questions || [];
     document.getElementById("bizName").textContent = d.name + " · Onboarding";
     document.getElementById("qs").innerHTML = QUESTIONS.map(q =>
@@ -95,11 +98,11 @@ async function submitIntake(){
   btn.disabled = true; err.innerHTML = '<span class="spin"></span>Sending…';
   try {
     const r = await fetch(API, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({action:"intakeSubmit", code:CODE, by:(document.getElementById("byName").value||"").trim(), answers})});
+      body: JSON.stringify({action:"intakeSubmit", code:CODE, owner:(document.getElementById("ownerPin").value||"").trim() || undefined, by:(document.getElementById("byName").value||"").trim(), answers})});
     const d = await r.json();
     if(d.ok){ show("thanks"); window.scrollTo({top:0}); }
-    else { err.textContent = "Couldn't send — " + (d.error||"try again"); btn.disabled = false; }
-  } catch(e){ err.textContent = "No connection — check your signal and hit send again."; btn.disabled = false; }
+    else { err.textContent = d.error === "owner only" ? "Only the owner can send these. Type the owner PIN XC gave you at the top." : d.error === "busy" ? "XC's system is busy. Hit send again in a moment." : "Couldn't send. Try again, or message XC."; btn.disabled = false; }
+  } catch(e){ err.textContent = "No connection. Check your signal and hit send again."; btn.disabled = false; }
 }
 boot();
 </script>

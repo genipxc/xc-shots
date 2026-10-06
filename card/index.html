@@ -64,7 +64,7 @@
   const name = ps.get("name") || "XC Studio", codeV = (ps.get("code") || "").toUpperCase();
   document.getElementById("clientName").textContent = "XC STUDIO · " + name.toUpperCase();
   document.getElementById("codeBox").textContent = codeV || "————";
-  const qr = qrcode(0, "M"); qr.addData("https://app.xcmedia.co/"); qr.make();
+  const qr = qrcode(0, "M"); qr.addData("https://app.xcmedia.co/" + (codeV ? "?code=" + encodeURIComponent(codeV) : "")); qr.make();   // the scan opens straight on this code
   document.getElementById("qr").innerHTML = qr.createSvgTag({cellSize: 4, margin: 0, scalable: true});
   document.title = "XC Studio card — " + name;
 </script>
