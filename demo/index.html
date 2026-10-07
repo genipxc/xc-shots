@@ -988,6 +988,7 @@ html[data-theme="light"] rect[stroke="#3A3A3A"]{stroke:var(--frameS)}   /* the f
       <div class="mrow"><div class="r"><span class="nm">Appearance<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Saved on this device</span></span></div><div class="switch thsw" role="group" aria-label="Appearance"><button type="button" data-th="dark" aria-pressed="true" onclick="themeSet('dark')">Dark</button><button type="button" data-th="light" aria-pressed="false" onclick="themeSet('light')">Light</button><button type="button" data-th="auto" aria-pressed="false" onclick="themeSet('auto')">Match my phone</button></div></div>
       <div class="mrow"><div class="r"><span class="nm">Refresh everything</span><button class="mact" onclick="xcRefresh()">Refresh</button></div></div>
       <div class="mrow nat-only"><div class="r"><span class="nm">Lock with Face ID<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Asks for your face each time the app opens</span></span><button class="mact faceLockBtn" onclick="faceLockToggle()">Turn on</button></div></div>
+      <div class="mrow nat-only"><div class="r"><span class="nm">Test notification<br><span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase">Sends one to this phone</span></span><button class="mact" onclick="pushTestNow(this)">Send one</button></div></div>
       <div class="mrow"><div class="r"><span class="nm">Sign out of the studio side</span><button class="mact cancel" onclick="xcSignOut()">Sign out</button></div></div>
     </div>
     <p class="demonote" style="border:0;padding:0">App v<span id="buildC"></span></p>
@@ -1431,7 +1432,7 @@ if(window.__devHost && /[?&]uidev=1/.test(location.search) && /[?&]nat=1/.test(l
 /* ═══════════════ config ═══════════════ */
 try { const k1 = localStorage.getItem("xcs.pk"), c1 = localStorage.getItem("xcs.code") || localStorage.getItem("xcs.ownercode"); if(k1){ if(c1 && !/-/.test(c1)){ const m = JSON.parse(localStorage.getItem("xcs.pks") || "{}"); m[c1.toUpperCase()] = k1; localStorage.setItem("xcs.pks", JSON.stringify(m)); } localStorage.removeItem("xcs.pk"); } } catch(e){}   // v4.38: 4.37 kept one key
 const API = "https://script.google.com/macros/s/AKfycbxpz2wQHgci9lUEG9KPAk-fUxk2VmyY1cRUhfHfwnSHc6z6QJifVcpEWt0W275wyGz8/exec";
-const BUILD = "4.42";
+const BUILD = "4.43";
 const FORCE_EDITOR = /\/editor\/?$/.test(location.pathname);
 const FORCE_XC = /\/xc\/?$/.test(location.pathname);
 const POLL_MS = 20000;
@@ -4799,6 +4800,23 @@ async function pushSend(token){
   const body = { action: "pushReg", token, kind: "fcm", role: xc ? "xc" : "client", device: devLabel() }; if(xc) body.pin = pin; else body.code = code;
   let d = null; try { d = await apiPostRun(keyed(body)); } catch(e){}
   if(d && d.ok) LS.set("pushSent", key);   // 2.9.5 says "unknown action": tried again on the next open
+}
+/* v4.43: Studio › Test notification (XC 7 Oct): signs this phone up for XC's notifications if it isn't yet, then asks the server
+   (2.9.7 pushTest) to send one, so the whole chain is proven: server → Firebase → Apple → this phone */
+async function pushTestNow(btn){
+  if(!pin || !NATIVE) return; const was = btn.textContent; btn.disabled = true; btn.textContent = "Sending…";
+  try {
+    let r = null; try { r = await natPlugin("XCNative", "pushRegister"); } catch(e){}
+    if(!r || r.reason === "no-firebase"){ toast("This build can't get notifications. Install the newest build from <b>TestFlight</b>, then try again."); return; }
+    if(!r.granted || !r.token){ toast(r.reason === "denied" ? "Notifications are off for XC Studio. Turn them on in <b>Settings › XC Studio › Notifications</b>." : "This phone couldn't sign up for notifications just now. Try again in a minute."); return; }
+    LS.set("pushSent", ""); await pushSend(r.token);
+    const d = await apiPost({ action: "pushTest", pin });
+    if(d && d.ok && d.sent > 0) toast("<b>Sent.</b> It lands at the top of the screen in a few seconds.");
+    else if(d && d.off) toast("Notifications aren't switched on in the server yet.");
+    else if(d && d.ok && !d.devices) toast("The server doesn't have this phone yet. Try again in a minute.");
+    else if(d && d.error === "unknown action") toast("The server needs its update first.");
+    else toast("Couldn't send it" + (d && d.error ? ": " + esc(String(d.error)).slice(0, 120) : "") + ".");
+  } finally { btn.disabled = false; btn.textContent = was; }
 }
 async function pushMaybeAsk(){
   if(!NATIVE || LS.get("pushAsked") || natWelcomeBusy || overlayOpen()) return;
